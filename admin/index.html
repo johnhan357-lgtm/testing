@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel & Visual CMS — Document Verification Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -797,6 +800,22 @@
             <button type="button" class="btn-secondary" id="btnResetThemeDefaults" style="margin-top: 10px;">
               Reset Palette to Default Forest Green
             </button>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <h2 class="card-title">Global Typography &amp; Portal Font</h2>
+            <p class="card-desc">Set the base font family across the entire public verification portal. Individual fields can still have their own custom font override.</p>
+            <div class="form-field">
+              <label class="form-label" for="cfgGlobalFont">Global Website Font</label>
+              <select id="cfgGlobalFont" class="form-input">
+                <option value="">Default (-apple-system / System Sans)</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                <option value="Times">Times (Times New Roman)</option>
+                <option value="Poppins">Poppins</option>
+                <option value="Fair">Fair (Playfair Display)</option>
+                <option value="Helvetica">Helvetica</option>
+              </select>
+            </div>
           </div>
         </section>
 

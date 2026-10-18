@@ -145,8 +145,10 @@ const DEFAULT_CONFIG = {
     primaryGreenDark: "#003316",
     primaryGreenLight: "#0b5e2b",
     footerDark: "#1e2225",
-    bgLight: "#f8f9fb"
+    bgLight: "#f8f9fb",
+    globalFont: ""
   },
+  fieldFonts: {},
   navigation: [
     { id: "nav-1", label: "HOME", url: "#", target: "_self", enabled: true, isExternal: false },
     { id: "nav-2", label: "CHECKLIST", url: "#checklist", target: "_self", enabled: true, isExternal: false },

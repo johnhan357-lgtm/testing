@@ -42,6 +42,86 @@ document.addEventListener("DOMContentLoaded", async () => {
   const resHash = document.getElementById("resHash");
   const resultTable = document.querySelector(".result-table");
 
+  // =========================================================================
+  // TYPOGRAPHY & FONT MAP ENGINE
+  // =========================================================================
+  const FONT_MAP = {
+    "Plus Jakarta Sans": "'Plus Jakarta Sans', sans-serif",
+    "Times": "'Times New Roman', Times, serif",
+    "Poppins": "'Poppins', sans-serif",
+    "Fair": "'Playfair Display', 'Fair', Georgia, serif",
+    "Helvetica": "'Helvetica Neue', Helvetica, Arial, sans-serif"
+  };
+
+  const FIELD_TO_PUBLIC_SELECTOR_MAP = {
+    "cfgAuthorityName": [".brand-title"],
+    "cfgAuthoritySubtitle": [".brand-subtitle"],
+    "cfgHeroTitle": [".hero-title"],
+    "cfgHeroSubtitle": [".hero-subtitle"],
+    "cfgCardHeading": [".card-heading", ".card-title"],
+    "cfgDocLabel": ["label[for='docNumber']"],
+    "cfgDocPlaceholder": ["#docNumber"],
+    "cfgDateLabel": ["label[for='docDate']"],
+    "cfgVerifyBtnText": ["#btnVerify"],
+    "cfgClearBtnText": ["#btnClear"],
+    "cfgHelpText": [".help-text"],
+    "cfgCertPageTitle": [".cert-page-title", "#certPageTitle"],
+    "cfgCertBreadcrumb": [".cert-breadcrumb", "#certBreadcrumbText"],
+    "cfgCertIssuerStatement": [".cert-issuer-statement", "#certIssuerStatement", "#aposIssuerStatement"],
+    "cfgCertConventionTitle": [".cert-convention-title", "#aposConventionTitle"],
+    "cfgCertConventionSubtitle": [".cert-convention-subtitle", "#aposConventionSubtitle"],
+    "cfgCertCountry": ["#certCountryVal", "#aposCountry"],
+    "cfgCertCertifiedWord": [".cert-box-title", "#aposCertified"],
+    "cfgCertSignatoryOfficer": ["#certOfficerVal", "#aposSignatory"],
+    "cfgCertDisclaimer": [".cert-disclaimer-box", "#aposDisclaimer"],
+    "cfgCertVerificationUrl": [".cert-footer-url", "#aposVerifyUrl"],
+    "cfgNoticeTitle": ["#modalTitle"],
+    "cfgNoticeBodyEn": [".modal-body-text"],
+    "cfgNoticeBodyReg": [".modal-regional-text"],
+    "cfgNoticeBtnText": ["#modalAcknowledgeBtn"],
+    "cfgFloatingLabel": [".floating-feedback-btn span", "#btnFeedback span"],
+    "cfgFooterAuthorityName": [".footer-brand-title", ".footer-brand .brand-title"],
+    "cfgFooterAuthoritySubtitle": [".footer-brand-subtitle", ".footer-brand .brand-subtitle"],
+    "cfgFooterCopyright": [".footer-bottom"],
+    // Apostille direct field mapping
+    "qgDocNumber": ["#aposDocNumber"],
+    "qgCategory": ["#aposIssuerStatement"],
+    "qgCountry": ["#aposCountry"],
+    "qgSignatory": ["#aposSignatory"],
+    "qgCapacity": ["#aposCapacity"],
+    "qgSeal": ["#aposSealOf"],
+    "qgLocation": ["#aposIssuePlace"],
+    "qgSignatoryOfficer": ["#aposSignatory"]
+  };
+
+  function applyFieldFonts(cfg) {
+    if (!cfg) return;
+
+    // Apply Global Portal Font
+    if (cfg.theme && cfg.theme.globalFont && FONT_MAP[cfg.theme.globalFont]) {
+      const globalCss = FONT_MAP[cfg.theme.globalFont];
+      document.documentElement.style.setProperty('--font-family', globalCss);
+      document.body.style.fontFamily = globalCss;
+    }
+
+    // Apply Per-Field Custom Fonts
+    if (cfg.fieldFonts && typeof cfg.fieldFonts === 'object') {
+      Object.entries(cfg.fieldFonts).forEach(([fieldId, fontName]) => {
+        if (!fontName || !FONT_MAP[fontName]) return;
+        const fontCss = FONT_MAP[fontName];
+        const selectors = FIELD_TO_PUBLIC_SELECTOR_MAP[fieldId];
+        if (selectors && Array.isArray(selectors)) {
+          selectors.forEach(sel => {
+            const els = document.querySelectorAll(sel);
+            els.forEach(el => {
+              el.style.fontFamily = fontCss;
+            });
+          });
+        }
+      });
+    }
+  }
+
   // Mobile Menu & Date Selects
   const mobileMenuBtn = document.getElementById("mobileMenuBtn");
   const mainNavbar = document.querySelector(".main-navbar");
@@ -332,6 +412,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         elSigImg.src = cv.signatureUrl;
       }
     }
+
+    // Apply Fonts to All Applicable Elements
+    applyFieldFonts(cfg);
   }
 
   // =========================================================================
@@ -547,6 +630,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (data.status !== "NOT_FOUND" && data.status !== "DATE_MISMATCH") {
       const guideEl = document.getElementById("notFoundGuidance");
       if (guideEl) guideEl.style.display = "none";
+    }
+
+    // Re-apply field fonts to result elements (Apostille certificate fields)
+    if (currentConfig) {
+      applyFieldFonts(currentConfig);
     }
   }
 

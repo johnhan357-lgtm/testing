@@ -16,7 +16,14 @@
     "primaryGreenDark": "#003316",
     "primaryGreenLight": "#34744f",
     "footerDark": "#1e2225",
-    "bgLight": "#f8f9fb"
+    "bgLight": "#f8f9fb",
+    "globalFont": "Plus Jakarta Sans"
+  },
+  "fieldFonts": {
+    "cfgHeroTitle": "Poppins",
+    "cfgCertConventionTitle": "Fair",
+    "cfgCertSignatoryOfficer": "Times",
+    "cfgHelpText": "Helvetica"
   },
   "navigation": [
     {
@@ -80,7 +87,7 @@
     "verifyButtonText": "Verify",
     "clearButtonText": "Clear data",
     "supportEmail": "support@verification-portal.org",
-    "helpText": "If you need further help email support@verification-portal.org with the certificate number and date"
+    "helpText": "If you need further help email verifyapostille@mofa.gov.pk with the Apostille number and date"
   },
   "noticeModal": {
     "enabled": true,
@@ -145,8 +152,8 @@
     "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-18T19:34:56.531Z",
-    "lastPublishedAt": "2026-10-18T19:34:56.539Z",
-    "version": 45
+    "lastSavedAt": "2026-10-18T19:56:31.270Z",
+    "lastPublishedAt": "2026-10-18T19:56:31.281Z",
+    "version": 53
   }
 }

@@ -9,6 +9,95 @@ document.addEventListener("DOMContentLoaded", () => {
   let cachedRecords = [];
 
   // =========================================================================
+  // TYPOGRAPHY & FONT CHANGER ENGINE
+  // =========================================================================
+  const FONT_MAP = {
+    "Plus Jakarta Sans": "'Plus Jakarta Sans', sans-serif",
+    "Times": "'Times New Roman', Times, serif",
+    "Poppins": "'Poppins', sans-serif",
+    "Fair": "'Playfair Display', 'Fair', Georgia, serif",
+    "Helvetica": "'Helvetica Neue', Helvetica, Arial, sans-serif"
+  };
+
+  const AVAILABLE_FONTS = [
+    { id: "Plus Jakarta Sans", name: "Plus Jakarta Sans", css: "'Plus Jakarta Sans', sans-serif" },
+    { id: "Times", name: "Times", css: "'Times New Roman', Times, serif" },
+    { id: "Poppins", name: "Poppins", css: "'Poppins', sans-serif" },
+    { id: "Fair", name: "Fair", css: "'Playfair Display', serif" },
+    { id: "Helvetica", name: "Helvetica", css: "'Helvetica Neue', Helvetica, Arial, sans-serif" }
+  ];
+
+  function setupFieldFontSelectors() {
+    const targetInputs = document.querySelectorAll(
+      '.tab-content input[type="text"], .tab-content input[type="email"], .tab-content textarea, #recordModal input[type="text"]'
+    );
+
+    targetInputs.forEach(input => {
+      if (input.type === "color" || input.type === "file") return;
+      if (input.readOnly && !input.id.startsWith("cfg")) return;
+      if (input.id === "cfgColorPrimary" || input.id === "cfgColorDark" || input.id === "cfgColorFooter" || input.id === "cfgColorBg") return;
+      if (input.id === "cfgFooterLogoUrl" || input.id === "cfgCertSignatureUrl" || input.id === "qgSignatureUrl" || input.id === "recSignatureUrl") return;
+
+      const parentField = input.closest('.form-field');
+      if (!parentField) return;
+
+      // Check if already created
+      if (parentField.querySelector('.field-font-picker')) return;
+
+      const label = parentField.querySelector('label.form-label') || parentField.querySelector('label');
+      if (!label) return;
+
+      const headerRow = document.createElement('div');
+      headerRow.className = 'field-font-header-row';
+      headerRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;';
+
+      label.style.marginBottom = '0';
+      label.parentNode.insertBefore(headerRow, label);
+      headerRow.appendChild(label);
+
+      const fontPill = document.createElement('div');
+      fontPill.className = 'font-picker-pill';
+      fontPill.style.cssText = 'display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 7px;';
+
+      const fontPillLabel = document.createElement('span');
+      fontPillLabel.textContent = 'Font:';
+      fontPillLabel.style.cssText = 'color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 0.68rem;';
+      fontPill.appendChild(fontPillLabel);
+
+      const select = document.createElement('select');
+      select.className = 'field-font-picker';
+      select.dataset.fieldId = input.id;
+      select.style.cssText = 'font-size: 0.78rem; border: none; background: transparent; color: #1e293b; font-weight: 600; cursor: pointer; outline: none; padding: 1px 2px;';
+
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = '';
+      defaultOpt.textContent = 'Default Font';
+      select.appendChild(defaultOpt);
+
+      AVAILABLE_FONTS.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = f.name;
+        opt.style.fontFamily = f.css;
+        select.appendChild(opt);
+      });
+
+      // Update editable bar font immediately on change
+      select.addEventListener('change', () => {
+        const chosen = select.value;
+        if (chosen && FONT_MAP[chosen]) {
+          input.style.fontFamily = FONT_MAP[chosen];
+        } else {
+          input.style.fontFamily = '';
+        }
+      });
+
+      fontPill.appendChild(select);
+      headerRow.appendChild(fontPill);
+    });
+  }
+
+  // =========================================================================
   // 1. AUTHENTICATION & LOGIN
   // =========================================================================
   const loginOverlay = document.getElementById("loginOverlay");
@@ -119,6 +208,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const targetPane = document.getElementById(targetId);
     if (targetPane) targetPane.classList.add("active");
 
+    setupFieldFontSelectors();
+
     const sidebarNav = document.getElementById("adminSidebarNav");
     if (sidebarNav) {
       sidebarNav.querySelectorAll(".nav-tab-btn").forEach(btn => {
@@ -187,6 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function populateFormFromConfig(cfg) {
     if (!cfg) return;
+
+    setupFieldFontSelectors();
 
     // Tab 2: Branding
     if (cfg.branding) {
@@ -339,6 +432,23 @@ document.addEventListener("DOMContentLoaded", () => {
       syncColor("cfgColorDark", cfg.theme.primaryGreenDark || "#003316");
       syncColor("cfgColorFooter", cfg.theme.footerDark || "#1e2225");
       syncColor("cfgColorBg", cfg.theme.bgLight || "#f8f9fb");
+      const gFontEl = document.getElementById("cfgGlobalFont");
+      if (gFontEl) gFontEl.value = cfg.theme.globalFont || "";
+    }
+
+    // Populate Field Fonts
+    if (cfg.fieldFonts && typeof cfg.fieldFonts === 'object') {
+      Object.keys(cfg.fieldFonts).forEach(fieldId => {
+        const picker = document.querySelector(`.field-font-picker[data-field-id="${fieldId}"]`);
+        const targetInput = document.getElementById(fieldId);
+        const fontName = cfg.fieldFonts[fieldId];
+        if (picker && fontName) {
+          picker.value = fontName;
+          if (targetInput && FONT_MAP[fontName]) {
+            targetInput.style.fontFamily = FONT_MAP[fontName];
+          }
+        }
+      });
     }
   }
 
@@ -440,8 +550,19 @@ document.addEventListener("DOMContentLoaded", () => {
       primaryGreenDark: document.getElementById("cfgColorDark").value.trim(),
       primaryGreenLight: adjustColorBrightness(document.getElementById("cfgColorPrimary").value.trim(), 20),
       footerDark: document.getElementById("cfgColorFooter").value.trim(),
-      bgLight: document.getElementById("cfgColorBg").value.trim()
+      bgLight: document.getElementById("cfgColorBg").value.trim(),
+      globalFont: document.getElementById("cfgGlobalFont") ? document.getElementById("cfgGlobalFont").value : ""
     };
+
+    // Gather Field Fonts
+    updated.fieldFonts = {};
+    document.querySelectorAll('.field-font-picker').forEach(picker => {
+      const fieldId = picker.dataset.fieldId;
+      const fontVal = picker.value;
+      if (fieldId && fontVal) {
+        updated.fieldFonts[fieldId] = fontVal;
+      }
+    });
 
     return updated;
   }
@@ -1148,6 +1269,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (recSigPrev) recSigPrev.src = recSig;
         document.getElementById("recNotes").value = rec.notes || "";
         recordModal.classList.add("active");
+        setupFieldFontSelectors();
       });
     });
 
@@ -1196,6 +1318,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const recSigPrev = document.getElementById("recSigPreview");
       if (recSigPrev) recSigPrev.src = "/uploads/signature_ali_faraz_clean.png";
       recordModal.classList.add("active");
+      setupFieldFontSelectors();
     });
   }
 
