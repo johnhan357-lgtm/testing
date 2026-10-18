@@ -66,13 +66,6 @@
       "target": "_self",
       "enabled": true,
       "isExternal": false
-    },
-    {
-      "id": "nav-test-1792334028274",
-      "label": "Main Organization Portal - 1792334028274",
-      "url": "https://myorganization.com/services",
-      "target": "_blank",
-      "enabled": true
     }
   ],
   "hero": {
@@ -148,8 +141,8 @@
     "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-18T14:33:48.276Z",
-    "lastPublishedAt": "2026-10-18T14:33:48.294Z",
-    "version": 8
+    "lastSavedAt": "2026-10-18T14:40:47.988Z",
+    "lastPublishedAt": "2026-10-18T14:40:47.995Z",
+    "version": 11
   }
 }

@@ -61,6 +61,28 @@ function get(endpoint, headers = {}) {
   });
 }
 
+function del(endpoint, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const req = http.request(`${BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers
+    }, res => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, data: JSON.parse(body) });
+        } catch {
+          resolve({ status: res.statusCode, data: body });
+        }
+      });
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+
 async function runTests() {
   console.log('====================================================');
   console.log('       RUNNING END-TO-END CMS INTEGRATION TESTS     ');
@@ -185,6 +207,15 @@ async function runTests() {
     throw new Error('Public verification of new registered record failed!');
   }
   console.log(`✓ Public Verification confirmed: Status = ${verifyNew.data.status}, Name = ${verifyNew.data.record.applicantName}, Hash = ${verifyNew.data.record.securityHash}`);
+
+  // Clean up: delete test record and restore clean navigation
+  await del(`/api/admin/records/${addRecRes.data.record.id}`, authHeaders);
+  const cleanDraftRes = await get('/api/admin/config/draft', authHeaders);
+  const cleanDraft = cleanDraftRes.data;
+  cleanDraft.navigation = cleanDraft.navigation.filter(item => !item.id.startsWith('nav-test-'));
+  await post('/api/admin/config/draft', cleanDraft, authHeaders);
+  await post('/api/admin/config/publish', {}, authHeaders);
+  console.log('✓ Test record and temporary test navigation links cleaned up cleanly.');
 
   // Test 6: Persistence Check (Data files on disk)
   console.log('\n[Test 6] Verifying Data File Persistence on Disk...');

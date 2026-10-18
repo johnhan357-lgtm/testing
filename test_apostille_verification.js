@@ -1,5 +1,7 @@
 const http = require('http');
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const BASE_URL = 'http://localhost:3000';
 
@@ -201,7 +203,7 @@ async function runApostilleTests() {
   assert.strictEqual(verifyNewRes.data.record.sealOf, 'University of Engineering and Technology');
   console.log(`✓ Public verification confirmed for ${uniqueDoc}: Status = VERIFIED`);
 
-  // Clean up: delete test record
+  // Clean up: delete test record and temporary uploaded file
   await get(`/api/admin/records`, authHeaders);
   const delRes = await new Promise((resolve) => {
     const req = http.request(`${BASE_URL}/api/admin/records/${createdRecord.id}`, {
@@ -211,7 +213,11 @@ async function runApostilleTests() {
     req.end();
   });
   assert.strictEqual(delRes.status, 200, 'Test record should be deleted cleanly');
-  console.log(`✓ Test record cleaned up.`);
+  const uploadedPath = path.join(__dirname, uploadRes.data.fileUrl.replace(/^\//, ''));
+  if (fs.existsSync(uploadedPath)) {
+    try { fs.unlinkSync(uploadedPath); } catch {}
+  }
+  console.log(`✓ Test record and temporary upload cleaned up.`);
 
   console.log('\n====================================================');
   console.log('   🎉 ALL APOSTILLE VERIFICATION TESTS PASSED!      ');
