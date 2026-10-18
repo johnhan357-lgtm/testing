@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Document Verification Portal</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. TOP HEADER (Branding & Social Links)
+       ========================================================================= -->
+  <header class="top-header">
+    <div class="header-container">
+      <a href="#" class="brand-section">
+        <div class="brand-emblem" aria-hidden="true">
+          <!-- Generic Institutional Shield & Laurel Emblem SVG -->
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/>
+            <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+            <path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/>
+            <path d="M35 55 Q50 66 65 55" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="brand-titles">
+          <span class="brand-title">Department of Verification & Legalization</span>
+          <span class="brand-subtitle">Online Public Authentication Service</span>
+        </div>
+      </a>
+
+      <div class="social-links" aria-label="Social media links">
+        <a href="#facebook" class="social-icon" title="Facebook" aria-label="Facebook">
+          <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </a>
+        <a href="#instagram" class="social-icon" title="Instagram" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="none" stroke="currentColor" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="currentColor" stroke-width="2"/></svg>
+        </a>
+        <a href="#twitter" class="social-icon" title="Twitter / X" aria-label="Twitter">
+          <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+        </a>
+        <a href="#linkedin" class="social-icon" title="LinkedIn" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       2. MAIN NAVIGATION BAR
+       ========================================================================= -->
+  <nav class="main-navbar" aria-label="Primary Navigation">
+    <div class="nav-container">
+      <ul class="nav-list">
+        <li class="nav-item"><a href="#" class="nav-link">HOME</a></li>
+        <li class="nav-divider" aria-hidden="true">|</li>
+        <li class="nav-item"><a href="#" class="nav-link">CHECKLIST</a></li>
+        <li class="nav-divider" aria-hidden="true">|</li>
+        <li class="nav-item"><a href="#" class="nav-link">DOCUMENTS</a></li>
+        <li class="nav-divider" aria-hidden="true">|</li>
+        <li class="nav-item"><a href="#" class="nav-link">RECOGNIZED LIST</a></li>
+        <li class="nav-divider" aria-hidden="true">|</li>
+        <li class="nav-item"><a href="#" class="nav-link">FEE DETAILS</a></li>
+        <li class="nav-divider" aria-hidden="true">|</li>
+        <li class="nav-item"><a href="#" class="nav-link active">VERIFY ATTESTATION</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       3. HERO & MAIN CONTENT
+       ========================================================================= -->
+  <main class="main-content">
+    <section class="hero-title-section">
+      <h1 class="hero-title">Verify an Official Document Certificate issued from the Verification Authority</h1>
+      <p class="hero-subtitle">Use this service if you want to verify either a paper or electronic certificate issued by the authority.</p>
+    </section>
+
+    <div class="verification-card-wrapper">
+      <!-- Search Form Card -->
+      <div class="verification-card" id="searchCard">
+        <h2 class="card-heading">Please Enter the required details below</h2>
+
+        <form id="verificationForm">
+          <div class="form-group">
+            <label for="docNumber" class="form-label">
+              Certificate Number <span class="required">*</span>
+            </label>
+            <div class="form-input-wrapper">
+              <input 
+                type="text" 
+                id="docNumber" 
+                name="docNumber" 
+                class="form-input" 
+                placeholder="eg: ADG-HYUI-QRTY-BGHN" 
+                required
+                autocomplete="off"
+              >
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="docDate" class="form-label">
+              Date <span class="required">*</span>
+            </label>
+            <div class="form-input-wrapper">
+              <input 
+                type="date" 
+                id="docDate" 
+                name="docDate" 
+                class="form-input" 
+                required
+              >
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-verify" id="btnVerify">Verify</button>
+            <button type="button" class="btn-clear" id="btnClear">Clear data</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Verification Result Card (Dynamic Output) -->
+      <div class="result-card" id="resultCard" aria-live="polite">
+        <div class="result-status-badge status-verified" id="statusBadge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span id="statusTitle">Document Certificate Verified</span>
+        </div>
+
+        <table class="result-table">
+          <tbody>
+            <tr>
+              <td class="label-cell">Certificate Number:</td>
+              <td class="value-cell" id="resDocNumber">ADG-HYUI-QRTY-BGHN</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Document Type:</td>
+              <td class="value-cell" id="resDocType">Official Educational Degree Attestation</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Applicant / Holder:</td>
+              <td class="value-cell" id="resApplicant">Muhammad Ahmed</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Issue Date:</td>
+              <td class="value-cell" id="resDate">18-Oct-2026</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Issuing Center:</td>
+              <td class="value-cell" id="resAuthority">Headquarters Directorate</td>
+            </tr>
+            <tr>
+              <td class="label-cell">Security Digital Hash:</td>
+              <td class="value-cell" id="resHash" style="font-family: monospace; font-size: 0.85rem; color: #475569;">9f83ac12...78b4e</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="result-actions">
+          <button type="button" class="btn-secondary" onclick="window.print()">Print Verification</button>
+          <button type="button" class="btn-secondary" id="btnSearchAgain">Search Another</button>
+        </div>
+      </div>
+
+      <!-- Help Desk Note -->
+      <p class="help-text">
+        If you need further help email <a href="mailto:support@verification-portal.org">support@verification-portal.org</a> with the certificate number and date
+      </p>
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       4. FLOATING FEEDBACK BUTTON
+       ========================================================================= -->
+  <button class="floating-feedback-btn" id="btnFeedback" aria-label="Submit Feedback">
+    <svg viewBox="0 0 24 24">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <span>Submit Feedback</span>
+  </button>
+
+  <!-- =========================================================================
+       5. IMPORTANT NOTICE POPUP MODAL (Screenshot 2 Replication)
+       ========================================================================= -->
+  <div class="modal-overlay" id="noticeModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-container">
+      <button class="modal-close-btn" id="closeModalBtn" aria-label="Close Notice">&times;</button>
+
+      <div class="modal-emblem">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/>
+          <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+          <path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/>
+        </svg>
+      </div>
+
+      <div class="modal-portal-title">Department of Verification & Legalization</div>
+      <div class="modal-portal-sub">Public Document Services</div>
+
+      <h3 class="modal-badge-title" id="modalTitle">IMPORTANT NOTICE</h3>
+      <div class="divider-dashes" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <p class="modal-body-text">
+        Dear Applicants, please visit the verification authority centers only on your scheduled appointment date and time for document processing.<br><br>
+        Your documents will only be processed on the date of your appointment. Applicants arriving before or after the scheduled date may not be facilitated.
+      </p>
+
+      <p class="modal-regional-text">
+        محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔
+      </p>
+
+      <button type="button" class="modal-btn-confirm" id="modalAcknowledgeBtn">Acknowledge & Proceed</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       6. TWO-TIER FOOTER
+       ========================================================================= -->
+  <footer class="main-footer">
+    <div class="footer-top">
+      <div class="footer-top-container">
+        <div class="footer-brand">
+          <div class="brand-emblem">
+            <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="none" stroke="currentColor" stroke-width="3"/>
+              <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="brand-titles">
+            <span class="brand-title">Department of Verification & Legalization</span>
+            <span class="brand-subtitle">Online Document Authentication Portal</span>
+          </div>
+        </div>
+
+        <ul class="footer-links">
+          <li><a href="#courier">Authorized Courier Companies</a></li>
+          <li class="footer-divider" aria-hidden="true">|</li>
+          <li><a href="#faq">FAQ</a></li>
+          <li class="footer-divider" aria-hidden="true">|</li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      Copyright &copy; 2026 Department of Verification & Legalization. All Rights Reserved.
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
