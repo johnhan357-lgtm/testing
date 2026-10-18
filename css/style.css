@@ -1075,13 +1075,25 @@ body {
 .apostille-frame {
   position: relative;
   width: 100%;
-  max-width: 630px;
+  max-width: 680px;
   background-color: #ffffff;
-  /* Authentic Hague Convention cross-stitch geometric floral border */
-  border: 16px solid #111827;
-  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cline x1='0' y1='1' x2='32' y2='1' stroke='%23111827' stroke-width='1.2'/%3E%3Cline x1='0' y1='31' x2='32' y2='31' stroke='%23111827' stroke-width='1.2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23111827'/%3E%3Cpolygon points='16,3 18.5,10 16,13 13.5,10' fill='%23111827'/%3E%3Cpolygon points='16,29 18.5,22 16,19 13.5,22' fill='%23111827'/%3E%3Cpolygon points='3,16 10,18.5 13,16 10,13.5' fill='%23111827'/%3E%3Cpolygon points='29,16 22,18.5 19,16 22,13.5' fill='%23111827'/%3E%3Cline x1='16' y1='16' x2='8' y2='8' stroke='%23111827' stroke-width='1.5'/%3E%3Ccircle cx='7' cy='7' r='1.5' fill='%23111827'/%3E%3Cline x1='16' y1='16' x2='24' y2='8' stroke='%23111827' stroke-width='1.5'/%3E%3Ccircle cx='25' cy='7' r='1.5' fill='%23111827'/%3E%3Cline x1='16' y1='16' x2='8' y2='24' stroke='%23111827' stroke-width='1.5'/%3E%3Ccircle cx='7' cy='25' r='1.5' fill='%23111827'/%3E%3Cline x1='16' y1='16' x2='24' y2='24' stroke='%23111827' stroke-width='1.5'/%3E%3Ccircle cx='25' cy='25' r='1.5' fill='%23111827'/%3E%3C/svg%3E") 16 repeat;
+  border: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+}
+
+/* Border Frame Overlay: exact 15x21 flower border from reference */
+.apostille-border-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('../images/apostille-frame-exact.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 3;
 }
 
 /* Horizontal Security Watermark Overlay */
@@ -1100,159 +1112,175 @@ body {
 .apostille-content {
   position: relative;
   z-index: 2;
-  padding: 20px 22px 18px 22px;
-}
-
-/* Certificate Header Titles */
-.apostille-title-block {
-  text-align: center;
-  margin-bottom: 12px;
-}
-.apostille-main-title {
-  font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 1.85rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #111827;
-  margin: 0 0 4px 0;
-}
-.apostille-convention-title {
-  font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #1f2937;
+  padding: 34px 28px 30px 28px;
 }
 
 /* Certificate Grid Table */
 .apostille-grid-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1.5px solid #111827;
-  font-family: "Times New Roman", Times, Georgia, serif;
+  border: 1px solid #000000;
+  font-family: Arial, Helvetica, sans-serif;
   background: transparent;
 }
 .apostille-grid-table td {
-  border: 1px solid #111827;
-  padding: 4px 8px;
+  border: 1px solid #000000;
+  padding: 3px 8px;
   vertical-align: top;
-  font-size: 0.92rem;
-  color: #111827;
-}
-
-.apos-col-num {
-  width: 28px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1rem;
-  border-right: 1px solid #111827;
-}
-.apos-col-half {
-  width: calc(50% - 14px);
-}
-.apos-col-half.border-left {
-  border-left: 1px solid #111827;
-}
-.apos-col-full {
-  width: calc(100% - 28px);
-}
-.apos-col-label-inline {
-  width: 40px;
-  font-weight: 600;
-}
-.apos-col-val-inline {
-  font-weight: 700;
-}
-.apos-field-label {
-  display: block;
-  font-size: 0.88rem;
-  color: #1f2937;
-  margin-bottom: 2px;
-}
-.apos-field-val {
-  font-size: 0.95rem;
   color: #000000;
 }
-.bold-text {
+
+/* Row 1: Main Title */
+.apos-row-title td {
+  text-align: center;
+  padding: 6px 0 2px 0 !important;
+  border-bottom: 1px solid #000000;
+}
+.apos-title-text {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 1.95rem;
   font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #000000;
+  margin: 0;
+  line-height: 1.15;
+}
+
+/* Row 2: Subtitle */
+.apos-row-subtitle td {
+  text-align: center;
+  padding: 3px 0 5px 0 !important;
+  border-bottom: 1px solid #000000;
+}
+.apos-subtitle-text {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.2;
+}
+
+/* Row 3: Two Col (Point 1) */
+.apos-cell-col-left {
+  width: 50%;
+  padding: 4px 8px !important;
+  border-right: 1px solid #000000;
+}
+.apos-cell-col-right {
+  width: 50%;
+  padding: 4px 8px !important;
+}
+
+/* Generic Header line & Values */
+.apos-cell-header-text {
+  font-size: 0.95rem;
+  color: #000000;
+  line-height: 1.25;
+  margin-bottom: 2px;
+}
+.apos-num-prefix {
+  display: inline-block;
+  min-width: 14px;
+  margin-right: 2px;
+}
+.apos-cell-val-bold {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #000000;
+  line-height: 1.25;
 }
 .code-font {
-  font-family: "Courier New", Courier, monospace;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-/* Calligraphic "Certified" divider */
-.apos-cell-certified {
+/* Row 7: Certified */
+.apos-row-certified td {
   text-align: center;
-  padding: 6px 0 !important;
-  border-top: 1px solid #111827;
-  border-bottom: 1px solid #111827;
+  padding: 4px 0 !important;
 }
 .certified-script {
   font-family: "Brush Script MT", "Snell Roundhand", "Great Vibes", "Segoe Script", cursive;
-  font-size: 1.45rem;
+  font-size: 1.7rem;
   font-style: italic;
-  font-weight: 700;
-  color: #111827;
-}
-
-/* Verification Row (Date/Seal on Left, QR in Middle, Signature on Right) */
-.apos-cell-verification {
-  padding: 10px 8px !important;
-  background: transparent;
-}
-.apos-verif-grid {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 12px;
-}
-.apos-seal-area {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-}
-.apos-verif-date {
-  font-weight: 700;
-  font-size: 0.88rem;
-  margin-bottom: 10px;
-}
-.apos-seal-box {
-  font-size: 0.82rem;
   font-weight: 600;
-  color: #374151;
+  color: #000000;
+  line-height: 1.1;
 }
 
-.apos-qr-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Rows 8-11: Numbered points (5, 6, 7, 8) */
+.apos-col-number {
+  width: 32px;
+  text-align: center;
+  font-size: 0.95rem;
+  border-right: 1px solid #000000;
+  padding: 3px 4px !important;
+}
+.apos-col-label {
+  width: 52px;
+  font-size: 0.95rem;
+  border-right: 1px solid #000000;
+  padding: 3px 6px !important;
+}
+.apos-col-value {
+  padding: 3px 8px !important;
+}
+
+/* Row 12: Verification Grid */
+.apos-row-verification td {
+  padding: 0 !important;
+}
+.apos-cell-seal-block {
+  width: 33%;
+  border-right: 1px solid #000000;
+  vertical-align: top;
+}
+.apos-seal-date-line {
+  padding: 5px 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #000000;
+  border-bottom: 1px solid #000000;
+}
+.apos-seal-stamp-line {
+  padding: 24px 8px 6px 8px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #000000;
+}
+
+.apos-cell-qr-block {
+  width: 120px;
+  border-right: 1px solid #000000;
+  vertical-align: middle;
+  text-align: center;
+  padding: 4px !important;
 }
 .apos-qr-code {
-  width: 90px;
-  height: 90px;
+  width: 95px;
+  height: 95px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
-  padding: 4px;
 }
 .apos-qr-code svg,
 .apos-qr-code img {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
-.apos-sig-area {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
+.apos-cell-sig-block {
+  vertical-align: middle;
+  text-align: center;
+  padding: 6px 12px !important;
 }
 .apos-sig-graphic {
   width: 95px;
-  height: 35px;
+  height: 38px;
+  margin: 0 auto 3px auto;
 }
 .apos-sig-graphic .sig-svg {
   width: 100%;
@@ -1260,10 +1288,8 @@ body {
 }
 .apos-sig-name {
   font-size: 0.82rem;
-  color: #1f2937;
-  font-weight: 600;
-  text-align: right;
-  margin-top: 2px;
+  color: #000000;
+  font-weight: 500;
 }
 
 /* Legal disclaimer at bottom of certificate */
@@ -1273,16 +1299,21 @@ body {
   text-align: center;
 }
 .apos-legal-disclaimer {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   line-height: 1.45;
-  color: #374151;
-  margin-bottom: 6px;
+  color: #000000;
+  margin: 0 0 6px 0;
+  font-weight: 400;
 }
 .apos-legal-url {
-  font-size: 0.76rem;
+  font-size: 0.86rem;
   font-weight: 700;
-  color: #111827;
+  color: #000000;
   word-break: break-all;
+  margin: 0;
+}
+.apos-legal-url u {
+  text-decoration: underline;
 }
 
 /* ==========================================================================
@@ -1397,31 +1428,79 @@ body {
 /* Responsive Switching between Desktop & Mobile View */
 @media (max-width: 768px) {
   .cert-page-title {
-    font-size: 1.5rem;
+    font-size: 2.1rem;
+    line-height: 1.15;
+    max-width: 320px;
+    margin: 0 auto 16px auto;
+  }
+  .cert-issuer-statement {
+    font-size: 0.95rem;
+    margin-bottom: 18px;
   }
   .cert-ref-statement {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    padding: 0 8px;
   }
   .apostille-frame {
-    border-width: 10px;
     max-width: 100%;
   }
   .apostille-content {
-    padding: 14px 12px 14px 12px;
+    padding: 22px 16px 20px 16px;
   }
-  .apostille-main-title {
-    font-size: 1.45rem;
+  .apos-title-text {
+    font-size: 1.55rem;
   }
-  .apostille-convention-title {
+  .apos-subtitle-text {
     font-size: 0.82rem;
   }
-  .apostille-grid-table td {
-    padding: 3px 6px;
+  .apos-cell-header-text {
+    font-size: 0.78rem;
+  }
+  .apos-cell-val-bold {
     font-size: 0.82rem;
+  }
+  .certified-script {
+    font-size: 1.4rem;
+  }
+  .apos-col-number,
+  .apos-col-label,
+  .apos-col-value {
+    font-size: 0.8rem;
+  }
+  .apos-col-number {
+    width: 26px;
+  }
+  .apos-col-label {
+    width: 44px;
+  }
+  .apos-seal-date-line,
+  .apos-seal-stamp-line {
+    font-size: 0.76rem;
+  }
+  .apos-seal-stamp-line {
+    padding-top: 16px;
+  }
+  .apos-cell-qr-block {
+    width: 82px;
   }
   .apos-qr-code {
-    width: 72px;
-    height: 72px;
+    width: 74px;
+    height: 74px;
+  }
+  .apos-sig-graphic {
+    width: 78px;
+    height: 32px;
+  }
+  .apos-sig-name {
+    font-size: 0.72rem;
+  }
+  .apos-legal-disclaimer {
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+  .apos-legal-url {
+    font-size: 0.74rem;
   }
 
   /* Switch Viewer: Hide desktop iframe toolbar and show mobile charcoal box */

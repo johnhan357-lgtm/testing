@@ -172,100 +172,130 @@
         <!-- THE AUTHENTIC APOSTILLE CERTIFICATE CONTAINER -->
         <div class="apostille-certificate-container" id="apostilleContainer">
           <div class="apostille-frame" id="apostilleFrame">
+            <!-- Frame Overlay: Exact 15x21 Selburose Cross-Stitch Floral Border from reference -->
+            <div class="apostille-border-frame" aria-hidden="true"></div>
+
             <!-- Repeating Security Watermark Layer -->
             <div class="apostille-watermark-overlay" id="apostilleWatermark"></div>
 
             <div class="apostille-content">
-              <div class="apostille-title-block">
-                <h2 class="apostille-main-title" id="aposTitle">APOSTILLE</h2>
-                <div class="apostille-convention-title" id="aposSubtitle">(Convention de La Haye du 5 October 1961)</div>
-              </div>
-
               <table class="apostille-grid-table">
                 <tbody>
-                  <tr>
-                    <td class="apos-col-num">1</td>
-                    <td class="apos-col-half">
-                      <span class="apos-field-label">Country:</span>
-                      <div class="apos-field-val bold-text" id="aposCountry">Pakistan</div>
-                    </td>
-                    <td class="apos-col-half border-left">
-                      <span class="apos-field-label">This Public Document</span>
-                      <div class="apos-field-val bold-text" id="aposDocCategory">Personal Document</div>
+                  <!-- Row 1: Title inside table box -->
+                  <tr class="apos-row-title">
+                    <td colspan="4" class="apos-cell-title">
+                      <div class="apos-title-text" id="aposTitle">APOSTILLE</div>
                     </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">2</td>
-                    <td colspan="2" class="apos-col-full">
-                      <span class="apos-field-label">has been signed by</span>
-                      <div class="apos-field-val bold-text" id="aposSignedBy">N/A</div>
+
+                  <!-- Row 2: Convention Subtitle inside table box -->
+                  <tr class="apos-row-subtitle">
+                    <td colspan="4" class="apos-cell-subtitle">
+                      <div class="apos-subtitle-text" id="aposSubtitle">(Convention de La Haye du 5 October 1961)</div>
                     </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">3</td>
-                    <td colspan="2" class="apos-col-full">
-                      <span class="apos-field-label">acting in the capacity of</span>
-                      <div class="apos-field-val bold-text" id="aposCapacity">Registrar</div>
+
+                  <!-- Row 3: Point 1 (Country & This Public Document) -->
+                  <tr class="apos-row-point1">
+                    <td colspan="2" class="apos-cell-col-left">
+                      <div class="apos-cell-header-text"><span class="apos-num-prefix">1</span> Country</div>
+                      <div class="apos-cell-val-bold" id="aposCountry">Pakistan</div>
+                    </td>
+                    <td colspan="2" class="apos-cell-col-right">
+                      <div class="apos-cell-header-text">This Public Document</div>
+                      <div class="apos-cell-val-bold" id="aposDocCategory">Personal Document</div>
                     </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">4</td>
-                    <td colspan="2" class="apos-col-full">
-                      <span class="apos-field-label">bears the seal stamp of</span>
-                      <div class="apos-field-val bold-text" id="aposSealOf">Preston University</div>
+
+                  <!-- Row 4: Point 2 (has been signed by) -->
+                  <tr class="apos-row-full-item">
+                    <td colspan="4" class="apos-cell-full">
+                      <div class="apos-cell-header-text"><span class="apos-num-prefix">2</span> has been signed by</div>
+                      <div class="apos-cell-val-bold" id="aposSignedBy">N/A</div>
                     </td>
                   </tr>
-                  <tr class="certified-row">
-                    <td colspan="3" class="apos-cell-certified">
+
+                  <!-- Row 5: Point 3 (acting in the capacity of) -->
+                  <tr class="apos-row-full-item">
+                    <td colspan="4" class="apos-cell-full">
+                      <div class="apos-cell-header-text"><span class="apos-num-prefix">3</span> acting in the capacity of</div>
+                      <div class="apos-cell-val-bold" id="aposCapacity">Registrar</div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 6: Point 4 (bears the seal stamp of) -->
+                  <tr class="apos-row-full-item">
+                    <td colspan="4" class="apos-cell-full">
+                      <div class="apos-cell-header-text"><span class="apos-num-prefix">4</span> bears the seal stamp of</div>
+                      <div class="apos-cell-val-bold" id="aposSealOf">Preston University</div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 7: Certified -->
+                  <tr class="apos-row-certified">
+                    <td colspan="4" class="apos-cell-certified">
                       <span class="certified-script" id="aposCertified">Certified</span>
                     </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">5</td>
-                    <td class="apos-col-label-inline">at</td>
-                    <td class="apos-col-val-inline bold-text" id="aposIssuePlace">Lahore Pakistan</td>
+
+                  <!-- Row 8: Point 5 (at / Lahore Pakistan) -->
+                  <tr class="apos-row-numbered-item">
+                    <td class="apos-col-number">5</td>
+                    <td class="apos-col-label">at</td>
+                    <td colspan="2" class="apos-col-value">
+                      <span class="apos-cell-val-bold" id="aposIssuePlace">Lahore Pakistan</span>
+                    </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">6</td>
-                    <td class="apos-col-label-inline">the</td>
-                    <td class="apos-col-val-inline bold-text" id="aposIssueDate">09 Jun 2026</td>
+
+                  <!-- Row 9: Point 6 (the / 09 Jun 2026) -->
+                  <tr class="apos-row-numbered-item">
+                    <td class="apos-col-number">6</td>
+                    <td class="apos-col-label">the</td>
+                    <td colspan="2" class="apos-col-value">
+                      <span class="apos-cell-val-bold" id="aposIssueDate">09 Jun 2026</span>
+                    </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">7</td>
-                    <td class="apos-col-label-inline">by</td>
-                    <td class="apos-col-val-inline bold-text" id="aposAuthority">Ministry of Foreign Affairs</td>
+
+                  <!-- Row 10: Point 7 (by / Ministry of Foreign Affairs) -->
+                  <tr class="apos-row-numbered-item">
+                    <td class="apos-col-number">7</td>
+                    <td class="apos-col-label">by</td>
+                    <td colspan="2" class="apos-col-value">
+                      <span class="apos-cell-val-bold" id="aposAuthority">Ministry of Foreign Affairs</span>
+                    </td>
                   </tr>
-                  <tr>
-                    <td class="apos-col-num">8</td>
-                    <td class="apos-col-label-inline">No</td>
-                    <td class="apos-col-val-inline bold-text code-font" id="aposDocNumber">APO-KTAQ-NWSP-VDSJ</td>
+
+                  <!-- Row 11: Point 8 (No / APO-KTAQ-NWSP-VDSJ) -->
+                  <tr class="apos-row-numbered-item">
+                    <td class="apos-col-number">8</td>
+                    <td class="apos-col-label">No</td>
+                    <td colspan="2" class="apos-col-value">
+                      <span class="apos-cell-val-bold code-font" id="aposDocNumber">APO-KTAQ-NWSP-VDSJ</span>
+                    </td>
                   </tr>
-                  <!-- Bottom Verification Block -->
-                  <tr>
-                    <td colspan="3" class="apos-cell-verification">
-                      <div class="apos-verif-grid">
-                        <div class="apos-seal-area">
-                          <div class="apos-verif-date" id="aposDateBlock">Date: 09 Jun 2026</div>
-                          <div class="apos-seal-box">Seal/Stamp</div>
-                        </div>
-                        <div class="apos-qr-area">
-                          <div class="apos-qr-code" id="aposQrCode"></div>
-                        </div>
-                        <div class="apos-sig-area">
-                          <div class="apos-sig-graphic" id="aposSigGraphic">
-                            <svg viewBox="0 0 120 45" class="sig-svg" style="width: 100px; height: 38px;">
-                              <path d="M 16,30 L 45,26 L 85,18" stroke="#1d4ed8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-                              <path d="M 38,34 L 52,18" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" fill="none"/>
-                              <line x1="28" y1="30" x2="20" y2="35" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>
-                              <line x1="56" y1="26" x2="62" y2="36" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>
-                              <ellipse cx="88" cy="13" rx="6" ry="5" stroke="#1d4ed8" stroke-width="2" fill="none" transform="rotate(-15 88 13)"/>
-                              <path d="M 85,18 Q 80,10 88,10 Q 94,10 93,16" stroke="#1d4ed8" stroke-width="1.8" fill="none"/>
-                              <circle cx="68" cy="13" r="1.5" fill="#1d4ed8"/>
-                            </svg>
-                          </div>
-                          <div class="apos-sig-name" id="aposSignatory">Ali Faraz</div>
-                        </div>
+
+                  <!-- Row 12: Bottom Verification Grid (Seal/Date, QR Code, Signature) -->
+                  <tr class="apos-row-verification">
+                    <td colspan="2" class="apos-cell-seal-block">
+                      <div class="apos-seal-date-line" id="aposDateBlock">Date: 09 Jun 2026</div>
+                      <div class="apos-seal-stamp-line">Seal/Stamp</div>
+                    </td>
+                    <td class="apos-cell-qr-block">
+                      <div class="apos-qr-code" id="aposQrCode"></div>
+                    </td>
+                    <td class="apos-cell-sig-block">
+                      <div class="apos-sig-graphic" id="aposSigGraphic">
+                        <svg viewBox="0 0 120 45" class="sig-svg" style="width: 100px; height: 38px;">
+                          <path d="M 16,30 L 45,26 L 85,18" stroke="#1d4ed8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                          <path d="M 38,34 L 52,18" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" fill="none"/>
+                          <line x1="28" y1="30" x2="20" y2="35" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>
+                          <line x1="56" y1="26" x2="62" y2="36" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>
+                          <ellipse cx="88" cy="13" rx="6" ry="5" stroke="#1d4ed8" stroke-width="2" fill="none" transform="rotate(-15 88 13)"/>
+                          <path d="M 85,18 Q 80,10 88,10 Q 94,10 93,16" stroke="#1d4ed8" stroke-width="1.8" fill="none"/>
+                          <circle cx="68" cy="13" r="1.5" fill="#1d4ed8"/>
+                        </svg>
                       </div>
+                      <div class="apos-sig-name" id="aposSignatory">Ali Faraz</div>
                     </td>
                   </tr>
                 </tbody>
@@ -277,7 +307,7 @@
                   This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.
                 </p>
                 <p class="apos-legal-url" id="aposVerifyUrl">
-                  To verify this apostille, visit www.apostille.mofa.gov.pk
+                  To verify this apostille, visit <u>www.apostille.mofa.gov.pk</u>
                 </p>
               </div>
             </div>
