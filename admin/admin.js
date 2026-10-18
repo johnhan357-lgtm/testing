@@ -243,6 +243,12 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleFeedbackUrlField();
     }
     if (cfg.footer) {
+      if (document.getElementById("cfgFooterAuthorityName")) {
+        document.getElementById("cfgFooterAuthorityName").value = cfg.footer.authorityName || "";
+      }
+      if (document.getElementById("cfgFooterAuthoritySubtitle")) {
+        document.getElementById("cfgFooterAuthoritySubtitle").value = cfg.footer.authoritySubtitle || "";
+      }
       document.getElementById("cfgFooterCopyright").value = cfg.footer.copyrightText || "";
       renderFooterLinksTable(cfg.footer.links || []);
     }
@@ -360,6 +366,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     updated.footer = updated.footer || {};
+    if (document.getElementById("cfgFooterAuthorityName")) {
+      updated.footer.authorityName = document.getElementById("cfgFooterAuthorityName").value.trim();
+    }
+    if (document.getElementById("cfgFooterAuthoritySubtitle")) {
+      updated.footer.authoritySubtitle = document.getElementById("cfgFooterAuthoritySubtitle").value.trim();
+    }
     updated.footer.copyrightText = document.getElementById("cfgFooterCopyright").value.trim();
 
     // Theme
