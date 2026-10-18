@@ -185,6 +185,8 @@ const DEFAULT_CONFIG = {
   footer: {
     authorityName: "Department of Verification & Legalization",
     authoritySubtitle: "Online Document Authentication Portal",
+    logoType: "default_svg",
+    logoUrl: "",
     links: [
       { id: "foot-1", label: "Authorized Courier Companies", url: "#courier", target: "_self", enabled: true },
       { id: "foot-2", label: "FAQ", url: "#faq", target: "_self", enabled: true },

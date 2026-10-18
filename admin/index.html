@@ -715,6 +715,36 @@
               <label class="form-label" for="cfgFooterCopyright">Bottom Copyright Text</label>
               <input type="text" id="cfgFooterCopyright" class="form-input">
             </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Footer Emblem / Logo</h3>
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 10px; cursor: pointer;">
+                <input type="radio" name="footerLogoTypeRadio" value="default_svg" id="radioFooterLogoDefault" checked>
+                Use Standard Shield Emblem (Vector SVG)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="radio" name="footerLogoTypeRadio" value="custom_image" id="radioFooterLogoCustom">
+                Upload Custom Footer Logo (PNG, JPG, SVG, WebP)
+              </label>
+            </div>
+
+            <div id="customFooterLogoUploadSection" style="margin-top: 15px; margin-bottom: 20px; padding: 18px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; display: none;">
+              <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div id="footerLogoPreviewContainer" style="width: 60px; height: 60px; border: 1px solid #374151; background: #1f2937; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+                  <img id="footerLogoPreviewImg" src="" alt="Footer Logo Preview" style="max-width: 100%; max-height: 100%; display: none; object-fit: contain;">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                  <label class="btn-secondary" style="margin: 0; cursor: pointer; display: inline-block;">
+                    Upload Footer Logo
+                    <input type="file" id="footerLogoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+                  </label>
+                  <input type="text" id="cfgFooterLogoUrl" class="form-input" placeholder="/uploads/logo_...png" style="margin-top: 8px; font-family: monospace; font-size: 0.85rem;">
+                </div>
+              </div>
+              <span id="footerLogoStatusText" style="font-size: 0.85rem; color: #6b7280; display: block; margin-top: 8px;">No custom footer logo uploaded yet.</span>
+            </div>
           </div>
         </section>
 

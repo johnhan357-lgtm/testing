@@ -262,6 +262,34 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("cfgFooterAuthoritySubtitle").value = cfg.footer.authoritySubtitle || "";
       }
       document.getElementById("cfgFooterCopyright").value = cfg.footer.copyrightText || "";
+
+      // Footer Logo
+      const footerLogoType = cfg.footer.logoType || "default_svg";
+      const radFooterDef = document.getElementById("radioFooterLogoDefault");
+      const radFooterCust = document.getElementById("radioFooterLogoCustom");
+      if (footerLogoType === "custom_image") {
+        if (radFooterCust) radFooterCust.checked = true;
+      } else {
+        if (radFooterDef) radFooterDef.checked = true;
+      }
+      handleFooterLogoRadioToggle();
+
+      const footerLogoUrlInput = document.getElementById("cfgFooterLogoUrl");
+      const footerLogoPrevImg = document.getElementById("footerLogoPreviewImg");
+      const footerLogoStatusText = document.getElementById("footerLogoStatusText");
+      if (cfg.footer.logoUrl) {
+        if (footerLogoUrlInput) footerLogoUrlInput.value = cfg.footer.logoUrl;
+        if (footerLogoPrevImg) {
+          footerLogoPrevImg.src = cfg.footer.logoUrl;
+          footerLogoPrevImg.style.display = "block";
+        }
+        if (footerLogoStatusText) footerLogoStatusText.textContent = `Current Logo: ${cfg.footer.logoUrl}`;
+      } else {
+        if (footerLogoUrlInput) footerLogoUrlInput.value = "";
+        if (footerLogoPrevImg) footerLogoPrevImg.style.display = "none";
+        if (footerLogoStatusText) footerLogoStatusText.textContent = "No custom footer logo uploaded yet.";
+      }
+
       renderFooterLinksTable(cfg.footer.links || []);
     }
 
@@ -391,6 +419,8 @@ document.addEventListener("DOMContentLoaded", () => {
       updated.footer.authoritySubtitle = document.getElementById("cfgFooterAuthoritySubtitle").value.trim();
     }
     updated.footer.copyrightText = document.getElementById("cfgFooterCopyright").value.trim();
+    updated.footer.logoType = document.querySelector('input[name="footerLogoTypeRadio"]:checked')?.value || "default_svg";
+    updated.footer.logoUrl = (document.getElementById("cfgFooterLogoUrl")?.value || "").trim();
 
     // Theme
     updated.theme = {
@@ -530,6 +560,80 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Footer Logo Controls
+  const footerLogoRadios = document.querySelectorAll('input[name="footerLogoTypeRadio"]');
+  const customFooterLogoUploadSection = document.getElementById("customFooterLogoUploadSection");
+  const footerLogoFileInput = document.getElementById("footerLogoFileInput");
+
+  footerLogoRadios.forEach(r => r.addEventListener("change", handleFooterLogoRadioToggle));
+
+  function handleFooterLogoRadioToggle() {
+    const isCustom = document.getElementById("radioFooterLogoCustom")?.checked;
+    if (customFooterLogoUploadSection) {
+      customFooterLogoUploadSection.style.display = isCustom ? "block" : "none";
+    }
+  }
+
+  if (footerLogoFileInput) {
+    footerLogoFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size exceeds 2MB limit.");
+        footerLogoFileInput.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          showToast("Uploading footer logo...", "info");
+          const res = await apiFetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileData: reader.result, fileName: file.name, fileType: 'logo' })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            const footerLogoUrlInput = document.getElementById("cfgFooterLogoUrl");
+            if (footerLogoUrlInput) footerLogoUrlInput.value = data.fileUrl;
+            const logoImg = document.getElementById("footerLogoPreviewImg");
+            if (logoImg) {
+              logoImg.src = data.fileUrl;
+              logoImg.style.display = "block";
+            }
+            const statusText = document.getElementById("footerLogoStatusText");
+            if (statusText) statusText.textContent = `Uploaded: ${data.fileName}`;
+            showToast("Footer logo uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
+            await checkPublishingStatus();
+          } else {
+            showToast(data.message || "Upload failed.", "error");
+          }
+        } catch {
+          showToast("Network error uploading footer logo.", "error");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const cfgFooterLogoUrlInput = document.getElementById("cfgFooterLogoUrl");
+  if (cfgFooterLogoUrlInput) {
+    cfgFooterLogoUrlInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      const logoImg = document.getElementById("footerLogoPreviewImg");
+      if (logoImg) {
+        if (val) {
+          logoImg.src = val;
+          logoImg.style.display = "block";
+        } else {
+          logoImg.style.display = "none";
+        }
+      }
     });
   }
 

@@ -1,7 +1,7 @@
 {
   "branding": {
-    "authorityName": "Department of Verification & Legalization",
-    "authoritySubtitle": "Online Public Authentication Service",
+    "authorityName": "Ministry of Foreign Affairs",
+    "authoritySubtitle": "Government of Pakistan",
     "logoType": "custom_image",
     "logoUrl": "/uploads/logo_1792329381447.svg",
     "socialLinks": {
@@ -22,55 +22,55 @@
     {
       "id": "nav-1",
       "label": "HOME",
-      "url": "#",
+      "group": "",
+      "url": "https://apostille.mofa.gov.pk/",
       "target": "_self",
-      "enabled": true,
-      "isExternal": false
+      "enabled": true
     },
     {
       "id": "nav-2",
       "label": "CHECKLIST",
-      "url": "#checklist",
+      "group": "",
+      "url": "https://apostille.mofa.gov.pk/sops",
       "target": "_self",
-      "enabled": true,
-      "isExternal": false
+      "enabled": true
     },
     {
       "id": "nav-3",
       "label": "DOCUMENTS",
-      "url": "#documents",
+      "group": "",
+      "url": "https://apostille.mofa.gov.pk/list-of-public-documents",
       "target": "_self",
-      "enabled": true,
-      "isExternal": false
+      "enabled": true
     },
     {
       "id": "nav-4",
-      "label": "RECOGNIZED LIST",
-      "url": "#recognized",
+      "label": "APOSTILLE COUNTRY LIST",
+      "group": "",
+      "url": "https://apostille.mofa.gov.pk/list-of-countries",
       "target": "_self",
-      "enabled": true,
-      "isExternal": false
+      "enabled": true
     },
     {
       "id": "nav-5",
       "label": "FEE DETAILS",
-      "url": "#fees",
+      "group": "",
+      "url": "https://apostille.mofa.gov.pk/fee-structure",
       "target": "_self",
-      "enabled": true,
-      "isExternal": false
+      "enabled": true
     },
     {
       "id": "nav-6",
-      "label": "VERIFY ATTESTATION",
-      "url": "index.html",
+      "label": "VERIFY APOSITLLE",
+      "group": "",
+      "url": "https://apostille.mofa.gov.pk/verify-attestation",
       "target": "_self",
-      "enabled": true,
-      "isExternal": false
+      "enabled": true
     }
   ],
   "hero": {
-    "title": "Verify an Official Document Certificate issued from the Verification Authority",
-    "subtitle": "Use this service if you want to verify either a paper or electronic certificate issued by the authority."
+    "title": "Verify an Pakistani Apostille issued from the Ministry of Foreign Affairs",
+    "subtitle": "Use this service if you want to verify either a paper or electronic Apostille certificate issued in the Pakistan."
   },
   "verificationCard": {
     "heading": "Please Enter the required details below",
@@ -97,53 +97,56 @@
   },
   "footer": {
     "authorityName": "Department of Verification & Legalization",
-    "authoritySubtitle": "Online Document Authentication Portal",
+    "authoritySubtitle": "Government of Pakistan",
+    "logoType": "default_svg",
+    "logoUrl": "",
     "links": [
       {
         "id": "foot-1",
         "label": "Authorized Courier Companies",
-        "url": "#courier",
+        "url": "https://apostille.mofa.gov.pk/authorized-courier-companies",
         "target": "_self",
         "enabled": true
       },
       {
         "id": "foot-2",
         "label": "FAQ",
-        "url": "#faq",
+        "url": "https://apostille.mofa.gov.pk/verify-attestation#faq",
         "target": "_self",
         "enabled": true
       },
       {
         "id": "foot-3",
         "label": "Contact Us",
-        "url": "#contact",
+        "url": "https://apostille.mofa.gov.pk/verify-attestation#contact-us",
         "target": "_self",
         "enabled": true
       }
     ],
-    "copyrightText": "Copyright © 2026 Department of Verification & Legalization. All Rights Reserved."
+    "copyrightText": "Copyright © 2024 Ministry of Foreign Affairs, Government of Pakistan. All Rights Reserved."
   },
   "certificateView": {
     "pageTitle": "QR Code Verification Apostille Certificate",
     "breadcrumbText": "Home / Apostille verification",
-    "issuerStatement": "This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.",
+    "issuerStatement": "This apostille refers to Other Documents and issued on N/A and is Approved by Ministry of Foreign Affairs Pakistan",
     "summaryTemplate": "This apostille refers to {category} and issued on {date} and is Approved by {authority}",
     "watermarkText": "GOVTOFPAKISTAN",
     "conventionTitle": "APOSTILLE",
     "conventionSubtitle": "(Convention de La Haye du 5 October 1961)",
     "defaultCountry": "Pakistan",
     "certifiedWord": "Certified",
+    "signatoryOfficer": "Ali Faraz",
+    "defaultSignatory": "Ali Faraz",
+    "signatureUrl": "/uploads/signature_ali_faraz_clean.png",
     "disclaimerText": "This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.",
     "verificationUrlText": "To verify this apostille, visit www.apostille.mofa.gov.pk",
-    "defaultSignatory": "Ali Faraz",
     "enablePdfViewer": true,
     "defaultPdfFileName": "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
-    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
-    "signatureUrl": "/uploads/signature_ali_faraz_clean.png"
+    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-18T17:47:38.482Z",
-    "lastPublishedAt": "2026-10-18T17:47:38.491Z",
-    "version": 27
+    "lastSavedAt": "2026-10-18T19:23:27.511Z",
+    "lastPublishedAt": "2026-10-18T19:23:27.521Z",
+    "version": 41
   }
 }

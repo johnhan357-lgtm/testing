@@ -256,6 +256,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (footerBrandSubtitleEl && cfg.footer.authoritySubtitle) footerBrandSubtitleEl.textContent = cfg.footer.authoritySubtitle;
       if (footerBottomEl && cfg.footer.copyrightText) footerBottomEl.textContent = cfg.footer.copyrightText;
 
+      const footerBrandEmblemEl = document.getElementById("footerBrandEmblem") || document.querySelector(".footer-brand .brand-emblem");
+      if (footerBrandEmblemEl) {
+        if (cfg.footer.logoType === 'custom_image' && cfg.footer.logoUrl) {
+          footerBrandEmblemEl.innerHTML = `<img src="${cfg.footer.logoUrl}" alt="Footer Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+        } else {
+          footerBrandEmblemEl.innerHTML = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/></svg>`;
+        }
+      }
+
       if (cfg.footer.links && Array.isArray(cfg.footer.links) && footerLinksEl) {
         const activeFooterLinks = cfg.footer.links.filter(l => l.enabled !== false);
         let footHtml = '';
@@ -655,18 +664,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (btnFeedback) {
-    btnFeedback.addEventListener("click", () => {
-      if (currentConfig && currentConfig.floatingFeedback && currentConfig.floatingFeedback.actionType === 'custom_link') {
-        const url = currentConfig.floatingFeedback.customUrl;
-        if (url) {
-          window.open(url, '_blank');
-          return;
-        }
-      }
-      const feedback = prompt("Please enter your feedback or inquiry:");
-      if (feedback && feedback.trim()) {
-        alert("Thank you! Your feedback has been received.");
-      }
+    btnFeedback.addEventListener("click", (e) => {
+      e.preventDefault();
+      // Revoked: Button displays visually, but clicking it performs no action as requested
     });
   }
 
