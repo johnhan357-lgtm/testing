@@ -26,6 +26,7 @@ const PUBLISHED_CONFIG_FILE = path.join(DATA_DIR, 'config.published.json');
 const RECORDS_FILE = path.join(DATA_DIR, 'records.json');
 const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
 const ADMIN_NAV_FILE = path.join(DATA_DIR, 'admin-nav.json');
+const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 
 // Default Admin Sidebar Configuration (Separate from public website navigation)
 const DEFAULT_ADMIN_NAV = {
@@ -72,6 +73,28 @@ function readJsonSafe(filePath, fallback = {}) {
     console.error(`Error reading ${filePath}:`, err.message);
     return fallback;
   }
+}
+
+// Session persistence across server restarts
+function loadSessions() {
+  const data = readJsonSafe(SESSIONS_FILE, {});
+  const now = Date.now();
+  for (const [token, sess] of Object.entries(data)) {
+    if (sess && sess.expiresAt && sess.expiresAt > now) {
+      activeSessions.set(token, sess);
+    }
+  }
+}
+
+function persistSessions() {
+  const obj = {};
+  const now = Date.now();
+  for (const [token, sess] of activeSessions.entries()) {
+    if (sess && sess.expiresAt && sess.expiresAt > now) {
+      obj[token] = sess;
+    }
+  }
+  atomicWriteJson(SESSIONS_FILE, obj);
 }
 
 // =========================================================================
@@ -259,6 +282,7 @@ initAuth();
 initConfig();
 initRecords();
 initAdminNav();
+loadSessions();
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -311,6 +335,7 @@ function authenticateAdmin(req) {
 
   if (Date.now() > session.expiresAt) {
     activeSessions.delete(token);
+    persistSessions();
     return null;
   }
 
@@ -454,6 +479,7 @@ const server = http.createServer(async (req, res) => {
         username,
         expiresAt: Date.now() + SESSION_DURATION_MS
       });
+      persistSessions();
 
       res.writeHead(200, {
         'Content-Type': 'application/json',
@@ -469,6 +495,7 @@ const server = http.createServer(async (req, res) => {
     const authHeader = req.headers['authorization'];
     if (authHeader && authHeader.startsWith('Bearer ')) {
       activeSessions.delete(authHeader.substring(7));
+      persistSessions();
     }
     res.writeHead(200, {
       'Content-Type': 'application/json',

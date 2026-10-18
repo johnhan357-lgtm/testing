@@ -43,7 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loginOverlay) loginOverlay.style.display = "none";
     if (adminApp) adminApp.style.display = "flex";
     if (loggedUserBadge) loggedUserBadge.textContent = `Logged in as ${username || 'admin'}`;
-    initDashboard();
+    if (!draftConfig) {
+      initDashboard();
+    }
   }
 
   if (loginForm) {
@@ -86,13 +88,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Wrapper for authenticated fetch
-  function apiFetch(url, options = {}) {
+  // Wrapper for authenticated fetch with automatic 401 handling
+  async function apiFetch(url, options = {}) {
     options.headers = options.headers || {};
     if (authToken) {
       options.headers['Authorization'] = `Bearer ${authToken}`;
     }
-    return fetch(url, options);
+    const res = await fetch(url, options);
+    if (res.status === 401 && !url.includes('/api/admin/login') && !url.includes('/api/admin/me')) {
+      authToken = null;
+      sessionStorage.removeItem("admin_token");
+      if (loginOverlay) loginOverlay.style.display = "flex";
+      if (loginAlert) {
+        loginAlert.textContent = "Your session expired or was reset. Please log in to authorize and save your changes.";
+        loginAlert.style.display = "block";
+      }
+    }
+    return res;
   }
 
   // =========================================================================
