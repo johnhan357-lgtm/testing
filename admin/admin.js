@@ -98,22 +98,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   // 2. DASHBOARD & TAB SWITCHING
   // =========================================================================
-  const tabBtns = document.querySelectorAll(".nav-tab-btn");
+  let currentActiveTab = "tab-overview";
   const tabPanes = document.querySelectorAll(".tab-pane");
 
-  tabBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.getAttribute("data-tab");
-      tabBtns.forEach(b => b.classList.remove("active"));
-      tabPanes.forEach(p => p.classList.remove("active"));
+  function switchTab(targetId) {
+    currentActiveTab = targetId;
+    tabPanes.forEach(p => p.classList.remove("active"));
+    const targetPane = document.getElementById(targetId);
+    if (targetPane) targetPane.classList.add("active");
 
-      btn.classList.add("active");
-      const targetPane = document.getElementById(targetId);
-      if (targetPane) targetPane.classList.add("active");
-    });
-  });
+    const sidebarNav = document.getElementById("adminSidebarNav");
+    if (sidebarNav) {
+      sidebarNav.querySelectorAll(".nav-tab-btn").forEach(btn => {
+        if (btn.getAttribute("data-tab") === targetId) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+    }
+  }
 
   async function initDashboard() {
+    await loadAdminSidebarNav();
     await loadDraftConfig();
     await checkPublishingStatus();
     await loadRecords();
@@ -453,6 +460,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const navModalTitle = document.getElementById("navModalTitle");
   const navItemIndex = document.getElementById("navItemIndex");
   const navItemLabel = document.getElementById("navItemLabel");
+  const navItemGroup = document.getElementById("navItemGroup");
   const navItemUrl = document.getElementById("navItemUrl");
   const navItemTarget = document.getElementById("navItemTarget");
   const navItemEnabled = document.getElementById("navItemEnabled");
@@ -463,9 +471,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     navItems.forEach((item, index) => {
       const row = document.createElement("tr");
+      const groupBadge = item.group ? `<span style="font-size: 0.75rem; color: #6b7280; display: block;">${escapeHtml(item.group)}</span>` : '';
       row.innerHTML = `
         <td style="font-weight: 600; color: #6b7280;">#${index + 1}</td>
-        <td style="font-weight: 600;">${escapeHtml(item.label)}</td>
+        <td>
+          <div style="font-weight: 600;">${escapeHtml(item.label)}</div>
+          ${groupBadge}
+        </td>
         <td style="font-family: monospace; font-size: 0.85rem; color: #065f46;">
           <a href="${escapeHtml(item.url)}" target="_blank" style="color: inherit; text-decoration: none;">
             ${escapeHtml(item.url)}
@@ -531,6 +543,7 @@ document.addEventListener("DOMContentLoaded", () => {
         navModalTitle.textContent = "Edit Navigation Link";
         navItemIndex.value = idx;
         navItemLabel.value = item.label;
+        if (navItemGroup) navItemGroup.value = item.group || "";
         navItemUrl.value = item.url;
         navItemTarget.value = item.target || "_self";
         navItemEnabled.checked = item.enabled !== false;
@@ -555,6 +568,7 @@ document.addEventListener("DOMContentLoaded", () => {
       navModalTitle.textContent = "Add Navigation Link / Button";
       navItemIndex.value = "";
       navItemForm.reset();
+      if (navItemGroup) navItemGroup.value = "";
       navItemEnabled.checked = true;
       navItemModal.classList.add("active");
     });
@@ -569,6 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const newItem = {
         id: `nav-${Date.now()}`,
         label: navItemLabel.value.trim(),
+        group: navItemGroup ? navItemGroup.value.trim() : "",
         url: navItemUrl.value.trim(),
         target: navItemTarget.value,
         enabled: navItemEnabled.checked
@@ -895,6 +910,291 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } catch {
         showToast("Error updating password.", "error");
+      }
+    });
+  }
+
+  // =========================================================================
+  // 10. ADMIN PANEL SIDEBAR MANAGER (Dedicated Admin Navigation System)
+  // =========================================================================
+  let adminNavData = { items: [] };
+  const adminSidebarNav = document.getElementById("adminSidebarNav");
+  const adminNavTableBody = document.getElementById("adminNavTableBody");
+  const btnAddAdminNavItem = document.getElementById("btnAddAdminNavItem");
+  const btnResetAdminNav = document.getElementById("btnResetAdminNav");
+  const adminNavModal = document.getElementById("adminNavModal");
+  const adminNavForm = document.getElementById("adminNavForm");
+  const adminNavModalTitle = document.getElementById("adminNavModalTitle");
+  const adminNavIndex = document.getElementById("adminNavIndex");
+  const adminNavId = document.getElementById("adminNavId");
+  const adminNavType = document.getElementById("adminNavType");
+  const adminNavLabel = document.getElementById("adminNavLabel");
+  const adminNavGroup = document.getElementById("adminNavGroup");
+  const adminNavUrl = document.getElementById("adminNavUrl");
+  const adminNavUrlContainer = document.getElementById("adminNavUrlContainer");
+  const adminNavTarget = document.getElementById("adminNavTarget");
+  const adminNavTargetContainer = document.getElementById("adminNavTargetContainer");
+  const adminNavEnabled = document.getElementById("adminNavEnabled");
+
+  async function loadAdminSidebarNav() {
+    try {
+      const res = await apiFetch('/api/admin/sidebar');
+      if (res.ok) {
+        adminNavData = await res.json();
+        renderAdminSidebar();
+        renderAdminNavTable();
+      }
+    } catch (err) {
+      console.error('Failed to load admin sidebar navigation:', err);
+    }
+  }
+
+  function renderAdminSidebar() {
+    if (!adminSidebarNav) return;
+    adminSidebarNav.innerHTML = "";
+
+    const activeItems = (adminNavData.items || []).filter(item => item.enabled !== false);
+    let lastGroup = null;
+
+    activeItems.forEach(item => {
+      // Group header
+      if (item.group && item.group.trim() !== "" && item.group !== lastGroup) {
+        const groupEl = document.createElement("li");
+        groupEl.className = "sidebar-group-heading";
+        groupEl.textContent = item.group;
+        adminSidebarNav.appendChild(groupEl);
+        lastGroup = item.group;
+      }
+
+      const li = document.createElement("li");
+      if (item.type === 'custom_link') {
+        const link = document.createElement("a");
+        link.className = "nav-tab-btn";
+        link.href = item.url;
+        link.target = item.target || "_self";
+        link.textContent = `${item.label} ↗`;
+        li.appendChild(link);
+      } else {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "nav-tab-btn";
+        btn.setAttribute("data-tab", item.targetTab);
+        btn.textContent = item.label;
+        if (item.targetTab === currentActiveTab) {
+          btn.classList.add("active");
+        }
+        btn.addEventListener("click", () => {
+          switchTab(item.targetTab);
+        });
+        li.appendChild(btn);
+      }
+      adminSidebarNav.appendChild(li);
+    });
+  }
+
+  function renderAdminNavTable() {
+    if (!adminNavTableBody) return;
+    adminNavTableBody.innerHTML = "";
+
+    const items = adminNavData.items || [];
+    items.forEach((item, index) => {
+      const row = document.createElement("tr");
+      const isCustom = item.type === 'custom_link';
+      const targetDisplay = isCustom ? escapeHtml(item.url) : `Pane: ${escapeHtml(item.targetTab)}`;
+      const typeBadge = isCustom 
+        ? `<span style="font-size: 0.75rem; background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Custom Link</span>`
+        : `<span style="font-size: 0.75rem; background: #f3f4f6; color: #374151; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Built-in Tab</span>`;
+
+      row.innerHTML = `
+        <td style="font-weight: 600; color: #6b7280;">#${index + 1}</td>
+        <td style="color: #6b7280; font-size: 0.85rem;">${escapeHtml(item.group || '—')}</td>
+        <td style="font-weight: 600; color: #111827;">${escapeHtml(item.label)}</td>
+        <td>${typeBadge}</td>
+        <td style="font-family: monospace; font-size: 0.82rem; color: #065f46;">${targetDisplay}</td>
+        <td>
+          <label style="cursor: pointer;">
+            <input type="checkbox" class="admin-nav-toggle-visible" data-index="${index}" ${item.enabled !== false ? 'checked' : ''}>
+          </label>
+        </td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button type="button" class="btn-secondary btn-admin-nav-up" data-index="${index}" style="padding: 4px 8px;" title="Move Up" ${index === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-secondary btn-admin-nav-down" data-index="${index}" style="padding: 4px 8px;" title="Move Down" ${index === items.length - 1 ? 'disabled' : ''}>▼</button>
+          <button type="button" class="btn-secondary btn-admin-nav-edit" data-index="${index}" style="padding: 4px 8px;">Edit</button>
+          ${isCustom 
+            ? `<button type="button" class="btn-danger btn-admin-nav-del" data-index="${index}" style="padding: 4px 8px;">✕</button>`
+            : `<button type="button" class="btn-secondary" style="padding: 4px 8px; opacity: 0.5; cursor: not-allowed;" title="Built-in tabs cannot be deleted, only hidden" disabled>🔒</button>`
+          }
+        </td>
+      `;
+      adminNavTableBody.appendChild(row);
+    });
+
+    // Event listeners
+    adminNavTableBody.querySelectorAll(".admin-nav-toggle-visible").forEach(cb => {
+      cb.addEventListener("change", async (e) => {
+        const idx = parseInt(e.target.dataset.index, 10);
+        adminNavData.items[idx].enabled = e.target.checked;
+        await saveAdminSidebarNav();
+        renderAdminSidebar();
+        showToast(`Tab "${adminNavData.items[idx].label}" visibility updated.`);
+      });
+    });
+
+    adminNavTableBody.querySelectorAll(".btn-admin-nav-up").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (idx > 0) {
+          const temp = adminNavData.items[idx];
+          adminNavData.items[idx] = adminNavData.items[idx - 1];
+          adminNavData.items[idx - 1] = temp;
+          await saveAdminSidebarNav();
+          renderAdminSidebar();
+          renderAdminNavTable();
+        }
+      });
+    });
+
+    adminNavTableBody.querySelectorAll(".btn-admin-nav-down").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (idx < adminNavData.items.length - 1) {
+          const temp = adminNavData.items[idx];
+          adminNavData.items[idx] = adminNavData.items[idx + 1];
+          adminNavData.items[idx + 1] = temp;
+          await saveAdminSidebarNav();
+          renderAdminSidebar();
+          renderAdminNavTable();
+        }
+      });
+    });
+
+    adminNavTableBody.querySelectorAll(".btn-admin-nav-edit").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const item = adminNavData.items[idx];
+        adminNavModalTitle.textContent = item.type === 'custom_link' ? "Edit Custom Sidebar Link" : "Edit Admin Tab";
+        adminNavIndex.value = idx;
+        adminNavId.value = item.id;
+        adminNavType.value = item.type;
+        adminNavLabel.value = item.label;
+        adminNavGroup.value = item.group || "";
+        adminNavEnabled.checked = item.enabled !== false;
+
+        if (item.type === 'custom_link') {
+          adminNavUrlContainer.style.display = "block";
+          adminNavTargetContainer.style.display = "block";
+          adminNavUrl.value = item.url || "";
+          adminNavTarget.value = item.target || "_self";
+          adminNavUrl.required = true;
+        } else {
+          adminNavUrlContainer.style.display = "none";
+          adminNavTargetContainer.style.display = "none";
+          adminNavUrl.required = false;
+        }
+
+        adminNavModal.classList.add("active");
+      });
+    });
+
+    adminNavTableBody.querySelectorAll(".btn-admin-nav-del").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const item = adminNavData.items[idx];
+        if (confirm(`Remove custom sidebar link "${item.label}"?`)) {
+          adminNavData.items.splice(idx, 1);
+          await saveAdminSidebarNav();
+          renderAdminSidebar();
+          renderAdminNavTable();
+          showToast("Custom link removed.");
+        }
+      });
+    });
+  }
+
+  async function saveAdminSidebarNav() {
+    try {
+      const res = await apiFetch('/api/admin/sidebar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adminNavData)
+      });
+      return res.ok;
+    } catch (err) {
+      showToast("Error saving admin sidebar settings.", "error");
+      return false;
+    }
+  }
+
+  if (btnAddAdminNavItem) {
+    btnAddAdminNavItem.addEventListener("click", () => {
+      adminNavModalTitle.textContent = "Add Custom Sidebar Link";
+      adminNavIndex.value = "";
+      adminNavId.value = `custom-nav-${Date.now()}`;
+      adminNavType.value = "custom_link";
+      adminNavForm.reset();
+      adminNavUrlContainer.style.display = "block";
+      adminNavTargetContainer.style.display = "block";
+      adminNavUrl.required = true;
+      adminNavEnabled.checked = true;
+      adminNavModal.classList.add("active");
+    });
+  }
+
+  if (btnResetAdminNav) {
+    btnResetAdminNav.addEventListener("click", async () => {
+      if (!confirm("Are you sure you want to restore all default admin tabs and groups? Any custom tabs/order will be reset.")) return;
+      try {
+        const res = await apiFetch('/api/admin/sidebar/reset', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          adminNavData = data.data || { items: [] };
+          renderAdminSidebar();
+          renderAdminNavTable();
+          showToast("Default admin sidebar restored successfully.");
+        }
+      } catch {
+        showToast("Error restoring default sidebar.", "error");
+      }
+    });
+  }
+
+  if (adminNavForm) {
+    adminNavForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const idxStr = adminNavIndex.value;
+      const isCustom = adminNavType.value === 'custom_link';
+
+      const itemData = {
+        label: adminNavLabel.value.trim(),
+        group: adminNavGroup.value.trim(),
+        enabled: adminNavEnabled.checked
+      };
+
+      if (isCustom) {
+        itemData.type = "custom_link";
+        itemData.url = adminNavUrl.value.trim();
+        itemData.target = adminNavTarget.value;
+      }
+
+      if (idxStr !== "") {
+        const idx = parseInt(idxStr, 10);
+        adminNavData.items[idx] = {
+          ...adminNavData.items[idx],
+          ...itemData
+        };
+      } else {
+        adminNavData.items.push({
+          id: adminNavId.value || `custom-nav-${Date.now()}`,
+          ...itemData
+        });
+      }
+
+      const ok = await saveAdminSidebarNav();
+      if (ok) {
+        adminNavModal.classList.remove("active");
+        renderAdminSidebar();
+        renderAdminNavTable();
+        showToast("Admin sidebar updated.");
       }
     });
   }

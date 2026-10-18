@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "id": "admin-tab-overview",
+      "label": "Overview",
+      "type": "built_in",
+      "targetTab": "tab-overview",
+      "enabled": true,
+      "group": "Core Management"
+    },
+    {
+      "id": "admin-tab-branding",
+      "label": "Branding & Identity",
+      "type": "built_in",
+      "targetTab": "tab-branding",
+      "enabled": true,
+      "group": "Public Website"
+    },
+    {
+      "id": "admin-tab-navigation",
+      "label": "Public Navigation & Links",
+      "type": "built_in",
+      "targetTab": "tab-navigation",
+      "enabled": true,
+      "group": "Public Website"
+    },
+    {
+      "id": "admin-tab-content",
+      "label": "Page Texts & Form",
+      "type": "built_in",
+      "targetTab": "tab-content",
+      "enabled": true,
+      "group": "Public Website"
+    },
+    {
+      "id": "admin-tab-records",
+      "label": "Document Registry (CRUD)",
+      "type": "built_in",
+      "targetTab": "tab-records",
+      "enabled": true,
+      "group": "Verification System"
+    },
+    {
+      "id": "admin-tab-notice",
+      "label": "Notice Modal",
+      "type": "built_in",
+      "targetTab": "tab-notice",
+      "enabled": true,
+      "group": "Public Website"
+    },
+    {
+      "id": "admin-tab-footer",
+      "label": "Floating Action & Footer",
+      "type": "built_in",
+      "targetTab": "tab-footer",
+      "enabled": true,
+      "group": "Public Website"
+    },
+    {
+      "id": "admin-tab-theme",
+      "label": "Theme & Colors",
+      "type": "built_in",
+      "targetTab": "tab-theme",
+      "enabled": true,
+      "group": "Public Website"
+    },
+    {
+      "id": "admin-tab-sidebar-mgr",
+      "label": "Admin Sidebar Manager",
+      "type": "built_in",
+      "targetTab": "tab-admin-sidebar",
+      "enabled": true,
+      "group": "Admin Settings"
+    },
+    {
+      "id": "admin-tab-security",
+      "label": "Admin Security",
+      "type": "built_in",
+      "targetTab": "tab-security",
+      "enabled": true,
+      "group": "Admin Settings"
+    }
+  ]
+}

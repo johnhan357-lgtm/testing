@@ -25,6 +25,29 @@ const DRAFT_CONFIG_FILE = path.join(DATA_DIR, 'config.draft.json');
 const PUBLISHED_CONFIG_FILE = path.join(DATA_DIR, 'config.published.json');
 const RECORDS_FILE = path.join(DATA_DIR, 'records.json');
 const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
+const ADMIN_NAV_FILE = path.join(DATA_DIR, 'admin-nav.json');
+
+// Default Admin Sidebar Configuration (Separate from public website navigation)
+const DEFAULT_ADMIN_NAV = {
+  items: [
+    { id: "admin-tab-overview", label: "Overview", type: "built_in", targetTab: "tab-overview", enabled: true, group: "Core Management" },
+    { id: "admin-tab-branding", label: "Branding & Identity", type: "built_in", targetTab: "tab-branding", enabled: true, group: "Public Website" },
+    { id: "admin-tab-navigation", label: "Public Navigation & Links", type: "built_in", targetTab: "tab-navigation", enabled: true, group: "Public Website" },
+    { id: "admin-tab-content", label: "Page Texts & Form", type: "built_in", targetTab: "tab-content", enabled: true, group: "Public Website" },
+    { id: "admin-tab-records", label: "Document Registry (CRUD)", type: "built_in", targetTab: "tab-records", enabled: true, group: "Verification System" },
+    { id: "admin-tab-notice", label: "Notice Modal", type: "built_in", targetTab: "tab-notice", enabled: true, group: "Public Website" },
+    { id: "admin-tab-footer", label: "Floating Action & Footer", type: "built_in", targetTab: "tab-footer", enabled: true, group: "Public Website" },
+    { id: "admin-tab-theme", label: "Theme & Colors", type: "built_in", targetTab: "tab-theme", enabled: true, group: "Public Website" },
+    { id: "admin-tab-sidebar-mgr", label: "Admin Sidebar Manager", type: "built_in", targetTab: "tab-admin-sidebar", enabled: true, group: "Admin Settings" },
+    { id: "admin-tab-security", label: "Admin Security", type: "built_in", targetTab: "tab-security", enabled: true, group: "Admin Settings" }
+  ]
+};
+
+function initAdminNav() {
+  if (!fs.existsSync(ADMIN_NAV_FILE)) {
+    atomicWriteJson(ADMIN_NAV_FILE, DEFAULT_ADMIN_NAV);
+  }
+}
 
 // In-memory active session tokens: token -> { username, expiresAt }
 const activeSessions = new Map();
@@ -220,6 +243,7 @@ function initRecords() {
 initAuth();
 initConfig();
 initRecords();
+initAdminNav();
 
 function parseBody(req) {
   return new Promise((resolve, reject) => {
@@ -454,6 +478,40 @@ const server = http.createServer(async (req, res) => {
     atomicWriteJson(AUTH_FILE, auth);
 
     return sendJson(res, 200, { success: true, message: "Password updated successfully." });
+  }
+
+  // =========================================================================
+  // ADMIN PANEL SIDEBAR CONFIGURATION APIS (Isolated from Public Navigation)
+  // =========================================================================
+  if (pathname.startsWith('/api/admin/sidebar')) {
+    const session = authenticateAdmin(req);
+    if (!session) return sendJson(res, 401, { message: "Unauthorized." });
+
+    // GET /api/admin/sidebar
+    if (pathname === '/api/admin/sidebar' && method === 'GET') {
+      const navData = readJsonSafe(ADMIN_NAV_FILE, DEFAULT_ADMIN_NAV);
+      return sendJson(res, 200, navData);
+    }
+
+    // POST /api/admin/sidebar (Save customized admin sidebar)
+    if (pathname === '/api/admin/sidebar' && method === 'POST') {
+      try {
+        const payload = await parseBody(req);
+        if (!payload || !Array.isArray(payload.items)) {
+          return sendJson(res, 400, { success: false, message: "Invalid sidebar configuration format. 'items' array required." });
+        }
+        atomicWriteJson(ADMIN_NAV_FILE, payload);
+        return sendJson(res, 200, { success: true, message: "Admin sidebar configuration saved successfully." });
+      } catch (err) {
+        return sendJson(res, 500, { success: false, message: "Failed to save admin sidebar configuration." });
+      }
+    }
+
+    // POST /api/admin/sidebar/reset (Restore default admin tabs safely)
+    if (pathname === '/api/admin/sidebar/reset' && method === 'POST') {
+      atomicWriteJson(ADMIN_NAV_FILE, DEFAULT_ADMIN_NAV);
+      return sendJson(res, 200, { success: true, message: "Admin sidebar successfully restored to default tabs.", data: DEFAULT_ADMIN_NAV });
+    }
   }
 
   // =========================================================================
