@@ -142,8 +142,25 @@
         </form>
       </div>
 
-      <!-- Verification Result Card (Dynamic Output) -->
+      <!-- Verification Result Section (Dynamic Output matching government portal) -->
       <div class="result-card" id="resultCard" aria-live="polite">
+        <!-- Breadcrumb Navigation -->
+        <nav class="cert-breadcrumb" id="certBreadcrumb" aria-label="Breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <span id="certBreadcrumbText">Apostille verification</span>
+        </nav>
+
+        <!-- Certificate Page Heading & Summary Statement -->
+        <div class="cert-header-area">
+          <h1 class="cert-page-title" id="certPageTitle">QR Code Verification Apostille Certificate</h1>
+          <p class="cert-issuer-statement" id="certIssuerStatement">This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.</p>
+          <p class="cert-ref-statement" id="certRefStatement">
+            This apostille refers to <strong id="resSummaryCategory">Other Documents</strong> and issued on <strong id="resSummaryDate">N/A</strong> and is Approved by <strong id="resSummaryAuthority">Ministry of Foreign Affairs Pakistan</strong>
+          </p>
+        </div>
+
+        <!-- Official Status Badge for Special / Flagged States -->
         <div class="result-status-badge status-verified" id="statusBadge">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -152,38 +169,170 @@
           <span id="statusTitle">Document Certificate Verified</span>
         </div>
 
-        <table class="result-table">
+        <!-- THE AUTHENTIC APOSTILLE CERTIFICATE CONTAINER -->
+        <div class="apostille-certificate-container" id="apostilleContainer">
+          <div class="apostille-frame" id="apostilleFrame">
+            <!-- Repeating Security Watermark Layer -->
+            <div class="apostille-watermark-overlay" id="apostilleWatermark"></div>
+
+            <div class="apostille-content">
+              <div class="apostille-title-block">
+                <h2 class="apostille-main-title" id="aposTitle">APOSTILLE</h2>
+                <div class="apostille-convention-title" id="aposSubtitle">(Convention de La Haye du 5 October 1961)</div>
+              </div>
+
+              <table class="apostille-grid-table">
+                <tbody>
+                  <tr>
+                    <td class="apos-col-num">1</td>
+                    <td class="apos-col-half">
+                      <span class="apos-field-label">Country:</span>
+                      <div class="apos-field-val bold-text" id="aposCountry">Pakistan</div>
+                    </td>
+                    <td class="apos-col-half border-left">
+                      <span class="apos-field-label">This Public Document</span>
+                      <div class="apos-field-val bold-text" id="aposDocCategory">Personal Document</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">2</td>
+                    <td colspan="2" class="apos-col-full">
+                      <span class="apos-field-label">has been signed by</span>
+                      <div class="apos-field-val bold-text" id="aposSignedBy">N/A</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">3</td>
+                    <td colspan="2" class="apos-col-full">
+                      <span class="apos-field-label">acting in the capacity of</span>
+                      <div class="apos-field-val bold-text" id="aposCapacity">Registrar</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">4</td>
+                    <td colspan="2" class="apos-col-full">
+                      <span class="apos-field-label">bears the seal stamp of</span>
+                      <div class="apos-field-val bold-text" id="aposSealOf">Preston University</div>
+                    </td>
+                  </tr>
+                  <tr class="certified-row">
+                    <td colspan="3" class="apos-cell-certified">
+                      <span class="certified-script" id="aposCertified">Certified</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">5</td>
+                    <td class="apos-col-label-inline">at</td>
+                    <td class="apos-col-val-inline bold-text" id="aposIssuePlace">Lahore Pakistan</td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">6</td>
+                    <td class="apos-col-label-inline">the</td>
+                    <td class="apos-col-val-inline bold-text" id="aposIssueDate">09 Jun 2026</td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">7</td>
+                    <td class="apos-col-label-inline">by</td>
+                    <td class="apos-col-val-inline bold-text" id="aposAuthority">Ministry of Foreign Affairs</td>
+                  </tr>
+                  <tr>
+                    <td class="apos-col-num">8</td>
+                    <td class="apos-col-label-inline">No</td>
+                    <td class="apos-col-val-inline bold-text code-font" id="aposDocNumber">APO-KTAQ-NWSP-VDSJ</td>
+                  </tr>
+                  <!-- Bottom Verification Block -->
+                  <tr>
+                    <td colspan="3" class="apos-cell-verification">
+                      <div class="apos-verif-grid">
+                        <div class="apos-seal-area">
+                          <div class="apos-verif-date" id="aposDateBlock">Date: 09 Jun 2026</div>
+                          <div class="apos-seal-box">Seal/Stamp</div>
+                        </div>
+                        <div class="apos-qr-area">
+                          <div class="apos-qr-code" id="aposQrCode"></div>
+                        </div>
+                        <div class="apos-sig-area">
+                          <div class="apos-sig-graphic" id="aposSigGraphic">
+                            <svg viewBox="0 0 110 38" class="sig-svg">
+                              <path d="M8,26 Q30,6 48,22 T78,14 Q90,26 102,16" stroke="#1d4ed8" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+                              <circle cx="72" cy="15" r="3.2" fill="none" stroke="#1d4ed8" stroke-width="1.8"/>
+                            </svg>
+                          </div>
+                          <div class="apos-sig-name" id="aposSignatory">Ali Faraz</div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Legal Note and Verification Link at Bottom -->
+              <div class="apostille-legal-block">
+                <p class="apos-legal-disclaimer" id="aposDisclaimer">
+                  This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.
+                </p>
+                <p class="apos-legal-url" id="aposVerifyUrl">
+                  To verify this apostille, visit www.apostille.mofa.gov.pk
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ATTACHED DOCUMENT / PDF PREVIEW SECTION -->
+        <div class="attached-pdf-section" id="attachedPdfSection">
+          <!-- Desktop Embedded PDF Viewer with Toolbar (Screenshot Desktop View) -->
+          <div class="desktop-pdf-viewer" id="desktopPdfViewer">
+            <div class="pdf-viewer-toolbar">
+              <div class="pdf-toolbar-left">
+                <button type="button" class="pdf-tool-btn" id="btnPdfMenu" title="Menu">≡</button>
+                <span class="pdf-page-indicator" id="pdfPageIndicator">1 / 2</span>
+              </div>
+              <div class="pdf-toolbar-center">
+                <button type="button" class="pdf-tool-btn" id="btnPdfZoomOut" title="Zoom Out">−</button>
+                <button type="button" class="pdf-tool-btn" id="btnPdfZoomIn" title="Zoom In">+</button>
+                <button type="button" class="pdf-tool-btn" id="btnPdfFit" title="Fit to page">⤢</button>
+              </div>
+              <div class="pdf-toolbar-right">
+                <button type="button" class="pdf-tool-btn" id="btnPdfRotate" title="Rotate Document">↻</button>
+                <button type="button" class="pdf-tool-btn" id="btnPdfPrint" title="Print Document">🖨</button>
+                <a href="/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf" target="_blank" class="pdf-tool-btn" id="btnPdfDownload" title="Download Document" download>⬇</a>
+              </div>
+            </div>
+            <div class="pdf-viewport" id="pdfViewport">
+              <iframe id="pdfIframe" src="/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf#toolbar=0" title="Attested Document Preview"></iframe>
+            </div>
+          </div>
+
+          <!-- Mobile PDF Container (Screenshot 1 Mobile View) -->
+          <div class="mobile-pdf-box" id="mobilePdfBox">
+            <div class="mobile-pdf-watermark">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="rgba(255,255,255,0.25)">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"></polyline>
+              </svg>
+            </div>
+            <div class="mobile-pdf-filename" id="mobilePdfFilename">wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf</div>
+            <a href="/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf" target="_blank" class="mobile-pdf-btn-open" id="btnMobilePdfOpen">Open</a>
+          </div>
+        </div>
+
+        <!-- Hidden legacy attributes container for compatibility -->
+        <table class="result-table" style="display: none;" aria-hidden="true">
           <tbody>
-            <tr>
-              <td class="label-cell">Certificate Number:</td>
-              <td class="value-cell" id="resDocNumber">ADG-HYUI-QRTY-BGHN</td>
-            </tr>
-            <tr>
-              <td class="label-cell">Document Type:</td>
-              <td class="value-cell" id="resDocType">Official Educational Degree Attestation</td>
-            </tr>
-            <tr>
-              <td class="label-cell">Applicant / Holder:</td>
-              <td class="value-cell" id="resApplicant">Muhammad Ahmed</td>
-            </tr>
-            <tr>
-              <td class="label-cell">Issue Date:</td>
-              <td class="value-cell" id="resDate">18-Oct-2026</td>
-            </tr>
-            <tr>
-              <td class="label-cell">Issuing Center:</td>
-              <td class="value-cell" id="resAuthority">Headquarters Directorate</td>
-            </tr>
-            <tr>
-              <td class="label-cell">Security Digital Hash:</td>
-              <td class="value-cell" id="resHash" style="font-family: monospace; font-size: 0.85rem; color: #475569;">9f83ac12...78b4e</td>
-            </tr>
+            <tr><td id="resDocNumber"></td></tr>
+            <tr><td id="resDocType"></td></tr>
+            <tr><td id="resApplicant"></td></tr>
+            <tr><td id="resDate"></td></tr>
+            <tr><td id="resAuthority"></td></tr>
+            <tr><td id="resHash"></td></tr>
           </tbody>
         </table>
 
-        <div class="result-actions">
-          <button type="button" class="btn-secondary" onclick="window.print()">Print Verification</button>
-          <button type="button" class="btn-secondary" id="btnSearchAgain">Search Another</button>
+        <!-- Action Buttons -->
+        <div class="result-actions" style="margin-top: 28px;">
+          <button type="button" class="btn-verify" onclick="window.print()" style="max-width: 220px;">Print Certificate</button>
+          <button type="button" class="btn-secondary" id="btnSearchAgain" style="max-width: 240px;">Verify Another Document</button>
         </div>
       </div>
 
@@ -276,6 +425,7 @@
     </div>
   </footer>
 
+  <script src="js/qrcode.min.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

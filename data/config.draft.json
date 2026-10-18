@@ -68,29 +68,8 @@
       "isExternal": false
     },
     {
-      "id": "nav-test-main-site",
-      "label": "Main Organization Portal",
-      "url": "https://myorganization.com/services",
-      "target": "_blank",
-      "enabled": true
-    },
-    {
-      "id": "nav-test-main-site",
-      "label": "Main Organization Portal",
-      "url": "https://myorganization.com/services",
-      "target": "_blank",
-      "enabled": true
-    },
-    {
-      "id": "nav-test-1792329885988",
-      "label": "Main Organization Portal - 1792329885988",
-      "url": "https://myorganization.com/services",
-      "target": "_blank",
-      "enabled": true
-    },
-    {
-      "id": "nav-test-1792329909511",
-      "label": "Main Organization Portal - 1792329909511",
+      "id": "nav-test-1792334028274",
+      "label": "Main Organization Portal - 1792334028274",
       "url": "https://myorganization.com/services",
       "target": "_blank",
       "enabled": true
@@ -151,9 +130,26 @@
     ],
     "copyrightText": "Copyright © 2026 Department of Verification & Legalization. All Rights Reserved."
   },
+  "certificateView": {
+    "pageTitle": "QR Code Verification Apostille Certificate",
+    "breadcrumbText": "Home / Apostille verification",
+    "issuerStatement": "This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.",
+    "summaryTemplate": "This apostille refers to {category} and issued on {date} and is Approved by {authority}",
+    "watermarkText": "GOVTOFPAKISTAN",
+    "conventionTitle": "APOSTILLE",
+    "conventionSubtitle": "(Convention de La Haye du 5 October 1961)",
+    "defaultCountry": "Pakistan",
+    "certifiedWord": "Certified",
+    "disclaimerText": "This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.",
+    "verificationUrlText": "To verify this apostille, visit www.apostille.mofa.gov.pk",
+    "defaultSignatory": "Ali Faraz",
+    "enablePdfViewer": true,
+    "defaultPdfFileName": "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
+    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
+  },
   "metadata": {
-    "lastSavedAt": "2026-10-18T13:25:09.511Z",
-    "lastPublishedAt": "2026-10-18T13:25:09.529Z",
-    "version": 5
+    "lastSavedAt": "2026-10-18T14:33:48.276Z",
+    "lastPublishedAt": "2026-10-18T14:33:48.294Z",
+    "version": 8
   }
 }

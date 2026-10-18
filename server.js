@@ -169,6 +169,21 @@ const DEFAULT_CONFIG = {
     ],
     copyrightText: "Copyright © 2026 Department of Verification & Legalization. All Rights Reserved."
   },
+  certificateView: {
+    pageTitle: "QR Code Verification Apostille Certificate",
+    breadcrumbText: "Home / Apostille verification",
+    issuerStatement: "This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.",
+    summaryTemplate: "This apostille refers to {category} and issued on {date} and is Approved by {authority}",
+    watermarkText: "GOVTOFPAKISTAN",
+    conventionTitle: "APOSTILLE",
+    conventionSubtitle: "(Convention de La Haye du 5 October 1961)",
+    defaultCountry: "Pakistan",
+    certifiedWord: "Certified",
+    disclaimerText: "This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.",
+    verificationUrlText: "To verify this apostille, visit www.apostille.mofa.gov.pk",
+    defaultSignatory: "Ali Faraz",
+    enablePdfViewer: true
+  },
   metadata: {
     lastSavedAt: new Date().toISOString(),
     lastPublishedAt: new Date().toISOString(),
@@ -368,8 +383,8 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      // Check date match
-      if (match.issueDate !== cleanDate) {
+      // Check date match if date is supplied
+      if (cleanDate && match.issueDate !== cleanDate) {
         return sendJson(res, 200, {
           success: false,
           status: "DATE_MISMATCH",
@@ -401,7 +416,17 @@ const server = http.createServer(async (req, res) => {
           issuingAuthority: match.issuingAuthority,
           securityHash: match.securityHash,
           status: currentStatus,
-          notes: match.notes || ""
+          notes: match.notes || "",
+          // Extended Apostille Certificate fields
+          country: match.country || "Pakistan",
+          documentCategory: match.documentCategory || match.documentType || "Personal Document",
+          signedBy: match.signedBy || "N/A",
+          capacity: match.capacity || "Registrar",
+          sealOf: match.sealOf || "Preston University",
+          issuePlace: match.issuePlace || "Lahore Pakistan",
+          signatoryOfficer: match.signatoryOfficer || "Ali Faraz",
+          pdfFileName: match.pdfFileName || "",
+          pdfUrl: match.pdfUrl || ""
         }
       });
     } catch (err) {
@@ -686,10 +711,19 @@ const server = http.createServer(async (req, res) => {
         id: `rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         docNumber: cleanDocNum,
         applicantName: data.applicantName.trim(),
-        documentType: data.documentType ? data.documentType.trim() : "Official Document Certificate",
+        documentType: data.documentType ? data.documentType.trim() : "Personal Document",
+        documentCategory: data.documentCategory ? data.documentCategory.trim() : (data.documentType ? data.documentType.trim() : "Personal Document"),
+        country: data.country ? data.country.trim() : "Pakistan",
+        signedBy: data.signedBy ? data.signedBy.trim() : "N/A",
+        capacity: data.capacity ? data.capacity.trim() : "Registrar",
+        sealOf: data.sealOf ? data.sealOf.trim() : "Preston University",
+        issuePlace: data.issuePlace ? data.issuePlace.trim() : "Lahore Pakistan",
         issueDate: data.issueDate.trim(),
         expiryDate: data.expiryDate ? data.expiryDate.trim() : "",
-        issuingAuthority: data.issuingAuthority ? data.issuingAuthority.trim() : "Verification Directorate",
+        issuingAuthority: data.issuingAuthority ? data.issuingAuthority.trim() : "Ministry of Foreign Affairs",
+        signatoryOfficer: data.signatoryOfficer ? data.signatoryOfficer.trim() : "Ali Faraz",
+        pdfFileName: data.pdfFileName ? data.pdfFileName.trim() : "",
+        pdfUrl: data.pdfUrl ? data.pdfUrl.trim() : "",
         status: data.status || "VERIFIED",
         securityHash: crypto.randomBytes(15).toString('hex'),
         notes: data.notes ? data.notes.trim() : "",
@@ -725,9 +759,18 @@ const server = http.createServer(async (req, res) => {
         docNumber: cleanDocNum,
         applicantName: data.applicantName ? data.applicantName.trim() : existing.applicantName,
         documentType: data.documentType ? data.documentType.trim() : existing.documentType,
+        documentCategory: data.documentCategory !== undefined ? data.documentCategory.trim() : (existing.documentCategory || existing.documentType),
+        country: data.country !== undefined ? data.country.trim() : (existing.country || "Pakistan"),
+        signedBy: data.signedBy !== undefined ? data.signedBy.trim() : (existing.signedBy || "N/A"),
+        capacity: data.capacity !== undefined ? data.capacity.trim() : (existing.capacity || "Registrar"),
+        sealOf: data.sealOf !== undefined ? data.sealOf.trim() : (existing.sealOf || "Preston University"),
+        issuePlace: data.issuePlace !== undefined ? data.issuePlace.trim() : (existing.issuePlace || "Lahore Pakistan"),
         issueDate: data.issueDate ? data.issueDate.trim() : existing.issueDate,
         expiryDate: data.expiryDate !== undefined ? data.expiryDate.trim() : existing.expiryDate,
         issuingAuthority: data.issuingAuthority ? data.issuingAuthority.trim() : existing.issuingAuthority,
+        signatoryOfficer: data.signatoryOfficer !== undefined ? data.signatoryOfficer.trim() : (existing.signatoryOfficer || "Ali Faraz"),
+        pdfFileName: data.pdfFileName !== undefined ? data.pdfFileName.trim() : (existing.pdfFileName || ""),
+        pdfUrl: data.pdfUrl !== undefined ? data.pdfUrl.trim() : (existing.pdfUrl || ""),
         status: data.status || existing.status,
         notes: data.notes !== undefined ? data.notes.trim() : existing.notes,
         updatedAt: new Date().toISOString()
@@ -775,18 +818,19 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Validate allowed extensions and MIME types
-      const allowedExts = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+      const allowedExts = ['.png', '.jpg', '.jpeg', '.svg', '.webp', '.pdf'];
       const ext = path.extname(data.fileName).toLowerCase();
       if (!allowedExts.includes(ext)) {
-        return sendJson(res, 400, { success: false, message: "Invalid file type. Allowed: PNG, JPG, JPEG, SVG, WEBP." });
+        return sendJson(res, 400, { success: false, message: "Invalid file type. Allowed: PNG, JPG, JPEG, SVG, WEBP, PDF." });
       }
 
-      // Max size: 2MB
-      if (buffer.length > 2 * 1024 * 1024) {
-        return sendJson(res, 400, { success: false, message: "File exceeds 2MB size limit." });
+      // Max size: 10MB
+      if (buffer.length > 10 * 1024 * 1024) {
+        return sendJson(res, 400, { success: false, message: "File exceeds 10MB size limit." });
       }
 
-      const safeName = `logo_${Date.now()}${ext}`;
+      const prefix = ext === '.pdf' ? 'doc_' : 'logo_';
+      const safeName = `${prefix}${Date.now()}${ext}`;
       const destPath = path.join(UPLOADS_DIR, safeName);
       fs.writeFileSync(destPath, buffer);
 

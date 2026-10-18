@@ -292,6 +292,78 @@
               </div>
             </div>
           </div>
+
+          <!-- Apostille Certificate & QR Result View Settings -->
+          <div class="card" style="margin-top: 24px;">
+            <h2 class="card-title">Apostille Certificate & QR Result View Settings</h2>
+            <p class="card-desc">Configure the public verification result layout, convention titles, security watermark, and PDF document viewer.</p>
+            
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertPageTitle">Certificate Result Page Title</label>
+                <input type="text" id="cfgCertPageTitle" class="form-input" placeholder="e.g. QR Code Verification Apostille Certificate">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertBreadcrumb">Breadcrumb Path</label>
+                <input type="text" id="cfgCertBreadcrumb" class="form-input" placeholder="e.g. Home / Apostille verification">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertIssuerStatement">Authority Issuer Statement</label>
+              <input type="text" id="cfgCertIssuerStatement" class="form-input" placeholder="e.g. This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertSummaryTemplate">Dynamic Reference Statement Template</label>
+              <input type="text" id="cfgCertSummaryTemplate" class="form-input" placeholder="e.g. This apostille refers to {category} and issued on {date} and is Approved by {authority}">
+              <small style="color: #6b7280; font-size: 0.8rem;">Variables: <code>{category}</code>, <code>{date}</code>, <code>{authority}</code></small>
+            </div>
+
+            <div class="grid-3">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertWatermark">Background Watermark Text</label>
+                <input type="text" id="cfgCertWatermark" class="form-input" placeholder="e.g. GOVTOFPAKISTAN">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertConventionTitle">Convention Header</label>
+                <input type="text" id="cfgCertConventionTitle" class="form-input" placeholder="e.g. APOSTILLE">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertCountry">Default Origin Country</label>
+                <input type="text" id="cfgCertCountry" class="form-input" placeholder="e.g. Pakistan">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertConventionSubtitle">Convention Subtitle</label>
+                <input type="text" id="cfgCertConventionSubtitle" class="form-input" placeholder="e.g. (Convention de La Haye du 5 October 1961)">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertSignatory">Default Signatory Officer</label>
+                <input type="text" id="cfgCertSignatory" class="form-input" placeholder="e.g. Ali Faraz">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertDisclaimer">Statutory Legal Disclaimer Note</label>
+              <textarea id="cfgCertDisclaimer" class="form-textarea" rows="2" placeholder="This apostille is not intended for use in Pakistan..."></textarea>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertVerifyUrl">Verification URL Note</label>
+                <input type="text" id="cfgCertVerifyUrl" class="form-input" placeholder="e.g. To verify this apostille, visit www.apostille.mofa.gov.pk">
+              </div>
+              <div class="form-field" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer;">
+                  <input type="checkbox" id="cfgCertEnablePdf" checked>
+                  Enable Attached PDF Document Viewer on Verification Result
+                </label>
+              </div>
+            </div>
+          </div>
         </section>
 
         <!-- ===================================================================
@@ -325,12 +397,13 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Certificate Number</th>
-                    <th>Holder Name</th>
-                    <th>Document Type</th>
+                    <th>Apostille / Doc Number</th>
+                    <th>Classification</th>
+                    <th>Institution / Seal</th>
                     <th>Issue Date</th>
                     <th>Status</th>
-                    <th style="width: 220px; text-align: right;">Actions</th>
+                    <th>PDF</th>
+                    <th style="width: 200px; text-align: right;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="recordsTableBody">
@@ -628,21 +701,53 @@
       </div>
       <form id="recordForm">
         <input type="hidden" id="recordId">
-        <div class="form-field">
-          <label class="form-label" for="recDocNumber">Certificate / Document Number <span style="color: red;">*</span></label>
-          <input type="text" id="recDocNumber" class="form-input" placeholder="e.g. ADG-HYUI-QRTY-BGHN" required>
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="recApplicant">Applicant / Holder Full Name <span style="color: red;">*</span></label>
-          <input type="text" id="recApplicant" class="form-input" placeholder="e.g. Muhammad Ahmed" required>
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="recDocType">Document Type</label>
-          <input type="text" id="recDocType" class="form-input" placeholder="e.g. Official Educational Degree Attestation">
-        </div>
         <div class="grid-2">
           <div class="form-field">
-            <label class="form-label" for="recIssueDate">Issue Date <span style="color: red;">*</span></label>
+            <label class="form-label" for="recDocNumber">Apostille / Certificate Number <span style="color: red;">*</span></label>
+            <input type="text" id="recDocNumber" class="form-input" placeholder="e.g. APO-KTAQ-NWSP-VDSJ" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recApplicant">Applicant / Holder Full Name <span style="color: red;">*</span></label>
+            <input type="text" id="recApplicant" class="form-input" placeholder="e.g. Attestation Candidate" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recDocCategory">Classification / Category (Box 1 Right) <span style="color: red;">*</span></label>
+            <input type="text" id="recDocCategory" class="form-input" placeholder="e.g. Personal Document" value="Personal Document" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recCountry">Origin Country (Box 1 Left)</label>
+            <input type="text" id="recCountry" class="form-input" placeholder="e.g. Pakistan" value="Pakistan">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recSignedBy">Signed By (Box 2)</label>
+            <input type="text" id="recSignedBy" class="form-input" placeholder="e.g. N/A or Official Name" value="N/A">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recCapacity">Acting in Capacity Of (Box 3)</label>
+            <input type="text" id="recCapacity" class="form-input" placeholder="e.g. Registrar" value="Registrar">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recSealOf">Bears Seal / Stamp Of (Box 4)</label>
+            <input type="text" id="recSealOf" class="form-input" placeholder="e.g. Preston University" value="Preston University">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recIssuePlace">Certified At Location (Box 5)</label>
+            <input type="text" id="recIssuePlace" class="form-input" placeholder="e.g. Lahore Pakistan" value="Lahore Pakistan">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recIssueDate">Issue Date (Box 6) <span style="color: red;">*</span></label>
             <input type="date" id="recIssueDate" class="form-input" required>
           </div>
           <div class="form-field">
@@ -650,10 +755,22 @@
             <input type="date" id="recExpiryDate" class="form-input">
           </div>
         </div>
+
         <div class="grid-2">
           <div class="form-field">
-            <label class="form-label" for="recAuthority">Issuing Authority / Center</label>
-            <input type="text" id="recAuthority" class="form-input" placeholder="e.g. Directorate of Attestations">
+            <label class="form-label" for="recAuthority">Issuing Authority (Box 7)</label>
+            <input type="text" id="recAuthority" class="form-input" placeholder="e.g. Ministry of Foreign Affairs" value="Ministry of Foreign Affairs">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recSignatoryOfficer">Approving Officer / Signature</label>
+            <input type="text" id="recSignatoryOfficer" class="form-input" placeholder="e.g. Ali Faraz" value="Ali Faraz">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recDocType">General Document Name</label>
+            <input type="text" id="recDocType" class="form-input" placeholder="e.g. Other Documents or Degree Certificate" value="Other Documents">
           </div>
           <div class="form-field">
             <label class="form-label" for="recStatus">Verification Status</label>
@@ -665,8 +782,25 @@
             </select>
           </div>
         </div>
+
+        <!-- Attached Document PDF -->
+        <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Attached Document PDF (Desktop Embed & Mobile Box)</label>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="recPdfFileName" class="form-input" placeholder="e.g. wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+            <input type="hidden" id="recPdfUrl">
+            <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+              Upload PDF
+              <input type="file" id="recPdfFileInput" accept=".pdf" style="display: none;">
+            </label>
+          </div>
+          <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Select a PDF from your computer or keep the sample Preston University document.
+          </small>
+        </div>
+
         <div class="form-field">
-          <label class="form-label" for="recNotes">Administrative Notes / Reason for Status</label>
+          <label class="form-label" for="recNotes">Administrative Notes / Revocation Reason</label>
           <textarea id="recNotes" class="form-textarea" rows="2" placeholder="Internal remarks or revocation notice"></textarea>
         </div>
         <div class="admin-modal-footer">

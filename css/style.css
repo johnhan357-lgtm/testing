@@ -1010,3 +1010,427 @@ body {
   }
 }
 
+/* ==========================================================================
+   APOSTILLE VERIFICATION CERTIFICATE & ADAPTIVE PDF PREVIEW
+   ========================================================================== */
+
+/* Breadcrumb */
+.cert-breadcrumb {
+  text-align: left;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+.cert-breadcrumb a {
+  color: #64748b;
+  text-decoration: none;
+}
+.cert-breadcrumb a:hover {
+  text-decoration: underline;
+  color: #1e293b;
+}
+.breadcrumb-sep {
+  margin: 0 6px;
+  color: #94a3b8;
+}
+
+/* Page Header Area */
+.cert-header-area {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.cert-page-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+.cert-issuer-statement {
+  font-size: 0.95rem;
+  color: #475569;
+  margin-bottom: 14px;
+}
+.cert-ref-statement {
+  font-size: 1rem;
+  color: #334155;
+  line-height: 1.6;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.cert-ref-statement strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Certificate Container */
+.apostille-certificate-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0 auto 30px auto;
+}
+
+/* Ornate Border & Background Frame */
+.apostille-frame {
+  position: relative;
+  width: 100%;
+  max-width: 630px;
+  background-color: #ffffff;
+  /* Authentic Cross-stitch geometric floral border */
+  border: 14px solid #111827;
+  border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 2 L17 11 L26 14 L17 17 L14 26 L11 17 L2 14 L11 11 Z' fill='%23111827'/%3E%3Ccircle cx='5' cy='5' r='2' fill='%23111827'/%3E%3Ccircle cx='23' cy='5' r='2' fill='%23111827'/%3E%3Ccircle cx='5' cy='23' r='2' fill='%23111827'/%3E%3Ccircle cx='23' cy='23' r='2' fill='%23111827'/%3E%3Ccircle cx='14' cy='14' r='2.5' fill='%23ffffff'/%3E%3C/svg%3E") 14 repeat;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Watermark Overlay */
+.apostille-watermark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='75' viewBox='0 0 240 75'%3E%3Ctext x='10' y='42' transform='rotate(-20 120 37)' font-family='Arial, sans-serif' font-weight='800' font-size='13' fill='rgba(1, 65, 28, 0.055)' letter-spacing='2'%3EGOVTOFPAKISTAN%3C/text%3E%3C/svg%3E");
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.apostille-content {
+  position: relative;
+  z-index: 2;
+  padding: 20px 22px 18px 22px;
+}
+
+/* Certificate Header Titles */
+.apostille-title-block {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.apostille-main-title {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+.apostille-convention-title {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Certificate Grid Table */
+.apostille-grid-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.5px solid #111827;
+  font-family: "Times New Roman", Times, Georgia, serif;
+  background: transparent;
+}
+.apostille-grid-table td {
+  border: 1px solid #111827;
+  padding: 4px 8px;
+  vertical-align: top;
+  font-size: 0.92rem;
+  color: #111827;
+}
+
+.apos-col-num {
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  border-right: 1px solid #111827;
+}
+.apos-col-half {
+  width: calc(50% - 14px);
+}
+.apos-col-half.border-left {
+  border-left: 1px solid #111827;
+}
+.apos-col-full {
+  width: calc(100% - 28px);
+}
+.apos-col-label-inline {
+  width: 40px;
+  font-weight: 600;
+}
+.apos-col-val-inline {
+  font-weight: 700;
+}
+.apos-field-label {
+  display: block;
+  font-size: 0.88rem;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+.apos-field-val {
+  font-size: 0.95rem;
+  color: #000000;
+}
+.bold-text {
+  font-weight: 700;
+}
+.code-font {
+  font-family: "Courier New", Courier, monospace;
+  letter-spacing: 0.5px;
+}
+
+/* Calligraphic "Certified" divider */
+.apos-cell-certified {
+  text-align: center;
+  padding: 6px 0 !important;
+  border-top: 1px solid #111827;
+  border-bottom: 1px solid #111827;
+}
+.certified-script {
+  font-family: "Brush Script MT", "Snell Roundhand", "Great Vibes", "Segoe Script", cursive;
+  font-size: 1.45rem;
+  font-style: italic;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Verification Row (Date/Seal on Left, QR in Middle, Signature on Right) */
+.apos-cell-verification {
+  padding: 10px 8px !important;
+  background: transparent;
+}
+.apos-verif-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.apos-seal-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+.apos-verif-date {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 10px;
+}
+.apos-seal-box {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.apos-qr-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.apos-qr-code {
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 4px;
+}
+.apos-qr-code svg,
+.apos-qr-code img {
+  width: 100%;
+  height: 100%;
+}
+
+.apos-sig-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+}
+.apos-sig-graphic {
+  width: 95px;
+  height: 35px;
+}
+.apos-sig-graphic .sig-svg {
+  width: 100%;
+  height: 100%;
+}
+.apos-sig-name {
+  font-size: 0.82rem;
+  color: #1f2937;
+  font-weight: 600;
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* Legal disclaimer at bottom of certificate */
+.apostille-legal-block {
+  margin-top: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+}
+.apos-legal-disclaimer {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #374151;
+  margin-bottom: 6px;
+}
+.apos-legal-url {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #111827;
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   ATTACHED PDF DOCUMENT PREVIEW
+   ========================================================================== */
+.attached-pdf-section {
+  width: 100%;
+  max-width: 630px;
+  margin: 0 auto;
+}
+
+/* Desktop Embedded PDF Viewer */
+.desktop-pdf-viewer {
+  display: block;
+  background-color: #323639;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+.pdf-viewer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #212529;
+  color: #ffffff;
+  padding: 8px 14px;
+  font-size: 0.88rem;
+  user-select: none;
+}
+.pdf-toolbar-left,
+.pdf-toolbar-center,
+.pdf-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pdf-tool-btn {
+  background: transparent;
+  border: none;
+  color: #e2e8f0;
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.pdf-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+.pdf-page-indicator {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  font-family: monospace;
+}
+.pdf-viewport {
+  width: 100%;
+  height: 480px;
+  background: #525659;
+  overflow: hidden;
+}
+.pdf-viewport iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Mobile PDF Box (Screenshot 1) */
+.mobile-pdf-box {
+  display: none;
+  background-color: #212529;
+  color: #ffffff;
+  padding: 70px 20px 40px 20px;
+  border-radius: 4px;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-pdf-watermark {
+  margin-bottom: 24px;
+  opacity: 0.4;
+}
+.mobile-pdf-filename {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  font-family: monospace;
+  word-break: break-all;
+  margin-bottom: 24px;
+  max-width: 90%;
+}
+.mobile-pdf-btn-open {
+  display: inline-block;
+  background-color: #60a5fa;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 8px 30px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.15s;
+}
+.mobile-pdf-btn-open:hover {
+  background-color: #93c5fd;
+  transform: scale(1.03);
+}
+
+/* Responsive Switching between Desktop & Mobile View */
+@media (max-width: 768px) {
+  .cert-page-title {
+    font-size: 1.5rem;
+  }
+  .cert-ref-statement {
+    font-size: 0.9rem;
+  }
+  .apostille-frame {
+    border-width: 10px;
+    max-width: 100%;
+  }
+  .apostille-content {
+    padding: 14px 12px 14px 12px;
+  }
+  .apostille-main-title {
+    font-size: 1.45rem;
+  }
+  .apostille-convention-title {
+    font-size: 0.82rem;
+  }
+  .apostille-grid-table td {
+    padding: 3px 6px;
+    font-size: 0.82rem;
+  }
+  .apos-qr-code {
+    width: 72px;
+    height: 72px;
+  }
+
+  /* Switch Viewer: Hide desktop iframe toolbar and show mobile charcoal box */
+  .desktop-pdf-viewer {
+    display: none;
+  }
+  .mobile-pdf-box {
+    display: flex;
+  }
+}
+
+

@@ -266,6 +266,42 @@ document.addEventListener("DOMContentLoaded", async () => {
         footerLinksEl.innerHTML = footHtml;
       }
     }
+
+    // Apply Certificate View Settings (Apostille Result Page)
+    if (cfg.certificateView) {
+      const cv = cfg.certificateView;
+      const elPageTitle = document.getElementById("certPageTitle");
+      const elBreadcrumb = document.getElementById("certBreadcrumbText");
+      const elIssuer = document.getElementById("certIssuerStatement");
+      const elAposTitle = document.getElementById("aposTitle");
+      const elAposSub = document.getElementById("aposSubtitle");
+      const elAposCertified = document.getElementById("aposCertified");
+      const elAposDisc = document.getElementById("aposDisclaimer");
+      const elAposUrl = document.getElementById("aposVerifyUrl");
+      const elWatermark = document.getElementById("apostilleWatermark");
+      const elPdfSection = document.getElementById("attachedPdfSection");
+
+      if (elPageTitle && cv.pageTitle) elPageTitle.textContent = cv.pageTitle;
+      if (elBreadcrumb && cv.breadcrumbText) {
+        const parts = cv.breadcrumbText.split('/');
+        elBreadcrumb.textContent = parts.length > 1 ? parts[1].trim() : cv.breadcrumbText;
+      }
+      if (elIssuer && cv.issuerStatement) elIssuer.textContent = cv.issuerStatement;
+      if (elAposTitle && cv.conventionTitle) elAposTitle.textContent = cv.conventionTitle;
+      if (elAposSub && cv.conventionSubtitle) elAposSub.textContent = cv.conventionSubtitle;
+      if (elAposCertified && cv.certifiedWord) elAposCertified.textContent = cv.certifiedWord;
+      if (elAposDisc && cv.disclaimerText) elAposDisc.textContent = cv.disclaimerText;
+      if (elAposUrl && cv.verificationUrlText) elAposUrl.textContent = cv.verificationUrlText;
+
+      if (elWatermark && cv.watermarkText) {
+        const wmText = encodeURIComponent(cv.watermarkText);
+        elWatermark.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='75' viewBox='0 0 240 75'%3E%3Ctext x='10' y='42' transform='rotate(-20 120 37)' font-family='Arial, sans-serif' font-weight='800' font-size='13' fill='rgba(1, 65, 28, 0.055)' letter-spacing='2'%3E${wmText}%3C/text%3E%3C/svg%3E")`;
+      }
+
+      if (elPdfSection) {
+        elPdfSection.style.display = cv.enablePdfViewer === false ? 'none' : '';
+      }
+    }
   }
 
   // =========================================================================
@@ -318,58 +354,134 @@ document.addEventListener("DOMContentLoaded", async () => {
     resultCard.style.display = "block";
     resultCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
+    // Certificate Elements
+    const apostilleContainer = document.getElementById("apostilleContainer");
+    const attachedPdfSection = document.getElementById("attachedPdfSection");
+    const resSummaryCategory = document.getElementById("resSummaryCategory");
+    const resSummaryDate = document.getElementById("resSummaryDate");
+    const resSummaryAuthority = document.getElementById("resSummaryAuthority");
+    const aposCountry = document.getElementById("aposCountry");
+    const aposDocCategory = document.getElementById("aposDocCategory");
+    const aposSignedBy = document.getElementById("aposSignedBy");
+    const aposCapacity = document.getElementById("aposCapacity");
+    const aposSealOf = document.getElementById("aposSealOf");
+    const aposIssuePlace = document.getElementById("aposIssuePlace");
+    const aposIssueDate = document.getElementById("aposIssueDate");
+    const aposAuthority = document.getElementById("aposAuthority");
+    const aposDocNumber = document.getElementById("aposDocNumber");
+    const aposDateBlock = document.getElementById("aposDateBlock");
+    const aposSignatory = document.getElementById("aposSignatory");
+    const aposQrCode = document.getElementById("aposQrCode");
+
+    const pdfIframe = document.getElementById("pdfIframe");
+    const mobilePdfFilename = document.getElementById("mobilePdfFilename");
+    const btnMobilePdfOpen = document.getElementById("btnMobilePdfOpen");
+    const btnPdfDownload = document.getElementById("btnPdfDownload");
+
     // Reset status classes
     statusBadge.className = "result-status-badge";
 
     if (data.status === "VERIFIED" && data.record) {
-      statusBadge.classList.add("status-verified");
-      statusTitle.textContent = "Document Certificate Verified";
+      // Official Authentic Apostille Result View
+      statusBadge.style.display = "none";
+      if (apostilleContainer) apostilleContainer.style.display = "flex";
+      if (attachedPdfSection && (!currentConfig || !currentConfig.certificateView || currentConfig.certificateView.enablePdfViewer !== false)) {
+        attachedPdfSection.style.display = "block";
+      }
 
-      resultTable.style.display = "table";
-      resDocNumber.textContent = data.record.docNumber;
-      resDocType.textContent = data.record.documentType;
-      resApplicant.textContent = data.record.applicantName;
-      resDate.textContent = formatDateDisplay(data.record.issueDate);
-      resAuthority.textContent = data.record.issuingAuthority;
-      resHash.textContent = data.record.securityHash || "Verified";
-    } 
+      const rec = data.record;
+      const formattedDate = formatDateDisplay(rec.issueDate);
+
+      // Dynamic Reference Statement
+      if (resSummaryCategory) resSummaryCategory.textContent = rec.documentType || rec.documentCategory || "Other Documents";
+      if (resSummaryDate) resSummaryDate.textContent = formattedDate;
+      if (resSummaryAuthority) resSummaryAuthority.textContent = rec.issuingAuthority || "Ministry of Foreign Affairs Pakistan";
+
+      // Numbered Certificate Grid
+      if (aposCountry) aposCountry.textContent = rec.country || "Pakistan";
+      if (aposDocCategory) aposDocCategory.textContent = rec.documentCategory || rec.documentType || "Personal Document";
+      if (aposSignedBy) aposSignedBy.textContent = rec.signedBy || "N/A";
+      if (aposCapacity) aposCapacity.textContent = rec.capacity || "Registrar";
+      if (aposSealOf) aposSealOf.textContent = rec.sealOf || "Preston University";
+      if (aposIssuePlace) aposIssuePlace.textContent = rec.issuePlace || "Lahore Pakistan";
+      if (aposIssueDate) aposIssueDate.textContent = formattedDate;
+      if (aposAuthority) aposAuthority.textContent = rec.issuingAuthority || "Ministry of Foreign Affairs";
+      if (aposDocNumber) aposDocNumber.textContent = rec.docNumber;
+      if (aposDateBlock) aposDateBlock.textContent = `Date: ${formattedDate}`;
+      if (aposSignatory) aposSignatory.textContent = rec.signatoryOfficer || "Ali Faraz";
+
+      // Live Scannable QR Code linking to verification endpoint
+      if (aposQrCode) {
+        const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+        if (typeof window.renderQRCodeSVG === "function") {
+          aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84);
+        } else {
+          aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84">`;
+        }
+      }
+
+      // Attested PDF Attachment (Desktop embed & Mobile container)
+      const pdfUrl = rec.pdfUrl || (rec.pdfFileName ? `/uploads/${rec.pdfFileName}` : '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf');
+      const pdfName = rec.pdfFileName || 'wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+
+      if (pdfIframe) pdfIframe.src = `${pdfUrl}#toolbar=0`;
+      if (mobilePdfFilename) mobilePdfFilename.textContent = pdfName;
+      if (btnMobilePdfOpen) btnMobilePdfOpen.href = pdfUrl;
+      if (btnPdfDownload) btnPdfDownload.href = pdfUrl;
+
+      // Legacy fallback values for tests and backward compatibility
+      if (resDocNumber) resDocNumber.textContent = rec.docNumber;
+      if (resDocType) resDocType.textContent = rec.documentType;
+      if (resApplicant) resApplicant.textContent = rec.applicantName;
+      if (resDate) resDate.textContent = formattedDate;
+      if (resAuthority) resAuthority.textContent = rec.issuingAuthority;
+      if (resHash) resHash.textContent = rec.securityHash || "Verified";
+    }
     else if (data.status === "EXPIRED" && data.record) {
+      statusBadge.style.display = "flex";
       statusBadge.classList.add("status-expired");
-      statusTitle.textContent = "Document Certificate Expired";
+      statusTitle.textContent = `Document Certificate Expired on ${formatDateDisplay(data.record.expiryDate)}`;
 
-      resultTable.style.display = "table";
-      resDocNumber.textContent = data.record.docNumber;
-      resDocType.textContent = data.record.documentType;
-      resApplicant.textContent = data.record.applicantName;
-      resDate.textContent = `${formatDateDisplay(data.record.issueDate)} (Expired: ${formatDateDisplay(data.record.expiryDate)})`;
-      resAuthority.textContent = data.record.issuingAuthority;
-      resHash.textContent = data.record.securityHash || "Expired";
+      if (apostilleContainer) apostilleContainer.style.display = "none";
+      if (attachedPdfSection) attachedPdfSection.style.display = "none";
+
+      if (resDocNumber) resDocNumber.textContent = data.record.docNumber;
+      if (resDocType) resDocType.textContent = data.record.documentType;
+      if (resApplicant) resApplicant.textContent = data.record.applicantName;
+      if (resDate) resDate.textContent = `${formatDateDisplay(data.record.issueDate)} (Expired: ${formatDateDisplay(data.record.expiryDate)})`;
+      if (resAuthority) resAuthority.textContent = data.record.issuingAuthority;
+      if (resHash) resHash.textContent = data.record.securityHash || "Expired";
     }
     else if (data.status === "REVOKED" && data.record) {
+      statusBadge.style.display = "flex";
       statusBadge.classList.add("status-revoked");
       statusTitle.textContent = "Document Certificate Revoked / Cancelled";
 
-      resultTable.style.display = "table";
-      resDocNumber.textContent = data.record.docNumber;
-      resDocType.textContent = data.record.documentType;
-      resApplicant.textContent = data.record.applicantName;
-      resDate.textContent = formatDateDisplay(data.record.issueDate);
-      resAuthority.textContent = `${data.record.issuingAuthority} (Status: REVOKED)`;
-      resHash.textContent = data.record.notes || "Official cancellation on record.";
+      if (apostilleContainer) apostilleContainer.style.display = "none";
+      if (attachedPdfSection) attachedPdfSection.style.display = "none";
+
+      if (resDocNumber) resDocNumber.textContent = data.record.docNumber;
+      if (resDocType) resDocType.textContent = data.record.documentType;
+      if (resApplicant) resApplicant.textContent = data.record.applicantName;
+      if (resDate) resDate.textContent = formatDateDisplay(data.record.issueDate);
+      if (resAuthority) resAuthority.textContent = `${data.record.issuingAuthority} (Status: REVOKED)`;
+      if (resHash) resHash.textContent = data.record.notes || "Official cancellation on record.";
     }
     else {
       // NOT_FOUND or DATE_MISMATCH
+      statusBadge.style.display = "flex";
       statusBadge.classList.add("status-invalid");
       statusTitle.textContent = "Verification Failed — Record Not Found";
 
-      resultTable.style.display = "none";
-      // Temporary guidance row
+      if (apostilleContainer) apostilleContainer.style.display = "none";
+      if (attachedPdfSection) attachedPdfSection.style.display = "none";
+
       let guideEl = document.getElementById("notFoundGuidance");
       if (!guideEl) {
         guideEl = document.createElement("div");
         guideEl.id = "notFoundGuidance";
         guideEl.style.cssText = "padding: 20px; text-align: center; color: #4b5563; font-size: 0.95rem; line-height: 1.6;";
-        resultTable.parentNode.insertBefore(guideEl, resultTable.nextSibling);
+        resultCard.insertBefore(guideEl, resultCard.querySelector(".result-actions"));
       }
       guideEl.style.display = "block";
       guideEl.innerHTML = `
@@ -440,6 +552,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       resultCard.style.display = "none";
       const guideEl = document.getElementById("notFoundGuidance");
       if (guideEl) guideEl.style.display = "none";
+      if (searchCard) searchCard.style.display = "block";
       verificationForm.reset();
       if (dateDaySelect) dateDaySelect.value = "";
       if (dateMonthSelect) dateMonthSelect.value = "";
@@ -447,6 +560,64 @@ document.addEventListener("DOMContentLoaded", async () => {
       docDateInput.value = "";
       searchCard.scrollIntoView({ behavior: "smooth" });
       docNumberInput.focus();
+    });
+  }
+
+  // =========================================================================
+  // 5. PDF VIEWER TOOLBAR CONTROLS
+  // =========================================================================
+  let pdfZoomLevel = 1.0;
+  let pdfRotationDeg = 0;
+  const btnPdfZoomIn = document.getElementById("btnPdfZoomIn");
+  const btnPdfZoomOut = document.getElementById("btnPdfZoomOut");
+  const btnPdfFit = document.getElementById("btnPdfFit");
+  const btnPdfRotate = document.getElementById("btnPdfRotate");
+  const btnPdfPrint = document.getElementById("btnPdfPrint");
+
+  function updatePdfTransform() {
+    const iframe = document.getElementById("pdfIframe");
+    if (iframe) {
+      iframe.style.transform = `scale(${pdfZoomLevel}) rotate(${pdfRotationDeg}deg)`;
+      iframe.style.transformOrigin = "top center";
+      iframe.style.transition = "transform 0.2s ease";
+    }
+  }
+
+  if (btnPdfZoomIn) {
+    btnPdfZoomIn.addEventListener("click", () => {
+      pdfZoomLevel = Math.min(2.0, pdfZoomLevel + 0.15);
+      updatePdfTransform();
+    });
+  }
+  if (btnPdfZoomOut) {
+    btnPdfZoomOut.addEventListener("click", () => {
+      pdfZoomLevel = Math.max(0.6, pdfZoomLevel - 0.15);
+      updatePdfTransform();
+    });
+  }
+  if (btnPdfFit) {
+    btnPdfFit.addEventListener("click", () => {
+      pdfZoomLevel = 1.0;
+      pdfRotationDeg = 0;
+      updatePdfTransform();
+    });
+  }
+  if (btnPdfRotate) {
+    btnPdfRotate.addEventListener("click", () => {
+      pdfRotationDeg = (pdfRotationDeg + 90) % 360;
+      updatePdfTransform();
+    });
+  }
+  if (btnPdfPrint) {
+    btnPdfPrint.addEventListener("click", () => {
+      const iframe = document.getElementById("pdfIframe");
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.print();
+          return;
+        } catch {}
+      }
+      window.print();
     });
   }
 
@@ -467,7 +638,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =========================================================================
-  // 5. INITIALIZE & CHECK QR QUERY PARAMETERS
+  // 6. INITIALIZE & CHECK QR QUERY PARAMETERS
   // =========================================================================
   await loadPublishedConfig();
 
@@ -491,11 +662,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (paramDate) {
       docDateInput.value = paramDate;
       syncDateFromValue(paramDate);
-    } else {
-      const today = new Date().toISOString().split("T")[0];
-      docDateInput.value = today;
-      syncDateFromValue(today);
     }
-    executeVerification(paramDoc, docDateInput.value);
+    // Auto-hide the manual search form when navigating via direct QR link
+    if (searchCard) {
+      searchCard.style.display = "none";
+    }
+    executeVerification(paramDoc, paramDate || "");
   }
 });

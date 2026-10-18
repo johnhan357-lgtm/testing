@@ -247,6 +247,36 @@ document.addEventListener("DOMContentLoaded", () => {
       renderFooterLinksTable(cfg.footer.links || []);
     }
 
+    // Certificate View Settings
+    if (cfg.certificateView) {
+      const cv = cfg.certificateView;
+      const elPageTitle = document.getElementById("cfgCertPageTitle");
+      const elBreadcrumb = document.getElementById("cfgCertBreadcrumb");
+      const elIssuer = document.getElementById("cfgCertIssuerStatement");
+      const elSummary = document.getElementById("cfgCertSummaryTemplate");
+      const elWatermark = document.getElementById("cfgCertWatermark");
+      const elConvTitle = document.getElementById("cfgCertConventionTitle");
+      const elConvSub = document.getElementById("cfgCertConventionSubtitle");
+      const elCountry = document.getElementById("cfgCertCountry");
+      const elSignatory = document.getElementById("cfgCertSignatory");
+      const elDisclaimer = document.getElementById("cfgCertDisclaimer");
+      const elVerifyUrl = document.getElementById("cfgCertVerifyUrl");
+      const elEnablePdf = document.getElementById("cfgCertEnablePdf");
+
+      if (elPageTitle) elPageTitle.value = cv.pageTitle || "QR Code Verification Apostille Certificate";
+      if (elBreadcrumb) elBreadcrumb.value = cv.breadcrumbText || "Home / Apostille verification";
+      if (elIssuer) elIssuer.value = cv.issuerStatement || "This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.";
+      if (elSummary) elSummary.value = cv.summaryTemplate || "This apostille refers to {category} and issued on {date} and is Approved by {authority}";
+      if (elWatermark) elWatermark.value = cv.watermarkText || "GOVTOFPAKISTAN";
+      if (elConvTitle) elConvTitle.value = cv.conventionTitle || "APOSTILLE";
+      if (elConvSub) elConvSub.value = cv.conventionSubtitle || "(Convention de La Haye du 5 October 1961)";
+      if (elCountry) elCountry.value = cv.defaultCountry || "Pakistan";
+      if (elSignatory) elSignatory.value = cv.defaultSignatory || "Ali Faraz";
+      if (elDisclaimer) elDisclaimer.value = cv.disclaimerText || "";
+      if (elVerifyUrl) elVerifyUrl.value = cv.verificationUrlText || "";
+      if (elEnablePdf) elEnablePdf.checked = cv.enablePdfViewer !== false;
+    }
+
     // Tab 8: Theme
     if (cfg.theme) {
       syncColor("cfgColorPrimary", cfg.theme.primaryGreen || "#01411c");
@@ -288,6 +318,29 @@ document.addEventListener("DOMContentLoaded", () => {
       supportEmail: document.getElementById("cfgSupportEmail").value.trim(),
       helpText: `If you need further help email ${document.getElementById("cfgSupportEmail").value.trim()} with the certificate number and date`
     };
+
+    // Apostille Certificate View
+    const elPageTitle = document.getElementById("cfgCertPageTitle");
+    if (elPageTitle) {
+      updated.certificateView = {
+        pageTitle: elPageTitle.value.trim() || "QR Code Verification Apostille Certificate",
+        breadcrumbText: (document.getElementById("cfgCertBreadcrumb")?.value || "").trim() || "Home / Apostille verification",
+        issuerStatement: (document.getElementById("cfgCertIssuerStatement")?.value || "").trim(),
+        summaryTemplate: (document.getElementById("cfgCertSummaryTemplate")?.value || "").trim(),
+        watermarkText: (document.getElementById("cfgCertWatermark")?.value || "").trim() || "GOVTOFPAKISTAN",
+        conventionTitle: (document.getElementById("cfgCertConventionTitle")?.value || "").trim() || "APOSTILLE",
+        conventionSubtitle: (document.getElementById("cfgCertConventionSubtitle")?.value || "").trim(),
+        defaultCountry: (document.getElementById("cfgCertCountry")?.value || "").trim() || "Pakistan",
+        certifiedWord: "Certified",
+        signatoryOfficer: (document.getElementById("cfgCertSignatory")?.value || "").trim() || "Ali Faraz",
+        defaultSignatory: (document.getElementById("cfgCertSignatory")?.value || "").trim() || "Ali Faraz",
+        disclaimerText: (document.getElementById("cfgCertDisclaimer")?.value || "").trim(),
+        verificationUrlText: (document.getElementById("cfgCertVerifyUrl")?.value || "").trim(),
+        enablePdfViewer: document.getElementById("cfgCertEnablePdf") ? document.getElementById("cfgCertEnablePdf").checked : true,
+        defaultPdfFileName: updated.certificateView?.defaultPdfFileName || "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
+        defaultPdfUrl: updated.certificateView?.defaultPdfUrl || "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
+      };
+    }
 
     // Notice Modal
     updated.noticeModal = {
@@ -718,12 +771,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (rec.status === 'REVOKED') statusClass = "badge-revoked";
       if (rec.status === 'SUSPENDED') statusClass = "badge-suspended";
 
+      const pdfBadge = (rec.pdfFileName || rec.pdfUrl)
+        ? `<a href="${rec.pdfUrl || ('/uploads/' + rec.pdfFileName)}" target="_blank" class="badge-pdf" style="display: inline-block; padding: 2px 7px; background: #e0f2fe; color: #0369a1; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-decoration: none;">PDF ↗</a>`
+        : `<span style="color: #94a3b8; font-size: 0.75rem;">None</span>`;
+
       row.innerHTML = `
         <td style="font-weight: 700; font-family: monospace; color: #111827;">${escapeHtml(rec.docNumber)}</td>
-        <td style="font-weight: 600;">${escapeHtml(rec.applicantName)}</td>
-        <td style="color: #4b5563;">${escapeHtml(rec.documentType)}</td>
+        <td style="font-weight: 600;">${escapeHtml(rec.documentCategory || rec.documentType || "Personal Document")}</td>
+        <td style="color: #4b5563;">${escapeHtml(rec.sealOf || rec.issuingAuthority)}</td>
         <td style="white-space: nowrap;">${escapeHtml(rec.issueDate)}</td>
         <td><span class="badge-status ${statusClass}">${rec.status}</span></td>
+        <td>${pdfBadge}</td>
         <td style="text-align: right; white-space: nowrap;">
           <button class="btn-secondary btn-copy-qr" data-doc="${escapeHtml(rec.docNumber)}" data-date="${escapeHtml(rec.issueDate)}" style="padding: 4px 8px;" title="Copy QR Verification Link">
             🔗 QR Link
@@ -756,15 +814,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const rec = cachedRecords.find(r => r.id === id);
         if (!rec) return;
 
-        recordModalTitle.textContent = "Edit Document Certificate";
+        recordModalTitle.textContent = "Edit Apostille / Document Certificate";
         document.getElementById("recordId").value = rec.id;
-        document.getElementById("recDocNumber").value = rec.docNumber;
-        document.getElementById("recApplicant").value = rec.applicantName;
-        document.getElementById("recDocType").value = rec.documentType;
-        document.getElementById("recIssueDate").value = rec.issueDate;
+        document.getElementById("recDocNumber").value = rec.docNumber || "";
+        document.getElementById("recApplicant").value = rec.applicantName || "";
+        document.getElementById("recDocCategory").value = rec.documentCategory || rec.documentType || "Personal Document";
+        document.getElementById("recCountry").value = rec.country || "Pakistan";
+        document.getElementById("recSignedBy").value = rec.signedBy || "N/A";
+        document.getElementById("recCapacity").value = rec.capacity || "Registrar";
+        document.getElementById("recSealOf").value = rec.sealOf || "Preston University";
+        document.getElementById("recIssuePlace").value = rec.issuePlace || "Lahore Pakistan";
+        document.getElementById("recIssueDate").value = rec.issueDate || "";
         document.getElementById("recExpiryDate").value = rec.expiryDate || "";
-        document.getElementById("recAuthority").value = rec.issuingAuthority;
-        document.getElementById("recStatus").value = rec.status;
+        document.getElementById("recAuthority").value = rec.issuingAuthority || "Ministry of Foreign Affairs";
+        document.getElementById("recSignatoryOfficer").value = rec.signatoryOfficer || "Ali Faraz";
+        document.getElementById("recDocType").value = rec.documentType || "Other Documents";
+        document.getElementById("recStatus").value = rec.status || "VERIFIED";
+        document.getElementById("recPdfFileName").value = rec.pdfFileName || "";
+        document.getElementById("recPdfUrl").value = rec.pdfUrl || "";
         document.getElementById("recNotes").value = rec.notes || "";
         recordModal.classList.add("active");
       });
@@ -796,11 +863,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (btnAddNewRecord) {
     btnAddNewRecord.addEventListener("click", () => {
-      recordModalTitle.textContent = "Register New Document Certificate";
+      recordModalTitle.textContent = "Register New Apostille / Document Certificate";
       document.getElementById("recordId").value = "";
       recordForm.reset();
+      document.getElementById("recCountry").value = "Pakistan";
+      document.getElementById("recDocCategory").value = "Personal Document";
+      document.getElementById("recSignedBy").value = "N/A";
+      document.getElementById("recCapacity").value = "Registrar";
+      document.getElementById("recSealOf").value = "Preston University";
+      document.getElementById("recIssuePlace").value = "Lahore Pakistan";
+      document.getElementById("recAuthority").value = "Ministry of Foreign Affairs";
+      document.getElementById("recSignatoryOfficer").value = "Ali Faraz";
+      document.getElementById("recDocType").value = "Other Documents";
       document.getElementById("recIssueDate").value = new Date().toISOString().split("T")[0];
+      document.getElementById("recPdfFileName").value = "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf";
+      document.getElementById("recPdfUrl").value = "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf";
       recordModal.classList.add("active");
+    });
+  }
+
+  // Handle PDF Upload in Record Modal
+  const recPdfFileInput = document.getElementById("recPdfFileInput");
+  if (recPdfFileInput) {
+    recPdfFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        showToast("Please select a PDF document.", "error");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          showToast("Uploading document PDF...", "info");
+          const res = await apiFetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileData: reader.result
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            document.getElementById("recPdfFileName").value = file.name;
+            document.getElementById("recPdfUrl").value = data.fileUrl;
+            showToast("Document PDF uploaded successfully.", "success");
+          } else {
+            showToast(data.message || "Failed to upload PDF.", "error");
+          }
+        } catch {
+          showToast("Network error uploading PDF.", "error");
+        }
+      };
+      reader.readAsDataURL(file);
     });
   }
 
@@ -811,11 +927,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const payload = {
         docNumber: document.getElementById("recDocNumber").value.trim(),
         applicantName: document.getElementById("recApplicant").value.trim(),
-        documentType: document.getElementById("recDocType").value.trim(),
+        documentCategory: document.getElementById("recDocCategory").value.trim(),
+        country: document.getElementById("recCountry").value.trim(),
+        signedBy: document.getElementById("recSignedBy").value.trim(),
+        capacity: document.getElementById("recCapacity").value.trim(),
+        sealOf: document.getElementById("recSealOf").value.trim(),
+        issuePlace: document.getElementById("recIssuePlace").value.trim(),
         issueDate: document.getElementById("recIssueDate").value,
         expiryDate: document.getElementById("recExpiryDate").value,
         issuingAuthority: document.getElementById("recAuthority").value.trim(),
+        signatoryOfficer: document.getElementById("recSignatoryOfficer").value.trim(),
+        documentType: document.getElementById("recDocType").value.trim(),
         status: document.getElementById("recStatus").value,
+        pdfFileName: document.getElementById("recPdfFileName").value.trim(),
+        pdfUrl: document.getElementById("recPdfUrl").value.trim(),
         notes: document.getElementById("recNotes").value.trim()
       };
 
