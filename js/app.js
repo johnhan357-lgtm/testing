@@ -382,8 +382,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     statusBadge.className = "result-status-badge";
 
     if (data.status === "VERIFIED" && data.record) {
-      // Official Authentic Apostille Result View
+      // Official Authentic Apostille Result View matching target government portal
       statusBadge.style.display = "none";
+      const heroSection = document.getElementById("heroSection");
+      const verifFormCard = document.getElementById("verifFormCard");
+      const resultActions = document.getElementById("resultActions");
+      if (heroSection) heroSection.style.display = "none";
+      if (verifFormCard) verifFormCard.style.display = "none";
+      if (resultActions) resultActions.style.display = "none";
+      resultCard.classList.add("cert-page-view");
+
       if (apostilleContainer) apostilleContainer.style.display = "flex";
       if (attachedPdfSection && (!currentConfig || !currentConfig.certificateView || currentConfig.certificateView.enablePdfViewer !== false)) {
         attachedPdfSection.style.display = "block";
@@ -550,6 +558,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (btnSearchAgain) {
     btnSearchAgain.addEventListener("click", () => {
       resultCard.style.display = "none";
+      resultCard.classList.remove("cert-page-view");
+      const heroSection = document.getElementById("heroSection");
+      const verifFormCard = document.getElementById("verifFormCard");
+      const resultActions = document.getElementById("resultActions");
+      if (heroSection) heroSection.style.display = "block";
+      if (verifFormCard) verifFormCard.style.display = "block";
+      if (resultActions) resultActions.style.display = "flex";
       const guideEl = document.getElementById("notFoundGuidance");
       if (guideEl) guideEl.style.display = "none";
       if (searchCard) searchCard.style.display = "block";
@@ -663,9 +678,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       docDateInput.value = paramDate;
       syncDateFromValue(paramDate);
     }
-    // Auto-hide the manual search form when navigating via direct QR link
+    // Auto-hide the manual search form and hero banner when navigating via direct QR link
     if (searchCard) {
       searchCard.style.display = "none";
+    }
+    const heroSection = document.getElementById("heroSection");
+    if (heroSection) {
+      heroSection.style.display = "none";
     }
     executeVerification(paramDoc, paramDate || "");
   }
