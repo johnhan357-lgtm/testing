@@ -204,9 +204,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (cardHeadingEl && cfg.verificationCard.heading) cardHeadingEl.textContent = cfg.verificationCard.heading;
       if (btnVerify && cfg.verificationCard.verifyButtonText) btnVerify.textContent = cfg.verificationCard.verifyButtonText;
       if (btnClear && cfg.verificationCard.clearButtonText) btnClear.textContent = cfg.verificationCard.clearButtonText;
-      if (helpTextEl && cfg.verificationCard.helpText) {
-        const email = cfg.verificationCard.supportEmail || 'support@verification-portal.org';
-        helpTextEl.innerHTML = `If you need further help email <a href="mailto:${email}">${email}</a> with the certificate number and date`;
+      if (helpTextEl) {
+        const customText = (cfg.verificationCard.helpText !== undefined && cfg.verificationCard.helpText !== null)
+          ? cfg.verificationCard.helpText.trim()
+          : "";
+        if (customText) {
+          helpTextEl.innerHTML = customText.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1">$1</a>');
+          helpTextEl.style.display = "";
+        } else if (cfg.verificationCard.supportEmail) {
+          const email = cfg.verificationCard.supportEmail;
+          helpTextEl.innerHTML = `If you need further help email <a href="mailto:${email}">${email}</a> with the certificate number and date`;
+          helpTextEl.style.display = "";
+        } else {
+          helpTextEl.innerHTML = "";
+          helpTextEl.style.display = "none";
+        }
       }
     }
 
@@ -515,8 +527,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!guideEl) {
         guideEl = document.createElement("div");
         guideEl.id = "notFoundGuidance";
-        guideEl.style.cssText = "padding: 20px; text-align: center; color: #4b5563; font-size: 0.95rem; line-height: 1.6;";
-        resultCard.insertBefore(guideEl, resultCard.querySelector(".result-actions"));
+        const actionRef = resultCard.querySelector(".result-actions");
+        if (actionRef) {
+          resultCard.insertBefore(guideEl, actionRef);
+        } else {
+          resultCard.appendChild(guideEl);
+        }
       }
       guideEl.style.display = "block";
       guideEl.innerHTML = `

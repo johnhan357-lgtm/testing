@@ -235,6 +235,11 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("cfgVerifyBtnText").value = cfg.verificationCard.verifyButtonText || "";
       document.getElementById("cfgClearBtnText").value = cfg.verificationCard.clearButtonText || "";
       document.getElementById("cfgSupportEmail").value = cfg.verificationCard.supportEmail || "";
+      const helpVal = (cfg.verificationCard.helpText !== undefined && cfg.verificationCard.helpText !== null)
+        ? cfg.verificationCard.helpText
+        : (cfg.verificationCard.supportEmail ? `If you need further help email ${cfg.verificationCard.supportEmail} with the certificate number and date` : "");
+      const helpInput = document.getElementById("cfgHelpText");
+      if (helpInput) helpInput.value = helpVal;
     }
 
     // Tab 6: Notice Modal
@@ -359,6 +364,13 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Verification Card
+    const cfgHelpInput = document.getElementById("cfgHelpText");
+    const supportEmailVal = document.getElementById("cfgSupportEmail").value.trim();
+    let customHelpVal = cfgHelpInput ? cfgHelpInput.value.trim() : "";
+    if (!customHelpVal && supportEmailVal) {
+      customHelpVal = `If you need further help email ${supportEmailVal} with the certificate number and date`;
+    }
+
     updated.verificationCard = {
       heading: document.getElementById("cfgCardHeading").value.trim(),
       docNumberLabel: document.getElementById("cfgDocLabel").value.trim(),
@@ -366,8 +378,8 @@ document.addEventListener("DOMContentLoaded", () => {
       docDateLabel: document.getElementById("cfgDateLabel").value.trim(),
       verifyButtonText: document.getElementById("cfgVerifyBtnText").value.trim(),
       clearButtonText: document.getElementById("cfgClearBtnText").value.trim(),
-      supportEmail: document.getElementById("cfgSupportEmail").value.trim(),
-      helpText: `If you need further help email ${document.getElementById("cfgSupportEmail").value.trim()} with the certificate number and date`
+      supportEmail: supportEmailVal,
+      helpText: customHelpVal
     };
 
     // Apostille Certificate View
@@ -633,6 +645,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           logoImg.style.display = "none";
         }
+      }
+    });
+  }
+
+  // Handle Support Email & Help Text sync
+  const cfgSupportEmailEl = document.getElementById("cfgSupportEmail");
+  const cfgHelpTextEl = document.getElementById("cfgHelpText");
+  if (cfgSupportEmailEl && cfgHelpTextEl) {
+    cfgSupportEmailEl.addEventListener("input", (e) => {
+      const email = e.target.value.trim();
+      const currentHelp = cfgHelpTextEl.value.trim();
+      if (!currentHelp || currentHelp.startsWith("If you need further help email ")) {
+        cfgHelpTextEl.value = email ? `If you need further help email ${email} with the certificate number and date` : "";
       }
     });
   }

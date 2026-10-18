@@ -96,10 +96,10 @@
     "customUrl": ""
   },
   "footer": {
-    "authorityName": "Department of Verification & Legalization",
+    "authorityName": "Ministry of Foreign Affairs",
     "authoritySubtitle": "Government of Pakistan",
-    "logoType": "default_svg",
-    "logoUrl": "",
+    "logoType": "custom_image",
+    "logoUrl": "/uploads/logo_1792351536135.svg",
     "links": [
       {
         "id": "foot-1",
@@ -145,8 +145,8 @@
     "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-18T19:23:27.511Z",
-    "lastPublishedAt": "2026-10-18T19:23:27.521Z",
-    "version": 41
+    "lastSavedAt": "2026-10-18T19:34:56.531Z",
+    "lastPublishedAt": "2026-10-18T19:34:56.539Z",
+    "version": 45
   }
 }
