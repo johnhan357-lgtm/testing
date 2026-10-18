@@ -658,10 +658,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================================================================
-  // 6. FOOTER LINKS MANAGER
+  // 6. FOOTER LINKS MANAGER (FULL MODAL, EDIT, REORDER & CUSTOM URLS)
   // =========================================================================
   const footerLinksTableBody = document.getElementById("footerLinksTableBody");
   const btnAddFooterLink = document.getElementById("btnAddFooterLink");
+  const footerLinkModal = document.getElementById("footerLinkModal");
+  const footerLinkModalTitle = document.getElementById("footerLinkModalTitle");
+  const footerLinkForm = document.getElementById("footerLinkForm");
+  const footerLinkIndex = document.getElementById("footerLinkIndex");
+  const footerLinkLabel = document.getElementById("footerLinkLabel");
+  const footerLinkUrl = document.getElementById("footerLinkUrl");
+  const footerLinkTarget = document.getElementById("footerLinkTarget");
+  const footerLinkEnabled = document.getElementById("footerLinkEnabled");
 
   function renderFooterLinksTable(links) {
     if (!footerLinksTableBody) return;
@@ -670,43 +678,141 @@ document.addEventListener("DOMContentLoaded", () => {
     links.forEach((link, idx) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td style="font-weight: 600;">${escapeHtml(link.label)}</td>
-        <td style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(link.url)}</td>
-        <td>${link.target === '_blank' ? 'New Tab' : 'Same Tab'}</td>
+        <td style="font-weight: 600; color: #6b7280;">#${idx + 1}</td>
+        <td>
+          <div style="font-weight: 600;">${escapeHtml(link.label)}</div>
+        </td>
+        <td style="font-family: monospace; font-size: 0.85rem; color: #065f46;">
+          <a href="${escapeHtml(link.url)}" target="_blank" style="color: inherit; text-decoration: none;">
+            ${escapeHtml(link.url)}
+          </a>
+        </td>
+        <td>
+          <span style="font-size: 0.8rem; background: #e5e7eb; padding: 2px 8px; border-radius: 4px;">
+            ${link.target === '_blank' ? 'New Tab' : 'Same Tab'}
+          </span>
+        </td>
+        <td>
+          <label style="cursor: pointer;">
+            <input type="checkbox" class="foot-toggle-enabled" data-index="${idx}" ${link.enabled !== false ? 'checked' : ''}>
+          </label>
+        </td>
         <td style="text-align: right;">
-          <button class="btn-danger btn-foot-del" data-index="${idx}" style="padding: 4px 8px;">✕</button>
+          <button type="button" class="btn-secondary btn-foot-up" data-index="${idx}" style="padding: 4px 8px;" title="Move Up" ${idx === 0 ? 'disabled' : ''}>▲</button>
+          <button type="button" class="btn-secondary btn-foot-down" data-index="${idx}" style="padding: 4px 8px;" title="Move Down" ${idx === links.length - 1 ? 'disabled' : ''}>▼</button>
+          <button type="button" class="btn-secondary btn-foot-edit" data-index="${idx}" style="padding: 4px 8px;">Edit</button>
+          <button type="button" class="btn-danger btn-foot-del" data-index="${idx}" style="padding: 4px 8px;">✕</button>
         </td>
       `;
       footerLinksTableBody.appendChild(row);
     });
 
+    // Toggle enabled checkbox listener
+    footerLinksTableBody.querySelectorAll(".foot-toggle-enabled").forEach(cb => {
+      cb.addEventListener("change", (e) => {
+        const idx = parseInt(e.target.dataset.index, 10);
+        draftConfig.footer = draftConfig.footer || {};
+        draftConfig.footer.links = draftConfig.footer.links || [];
+        draftConfig.footer.links[idx].enabled = e.target.checked;
+        showToast("Footer link status updated in draft.", "success");
+      });
+    });
+
+    // Move Up
+    footerLinksTableBody.querySelectorAll(".btn-foot-up").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (idx > 0) {
+          const temp = draftConfig.footer.links[idx];
+          draftConfig.footer.links[idx] = draftConfig.footer.links[idx - 1];
+          draftConfig.footer.links[idx - 1] = temp;
+          renderFooterLinksTable(draftConfig.footer.links);
+        }
+      });
+    });
+
+    // Move Down
+    footerLinksTableBody.querySelectorAll(".btn-foot-down").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (idx < draftConfig.footer.links.length - 1) {
+          const temp = draftConfig.footer.links[idx];
+          draftConfig.footer.links[idx] = draftConfig.footer.links[idx + 1];
+          draftConfig.footer.links[idx + 1] = temp;
+          renderFooterLinksTable(draftConfig.footer.links);
+        }
+      });
+    });
+
+    // Edit Link (Opens modal pre-filled with current link values)
+    footerLinksTableBody.querySelectorAll(".btn-foot-edit").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const item = draftConfig.footer.links[idx];
+        if (!footerLinkModal) return;
+        footerLinkModalTitle.textContent = "Edit Footer Link";
+        footerLinkIndex.value = idx;
+        footerLinkLabel.value = item.label || "";
+        footerLinkUrl.value = item.url || "";
+        footerLinkTarget.value = item.target || "_self";
+        footerLinkEnabled.checked = item.enabled !== false;
+        footerLinkModal.classList.add("active");
+      });
+    });
+
+    // Delete Link
     footerLinksTableBody.querySelectorAll(".btn-foot-del").forEach(btn => {
       btn.addEventListener("click", () => {
         const idx = parseInt(btn.dataset.index, 10);
-        draftConfig.footer.links.splice(idx, 1);
-        renderFooterLinksTable(draftConfig.footer.links);
+        if (confirm(`Delete footer link "${draftConfig.footer.links[idx].label}"?`)) {
+          draftConfig.footer.links.splice(idx, 1);
+          renderFooterLinksTable(draftConfig.footer.links);
+          showToast("Footer link removed from draft.", "success");
+        }
       });
     });
   }
 
   if (btnAddFooterLink) {
     btnAddFooterLink.addEventListener("click", () => {
-      const label = prompt("Enter footer link label:");
-      if (!label || !label.trim()) return;
-      const url = prompt("Enter destination URL:", "https://");
-      if (!url || !url.trim()) return;
+      if (!footerLinkModal) return;
+      footerLinkModalTitle.textContent = "Add Footer Navigation Link";
+      footerLinkIndex.value = "";
+      footerLinkForm.reset();
+      footerLinkUrl.value = "https://";
+      footerLinkTarget.value = "_blank";
+      footerLinkEnabled.checked = true;
+      footerLinkModal.classList.add("active");
+    });
+  }
 
+  if (footerLinkForm) {
+    footerLinkForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const idxStr = footerLinkIndex.value;
       draftConfig.footer = draftConfig.footer || {};
       draftConfig.footer.links = draftConfig.footer.links || [];
-      draftConfig.footer.links.push({
+
+      const newItem = {
         id: `foot-${Date.now()}`,
-        label: label.trim(),
-        url: url.trim(),
-        target: "_self",
-        enabled: true
-      });
+        label: footerLinkLabel.value.trim(),
+        url: footerLinkUrl.value.trim(),
+        target: footerLinkTarget.value,
+        enabled: footerLinkEnabled.checked
+      };
+
+      if (idxStr !== "") {
+        const idx = parseInt(idxStr, 10);
+        newItem.id = draftConfig.footer.links[idx].id || newItem.id;
+        draftConfig.footer.links[idx] = newItem;
+        showToast("Footer link updated in draft.", "success");
+      } else {
+        draftConfig.footer.links.push(newItem);
+        showToast("New footer link added to draft.", "success");
+      }
+
+      footerLinkModal.classList.remove("active");
       renderFooterLinksTable(draftConfig.footer.links);
-      showToast("Footer link added to draft.", "success");
     });
   }
 

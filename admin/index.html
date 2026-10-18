@@ -498,10 +498,12 @@
               <table class="data-table">
                 <thead>
                   <tr>
+                    <th style="width: 50px;">Order</th>
                     <th>Label</th>
                     <th>Destination URL</th>
                     <th>Target</th>
-                    <th style="width: 120px; text-align: right;">Actions</th>
+                    <th style="width: 80px;">Visible</th>
+                    <th style="width: 170px; text-align: right;">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="footerLinksTableBody">
@@ -685,6 +687,49 @@
         <div class="admin-modal-footer">
           <button type="button" class="btn-secondary" data-close-modal="navItemModal">Cancel</button>
           <button type="submit" class="btn-primary" id="btnSaveNavItem">Save Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: ADD / EDIT FOOTER LINK
+       ========================================================================= -->
+  <div class="admin-modal" id="footerLinkModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="footerLinkModalTitle">Footer Navigation Link</h3>
+        <button class="admin-modal-close" data-close-modal="footerLinkModal">&times;</button>
+      </div>
+      <form id="footerLinkForm">
+        <input type="hidden" id="footerLinkIndex">
+        <div class="form-field">
+          <label class="form-label" for="footerLinkLabel">Button / Link Label <span style="color: red;">*</span></label>
+          <input type="text" id="footerLinkLabel" class="form-input" placeholder="e.g. Authorized Courier Companies or Contact Us" required>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="footerLinkUrl">Destination URL <span style="color: red;">*</span></label>
+          <input type="text" id="footerLinkUrl" class="form-input" placeholder="e.g. https://your-main-website.com/services or #contact" required>
+          <small style="color: #6b7280; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Paste any custom URL from your main website, social profile, or an internal anchor.
+          </small>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="footerLinkTarget">Open Behavior</label>
+          <select id="footerLinkTarget" class="form-select">
+            <option value="_self">Same Browser Tab (_self)</option>
+            <option value="_blank">New Browser Tab (_blank)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem;">
+            <input type="checkbox" id="footerLinkEnabled" checked>
+            Enable this link on the public footer
+          </label>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="footerLinkModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveFooterLink">Save Footer Link</button>
         </div>
       </form>
     </div>
