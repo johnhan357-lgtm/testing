@@ -328,7 +328,8 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
-  '.webp': 'image/webp'
+  '.webp': 'image/webp',
+  '.pdf': 'application/pdf'
 };
 
 const server = http.createServer(async (req, res) => {
@@ -867,7 +868,11 @@ const server = http.createServer(async (req, res) => {
   if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
     const ext = path.extname(fullPath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType });
+    const responseHeaders = { 'Content-Type': contentType };
+    if (ext === '.pdf') {
+      responseHeaders['Content-Disposition'] = 'inline';
+    }
+    res.writeHead(200, responseHeaders);
     fs.createReadStream(fullPath).pipe(res);
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });

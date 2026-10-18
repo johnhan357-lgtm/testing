@@ -225,9 +225,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (modalRegional && cfg.noticeModal.bodyRegional) modalRegional.textContent = cfg.noticeModal.bodyRegional;
         if (modalBtn && cfg.noticeModal.confirmButtonText) modalBtn.textContent = cfg.noticeModal.confirmButtonText;
 
-        // Auto display modal on first visit in session
-        const noticeDismissed = sessionStorage.getItem("notice_dismissed");
-        if (!noticeDismissed && noticeModal) {
+        // Clear any past session flag and always show modal on page load / refresh
+        try {
+          sessionStorage.removeItem("notice_dismissed");
+          localStorage.removeItem("notice_dismissed");
+        } catch (_) {}
+
+        if (noticeModal) {
           setTimeout(() => {
             noticeModal.classList.add("active");
           }, 350);
@@ -315,7 +319,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function dismissNotice() {
     if (noticeModal) {
       noticeModal.classList.remove("active");
-      sessionStorage.setItem("notice_dismissed", "true");
     }
   }
 
