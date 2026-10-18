@@ -138,11 +138,12 @@
     "defaultSignatory": "Ali Faraz",
     "enablePdfViewer": true,
     "defaultPdfFileName": "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
-    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
+    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
+    "signatureUrl": "/uploads/signature_ali_faraz_clean.png"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-18T17:15:37.816Z",
-    "lastPublishedAt": "2026-10-18T17:15:37.825Z",
-    "version": 23
+    "lastSavedAt": "2026-10-18T17:37:20.211Z",
+    "lastPublishedAt": "2026-10-18T17:37:20.218Z",
+    "version": 25
   }
 }

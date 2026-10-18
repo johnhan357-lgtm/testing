@@ -346,6 +346,23 @@
               </div>
             </div>
 
+            <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px;">
+              <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Default Signatory Signature Graphic (PNG, JPG, SVG, WEBP)</label>
+              <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <div id="cfgCertSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+                  <img id="cfgCertSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+                <input type="text" id="cfgCertSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+                <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+                  Upload Signature
+                  <input type="file" id="cfgCertSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+                </label>
+              </div>
+              <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+                Default signature image used on generated certificates when none is specifically uploaded. Supports transparent PNG, JPG, SVG, and WEBP.
+              </small>
+            </div>
+
             <div class="form-field">
               <label class="form-label" for="cfgCertDisclaimer">Statutory Legal Disclaimer Note</label>
               <textarea id="cfgCertDisclaimer" class="form-textarea" rows="2" placeholder="This apostille is not intended for use in Pakistan..."></textarea>
@@ -511,6 +528,24 @@
                     <option value="SUSPENDED">SUSPENDED (Under Review)</option>
                   </select>
                 </div>
+              </div>
+
+              <!-- Officer Signature Graphic for Quick Generator -->
+              <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px;">
+                <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Officer Signature Graphic (PNG, JPG, SVG, WEBP)</label>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                  <div id="qgSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+                    <img id="qgSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                  </div>
+                  <input type="text" id="qgSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+                  <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+                    Upload Signature
+                    <input type="file" id="qgSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+                  </label>
+                </div>
+                <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+                  Upload any signature format (PNG, JPG, SVG, WEBP) to attach directly to this certificate.
+                </small>
               </div>
 
               <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px;">
@@ -1003,6 +1038,24 @@
           </div>
           <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
             Select a PDF from your computer or keep the sample Preston University document.
+          </small>
+        </div>
+
+        <!-- Officer Signature Graphic -->
+        <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-top: 10px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Officer Signature Graphic (PNG, JPG, SVG, WEBP)</label>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div id="recSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+              <img id="recSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+            <input type="text" id="recSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+            <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+              Upload Signature
+              <input type="file" id="recSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+            </label>
+          </div>
+          <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Upload any custom official signature (PNG with transparent background, JPG, SVG, or WEBP).
           </small>
         </div>
 

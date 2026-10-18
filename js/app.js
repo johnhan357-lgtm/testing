@@ -301,6 +301,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (elPdfSection) {
         elPdfSection.style.display = cv.enablePdfViewer === false ? 'none' : '';
       }
+
+      const elSigImg = document.getElementById("aposSigImg");
+      if (elSigImg && cv.signatureUrl) {
+        elSigImg.src = cv.signatureUrl;
+      }
     }
   }
 
@@ -417,6 +422,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (aposDocNumber) aposDocNumber.textContent = rec.docNumber;
       if (aposDateBlock) aposDateBlock.textContent = `Date: ${formattedDate}`;
       if (aposSignatory) aposSignatory.textContent = rec.signatoryOfficer || "Ali Faraz";
+
+      // Officer Signature Graphic
+      const aposSigImg = document.getElementById("aposSigImg");
+      const aposSigGraphic = document.getElementById("aposSigGraphic");
+      const sigSrc = rec.signatureUrl || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.signatureUrl) || "/uploads/signature_ali_faraz_clean.png";
+      if (aposSigImg) {
+        aposSigImg.src = sigSrc;
+      } else if (aposSigGraphic) {
+        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="Signature">`;
+      }
 
       // Live Scannable QR Code linking to verification endpoint
       if (aposQrCode) {

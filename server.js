@@ -425,6 +425,7 @@ const server = http.createServer(async (req, res) => {
           sealOf: match.sealOf || "Preston University",
           issuePlace: match.issuePlace || "Lahore Pakistan",
           signatoryOfficer: match.signatoryOfficer || "Ali Faraz",
+          signatureUrl: match.signatureUrl || "/uploads/signature_ali_faraz_clean.png",
           pdfFileName: match.pdfFileName || "",
           pdfUrl: match.pdfUrl || ""
         }
@@ -722,6 +723,7 @@ const server = http.createServer(async (req, res) => {
         expiryDate: data.expiryDate ? data.expiryDate.trim() : "",
         issuingAuthority: data.issuingAuthority ? data.issuingAuthority.trim() : "Ministry of Foreign Affairs",
         signatoryOfficer: data.signatoryOfficer ? data.signatoryOfficer.trim() : "Ali Faraz",
+        signatureUrl: data.signatureUrl ? data.signatureUrl.trim() : "/uploads/signature_ali_faraz_clean.png",
         pdfFileName: data.pdfFileName ? data.pdfFileName.trim() : "",
         pdfUrl: data.pdfUrl ? data.pdfUrl.trim() : "",
         status: data.status || "VERIFIED",
@@ -769,6 +771,7 @@ const server = http.createServer(async (req, res) => {
         expiryDate: data.expiryDate !== undefined ? data.expiryDate.trim() : existing.expiryDate,
         issuingAuthority: data.issuingAuthority ? data.issuingAuthority.trim() : existing.issuingAuthority,
         signatoryOfficer: data.signatoryOfficer !== undefined ? data.signatoryOfficer.trim() : (existing.signatoryOfficer || "Ali Faraz"),
+        signatureUrl: data.signatureUrl !== undefined ? data.signatureUrl.trim() : (existing.signatureUrl || "/uploads/signature_ali_faraz_clean.png"),
         pdfFileName: data.pdfFileName !== undefined ? data.pdfFileName.trim() : (existing.pdfFileName || ""),
         pdfUrl: data.pdfUrl !== undefined ? data.pdfUrl.trim() : (existing.pdfUrl || ""),
         status: data.status || existing.status,
@@ -829,7 +832,8 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 400, { success: false, message: "File exceeds 10MB size limit." });
       }
 
-      const prefix = ext === '.pdf' ? 'doc_' : 'logo_';
+      const isSignature = data.fileType === 'signature' || data.type === 'signature' || (data.fileName && data.fileName.toLowerCase().includes('sig'));
+      const prefix = ext === '.pdf' ? 'doc_' : (isSignature ? 'sig_' : 'logo_');
       const safeName = `${prefix}${Date.now()}${ext}`;
       const destPath = path.join(UPLOADS_DIR, safeName);
       fs.writeFileSync(destPath, buffer);

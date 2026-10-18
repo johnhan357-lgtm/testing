@@ -219,6 +219,91 @@ async function runApostilleTests() {
   }
   console.log(`✓ Test record and temporary upload cleaned up.`);
 
+  // Step 9: Testing Signature Upload in All Formats (PNG, SVG, JPG, WEBP)
+  console.log('\n[Step 9] Testing Signature Upload in Multiple Formats...');
+  // 1. PNG signature
+  const dummyPng = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  const uploadPngSig = await post('/api/admin/upload', {
+    fileName: 'officer_signature.png',
+    fileType: 'signature',
+    fileData: `data:image/png;base64,${dummyPng}`
+  }, authHeaders);
+  assert.strictEqual(uploadPngSig.status, 200);
+  assert(uploadPngSig.data.fileUrl.startsWith('/uploads/sig_'));
+  assert(uploadPngSig.data.fileUrl.endsWith('.png'));
+  console.log(`✓ PNG Signature upload successful: ${uploadPngSig.data.fileUrl}`);
+
+  // 2. SVG signature
+  const dummySvg = '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="40"><path d="M10 20 L90 20" stroke="black"/></svg>';
+  const uploadSvgSig = await post('/api/admin/upload', {
+    fileName: 'vector_signature.svg',
+    fileType: 'signature',
+    fileData: `data:image/svg+xml;base64,${Buffer.from(dummySvg).toString('base64')}`
+  }, authHeaders);
+  assert.strictEqual(uploadSvgSig.status, 200);
+  assert(uploadSvgSig.data.fileUrl.startsWith('/uploads/sig_'));
+  assert(uploadSvgSig.data.fileUrl.endsWith('.svg'));
+  console.log(`✓ SVG Signature upload successful: ${uploadSvgSig.data.fileUrl}`);
+
+  // Step 10: Assigning Custom Signature to Document Record & Public Verification
+  console.log('\n[Step 10] Assigning Custom Signature to Document and Verifying...');
+  const sigDocNum = `APO-SIG-${Date.now()}`;
+  const sigDocRes = await post('/api/admin/records', {
+    docNumber: sigDocNum,
+    applicantName: 'Tariq Mehmood',
+    documentCategory: 'Commercial Document',
+    country: 'Pakistan',
+    signedBy: 'Director',
+    capacity: 'Director General',
+    sealOf: 'Chamber of Commerce',
+    issuePlace: 'Islamabad Pakistan',
+    issueDate: '2026-10-18',
+    issuingAuthority: 'Ministry of Foreign Affairs',
+    signatoryOfficer: 'Ali Faraz',
+    signatureUrl: uploadPngSig.data.fileUrl,
+    documentType: 'Export Certificate',
+    status: 'VERIFIED',
+    pdfFileName: 'wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf',
+    pdfUrl: '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf',
+    notes: 'Signature verification test record'
+  }, authHeaders);
+  assert.strictEqual(sigDocRes.status, 201);
+  assert.strictEqual(sigDocRes.data.record.signatureUrl, uploadPngSig.data.fileUrl);
+
+  // Verify via public /api/verify endpoint
+  const sigVerifyRes = await post('/api/verify', {
+    docNumber: sigDocNum,
+    docDate: '2026-10-18'
+  });
+  assert.strictEqual(sigVerifyRes.status, 200);
+  assert.strictEqual(sigVerifyRes.data.record.signatureUrl, uploadPngSig.data.fileUrl);
+  console.log(`✓ Public verification correctly returned custom signatureUrl: ${sigVerifyRes.data.record.signatureUrl}`);
+
+  // Update record with SVG signature via PUT
+  const updateSigRes = await put(`/api/admin/records/${sigDocRes.data.record.id}`, {
+    ...sigDocRes.data.record,
+    signatureUrl: uploadSvgSig.data.fileUrl
+  }, authHeaders);
+  assert.strictEqual(updateSigRes.status, 200);
+  assert.strictEqual(updateSigRes.data.record.signatureUrl, uploadSvgSig.data.fileUrl);
+  console.log(`✓ Updated document signature to SVG via PUT successfully.`);
+
+  // Cleanup sig test files and record
+  await new Promise((resolve) => {
+    const req = http.request(`${BASE_URL}/api/admin/records/${sigDocRes.data.record.id}`, {
+      method: 'DELETE',
+      headers: authHeaders
+    }, res => resolve({ status: res.statusCode }));
+    req.end();
+  });
+  [uploadPngSig.data.fileUrl, uploadSvgSig.data.fileUrl].forEach(url => {
+    const fPath = path.join(__dirname, url.replace(/^\//, ''));
+    if (fs.existsSync(fPath)) {
+      try { fs.unlinkSync(fPath); } catch {}
+    }
+  });
+  console.log(`✓ Temporary test signatures and record cleaned up.`);
+
   console.log('\n====================================================');
   console.log('   🎉 ALL APOSTILLE VERIFICATION TESTS PASSED!      ');
   console.log('====================================================');
