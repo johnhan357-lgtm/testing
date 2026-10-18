@@ -1,0 +1,954 @@
+/**
+ * Admin Panel & Visual CMS Client Controller
+ * Manages authentication, live CMS drafts, publishing workflow, custom links, and document registry.
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  let authToken = sessionStorage.getItem("admin_token") || null;
+  let draftConfig = null;
+  let cachedRecords = [];
+
+  // =========================================================================
+  // 1. AUTHENTICATION & LOGIN
+  // =========================================================================
+  const loginOverlay = document.getElementById("loginOverlay");
+  const loginForm = document.getElementById("loginForm");
+  const loginUser = document.getElementById("loginUser");
+  const loginPass = document.getElementById("loginPass");
+  const loginAlert = document.getElementById("loginAlert");
+  const adminApp = document.getElementById("adminApp");
+  const btnLogout = document.getElementById("btnLogout");
+  const loggedUserBadge = document.getElementById("loggedUserBadge");
+
+  async function checkAuth() {
+    try {
+      const res = await apiFetch('/api/admin/me');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated) {
+          onLoginSuccess(data.username);
+          return;
+        }
+      }
+    } catch {}
+    showLogin();
+  }
+
+  function showLogin() {
+    if (loginOverlay) loginOverlay.style.display = "flex";
+    if (adminApp) adminApp.style.display = "none";
+  }
+
+  function onLoginSuccess(username) {
+    if (loginOverlay) loginOverlay.style.display = "none";
+    if (adminApp) adminApp.style.display = "flex";
+    if (loggedUserBadge) loggedUserBadge.textContent = `Logged in as ${username || 'admin'}`;
+    initDashboard();
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loginAlert.style.display = "none";
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: loginUser.value.trim(), password: loginPass.value })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          authToken = data.token;
+          sessionStorage.setItem("admin_token", authToken);
+          onLoginSuccess(data.username);
+          showToast("Welcome to Portal Admin CMS", "success");
+        } else {
+          loginAlert.textContent = data.message || "Invalid credentials.";
+          loginAlert.style.display = "block";
+        }
+      } catch (err) {
+        loginAlert.textContent = "Server connection error.";
+        loginAlert.style.display = "block";
+      }
+    });
+  }
+
+  if (btnLogout) {
+    btnLogout.addEventListener("click", async () => {
+      try {
+        await apiFetch('/api/admin/logout', { method: 'POST' });
+      } catch {}
+      sessionStorage.removeItem("admin_token");
+      authToken = null;
+      window.location.reload();
+    });
+  }
+
+  // Wrapper for authenticated fetch
+  function apiFetch(url, options = {}) {
+    options.headers = options.headers || {};
+    if (authToken) {
+      options.headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    return fetch(url, options);
+  }
+
+  // =========================================================================
+  // 2. DASHBOARD & TAB SWITCHING
+  // =========================================================================
+  const tabBtns = document.querySelectorAll(".nav-tab-btn");
+  const tabPanes = document.querySelectorAll(".tab-pane");
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-tab");
+      tabBtns.forEach(b => b.classList.remove("active"));
+      tabPanes.forEach(p => p.classList.remove("active"));
+
+      btn.classList.add("active");
+      const targetPane = document.getElementById(targetId);
+      if (targetPane) targetPane.classList.add("active");
+    });
+  });
+
+  async function initDashboard() {
+    await loadDraftConfig();
+    await checkPublishingStatus();
+    await loadRecords();
+  }
+
+  // =========================================================================
+  // 3. DRAFT & PUBLISHING WORKFLOW (Rule 4)
+  // =========================================================================
+  const statusPill = document.getElementById("statusPill");
+  const lastPublishedLabel = document.getElementById("lastPublishedLabel");
+  const btnSaveDraft = document.getElementById("btnSaveDraft");
+  const btnPublishLive = document.getElementById("btnPublishLive");
+  const btnDiscardDraft = document.getElementById("btnDiscardDraft");
+
+  async function checkPublishingStatus() {
+    try {
+      const res = await apiFetch('/api/admin/config/status');
+      if (res.ok) {
+        const data = await res.json();
+        updateStatusPill(data.hasDraftChanges, data.lastPublishedAt);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function updateStatusPill(hasDraftChanges, lastPublishedAt) {
+    if (hasDraftChanges) {
+      statusPill.className = "status-pill pill-draft";
+      statusPill.innerHTML = `<span>●</span> Draft Changes Pending (Unpublished)`;
+    } else {
+      statusPill.className = "status-pill pill-published";
+      statusPill.innerHTML = `<span>●</span> All Changes Published`;
+    }
+    if (lastPublishedAt && lastPublishedLabel) {
+      const pubDate = new Date(lastPublishedAt);
+      lastPublishedLabel.textContent = `Live since: ${pubDate.toLocaleTimeString()} (${pubDate.toLocaleDateString()})`;
+    }
+  }
+
+  async function loadDraftConfig() {
+    try {
+      const res = await apiFetch('/api/admin/config/draft');
+      if (res.ok) {
+        draftConfig = await res.json();
+        populateFormFromConfig(draftConfig);
+      }
+    } catch (err) {
+      showToast("Failed to load draft configuration", "error");
+    }
+  }
+
+  function populateFormFromConfig(cfg) {
+    if (!cfg) return;
+
+    // Tab 2: Branding
+    if (cfg.branding) {
+      document.getElementById("cfgAuthorityName").value = cfg.branding.authorityName || "";
+      document.getElementById("cfgAuthoritySubtitle").value = cfg.branding.authoritySubtitle || "";
+
+      if (cfg.branding.logoType === 'custom_image') {
+        document.getElementById("radioLogoCustom").checked = true;
+      } else {
+        document.getElementById("radioLogoDefault").checked = true;
+      }
+      handleLogoRadioToggle();
+
+      const logoImg = document.getElementById("logoPreviewImg");
+      const logoText = document.getElementById("logoStatusText");
+      if (cfg.branding.logoUrl) {
+        logoImg.src = cfg.branding.logoUrl;
+        logoImg.style.display = "block";
+        logoText.textContent = "Custom logo active.";
+      } else {
+        logoImg.style.display = "none";
+        logoText.textContent = "No custom logo uploaded.";
+      }
+
+      if (cfg.branding.socialLinks) {
+        document.getElementById("cfgSocialFb").value = cfg.branding.socialLinks.facebook || "";
+        document.getElementById("cfgSocialIg").value = cfg.branding.socialLinks.instagram || "";
+        document.getElementById("cfgSocialTw").value = cfg.branding.socialLinks.twitter || "";
+        document.getElementById("cfgSocialLi").value = cfg.branding.socialLinks.linkedin || "";
+      }
+    }
+
+    // Tab 3: Navigation
+    renderNavItemsTable(cfg.navigation || []);
+
+    // Tab 4: Content
+    if (cfg.hero) {
+      document.getElementById("cfgHeroTitle").value = cfg.hero.title || "";
+      document.getElementById("cfgHeroSubtitle").value = cfg.hero.subtitle || "";
+    }
+    if (cfg.verificationCard) {
+      document.getElementById("cfgCardHeading").value = cfg.verificationCard.heading || "";
+      document.getElementById("cfgDocLabel").value = cfg.verificationCard.docNumberLabel || "";
+      document.getElementById("cfgDocPlaceholder").value = cfg.verificationCard.docNumberPlaceholder || "";
+      document.getElementById("cfgDateLabel").value = cfg.verificationCard.docDateLabel || "";
+      document.getElementById("cfgVerifyBtnText").value = cfg.verificationCard.verifyButtonText || "";
+      document.getElementById("cfgClearBtnText").value = cfg.verificationCard.clearButtonText || "";
+      document.getElementById("cfgSupportEmail").value = cfg.verificationCard.supportEmail || "";
+    }
+
+    // Tab 6: Notice Modal
+    if (cfg.noticeModal) {
+      document.getElementById("cfgNoticeEnabled").checked = cfg.noticeModal.enabled !== false;
+      document.getElementById("cfgNoticeTitle").value = cfg.noticeModal.title || "";
+      document.getElementById("cfgNoticeBodyEn").value = cfg.noticeModal.bodyEnglish || "";
+      document.getElementById("cfgNoticeBodyReg").value = cfg.noticeModal.bodyRegional || "";
+      document.getElementById("cfgNoticeBtnText").value = cfg.noticeModal.confirmButtonText || "";
+    }
+
+    // Tab 7: Floating & Footer
+    if (cfg.floatingFeedback) {
+      document.getElementById("cfgFeedbackEnabled").checked = cfg.floatingFeedback.enabled !== false;
+      document.getElementById("cfgFeedbackLabel").value = cfg.floatingFeedback.label || "";
+      document.getElementById("cfgFeedbackAction").value = cfg.floatingFeedback.actionType || "dialog";
+      document.getElementById("cfgFeedbackUrl").value = cfg.floatingFeedback.customUrl || "";
+      toggleFeedbackUrlField();
+    }
+    if (cfg.footer) {
+      document.getElementById("cfgFooterCopyright").value = cfg.footer.copyrightText || "";
+      renderFooterLinksTable(cfg.footer.links || []);
+    }
+
+    // Tab 8: Theme
+    if (cfg.theme) {
+      syncColor("cfgColorPrimary", cfg.theme.primaryGreen || "#01411c");
+      syncColor("cfgColorDark", cfg.theme.primaryGreenDark || "#003316");
+      syncColor("cfgColorFooter", cfg.theme.footerDark || "#1e2225");
+      syncColor("cfgColorBg", cfg.theme.bgLight || "#f8f9fb");
+    }
+  }
+
+  function gatherConfigFromForm() {
+    const updated = JSON.parse(JSON.stringify(draftConfig || {}));
+
+    // Branding
+    updated.branding = updated.branding || {};
+    updated.branding.authorityName = document.getElementById("cfgAuthorityName").value.trim();
+    updated.branding.authoritySubtitle = document.getElementById("cfgAuthoritySubtitle").value.trim();
+    updated.branding.logoType = document.querySelector('input[name="logoTypeRadio"]:checked')?.value || "default_svg";
+    updated.branding.socialLinks = {
+      facebook: document.getElementById("cfgSocialFb").value.trim(),
+      instagram: document.getElementById("cfgSocialIg").value.trim(),
+      twitter: document.getElementById("cfgSocialTw").value.trim(),
+      linkedin: document.getElementById("cfgSocialLi").value.trim()
+    };
+
+    // Hero
+    updated.hero = {
+      title: document.getElementById("cfgHeroTitle").value.trim(),
+      subtitle: document.getElementById("cfgHeroSubtitle").value.trim()
+    };
+
+    // Verification Card
+    updated.verificationCard = {
+      heading: document.getElementById("cfgCardHeading").value.trim(),
+      docNumberLabel: document.getElementById("cfgDocLabel").value.trim(),
+      docNumberPlaceholder: document.getElementById("cfgDocPlaceholder").value.trim(),
+      docDateLabel: document.getElementById("cfgDateLabel").value.trim(),
+      verifyButtonText: document.getElementById("cfgVerifyBtnText").value.trim(),
+      clearButtonText: document.getElementById("cfgClearBtnText").value.trim(),
+      supportEmail: document.getElementById("cfgSupportEmail").value.trim(),
+      helpText: `If you need further help email ${document.getElementById("cfgSupportEmail").value.trim()} with the certificate number and date`
+    };
+
+    // Notice Modal
+    updated.noticeModal = {
+      enabled: document.getElementById("cfgNoticeEnabled").checked,
+      title: document.getElementById("cfgNoticeTitle").value.trim(),
+      bodyEnglish: document.getElementById("cfgNoticeBodyEn").value.trim(),
+      bodyRegional: document.getElementById("cfgNoticeBodyReg").value.trim(),
+      confirmButtonText: document.getElementById("cfgNoticeBtnText").value.trim()
+    };
+
+    // Floating Action & Footer
+    updated.floatingFeedback = {
+      enabled: document.getElementById("cfgFeedbackEnabled").checked,
+      label: document.getElementById("cfgFeedbackLabel").value.trim(),
+      actionType: document.getElementById("cfgFeedbackAction").value,
+      customUrl: document.getElementById("cfgFeedbackUrl").value.trim()
+    };
+
+    updated.footer = updated.footer || {};
+    updated.footer.copyrightText = document.getElementById("cfgFooterCopyright").value.trim();
+
+    // Theme
+    updated.theme = {
+      primaryGreen: document.getElementById("cfgColorPrimary").value.trim(),
+      primaryGreenDark: document.getElementById("cfgColorDark").value.trim(),
+      primaryGreenLight: adjustColorBrightness(document.getElementById("cfgColorPrimary").value.trim(), 20),
+      footerDark: document.getElementById("cfgColorFooter").value.trim(),
+      bgLight: document.getElementById("cfgColorBg").value.trim()
+    };
+
+    return updated;
+  }
+
+  // Save Draft Action (Rule 4: Does NOT alter live site)
+  if (btnSaveDraft) {
+    btnSaveDraft.addEventListener("click", async () => {
+      draftConfig = gatherConfigFromForm();
+      try {
+        const res = await apiFetch('/api/admin/config/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draftConfig)
+        });
+        if (res.ok) {
+          showToast("Draft saved successfully. Live public website remains unchanged.", "success");
+          await checkPublishingStatus();
+        } else {
+          showToast("Failed to save draft.", "error");
+        }
+      } catch (err) {
+        showToast("Error saving draft.", "error");
+      }
+    });
+  }
+
+  // Publish to Live Site Action (Rule 4: Validates, creates snapshot, updates public site)
+  if (btnPublishLive) {
+    btnPublishLive.addEventListener("click", async () => {
+      draftConfig = gatherConfigFromForm();
+      try {
+        // Save draft first
+        await apiFetch('/api/admin/config/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draftConfig)
+        });
+
+        // Trigger publish
+        const res = await apiFetch('/api/admin/config/publish', { method: 'POST' });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showToast("Changes published to live website!", "success");
+          await checkPublishingStatus();
+        } else {
+          showToast(data.message || "Publishing failed. Live site was preserved.", "error");
+        }
+      } catch (err) {
+        showToast("Publishing connection error.", "error");
+      }
+    });
+  }
+
+  // Discard Draft Action
+  if (btnDiscardDraft) {
+    btnDiscardDraft.addEventListener("click", async () => {
+      if (!confirm("Are you sure you want to discard your draft? All unsaved changes will be reset to match the currently published website.")) {
+        return;
+      }
+      try {
+        const res = await apiFetch('/api/admin/config/discard', { method: 'POST' });
+        if (res.ok) {
+          showToast("Draft discarded. Reset to live published version.", "success");
+          await loadDraftConfig();
+          await checkPublishingStatus();
+        }
+      } catch (err) {
+        showToast("Failed to discard draft.", "error");
+      }
+    });
+  }
+
+  // =========================================================================
+  // 4. LOGO UPLOAD & RADIO TOGGLE
+  // =========================================================================
+  const logoRadios = document.querySelectorAll('input[name="logoTypeRadio"]');
+  const uploadSection = document.getElementById("customLogoUploadSection");
+  const logoFileInput = document.getElementById("logoFileInput");
+
+  logoRadios.forEach(r => r.addEventListener("change", handleLogoRadioToggle));
+
+  function handleLogoRadioToggle() {
+    const isCustom = document.getElementById("radioLogoCustom")?.checked;
+    if (uploadSection) {
+      uploadSection.style.display = isCustom ? "block" : "none";
+    }
+  }
+
+  if (logoFileInput) {
+    logoFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size exceeds 2MB limit.");
+        logoFileInput.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const res = await apiFetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileData: reader.result, fileName: file.name })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.success) {
+            draftConfig.branding = draftConfig.branding || {};
+            draftConfig.branding.logoUrl = data.fileUrl;
+            draftConfig.branding.logoType = 'custom_image';
+            document.getElementById("radioLogoCustom").checked = true;
+
+            const logoImg = document.getElementById("logoPreviewImg");
+            logoImg.src = data.fileUrl;
+            logoImg.style.display = "block";
+            document.getElementById("logoStatusText").textContent = `Uploaded: ${data.fileName}`;
+            showToast("Custom logo uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
+            await checkPublishingStatus();
+          } else {
+            showToast(data.message || "Upload failed.", "error");
+          }
+        } catch {
+          showToast("Network error uploading file.", "error");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // =========================================================================
+  // 5. NAVIGATION & EXTERNAL LINKS MANAGER (Rule 3)
+  // =========================================================================
+  const navTableBody = document.getElementById("navItemsTableBody");
+  const btnAddNavItem = document.getElementById("btnAddNavItem");
+  const navItemModal = document.getElementById("navItemModal");
+  const navItemForm = document.getElementById("navItemForm");
+  const navModalTitle = document.getElementById("navModalTitle");
+  const navItemIndex = document.getElementById("navItemIndex");
+  const navItemLabel = document.getElementById("navItemLabel");
+  const navItemUrl = document.getElementById("navItemUrl");
+  const navItemTarget = document.getElementById("navItemTarget");
+  const navItemEnabled = document.getElementById("navItemEnabled");
+
+  function renderNavItemsTable(navItems) {
+    if (!navTableBody) return;
+    navTableBody.innerHTML = "";
+
+    navItems.forEach((item, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="font-weight: 600; color: #6b7280;">#${index + 1}</td>
+        <td style="font-weight: 600;">${escapeHtml(item.label)}</td>
+        <td style="font-family: monospace; font-size: 0.85rem; color: #065f46;">
+          <a href="${escapeHtml(item.url)}" target="_blank" style="color: inherit; text-decoration: none;">
+            ${escapeHtml(item.url)}
+          </a>
+        </td>
+        <td>
+          <span style="font-size: 0.8rem; background: #e5e7eb; padding: 2px 8px; border-radius: 4px;">
+            ${item.target === '_blank' ? 'New Tab' : 'Same Tab'}
+          </span>
+        </td>
+        <td>
+          <label style="cursor: pointer;">
+            <input type="checkbox" class="nav-toggle-enabled" data-index="${index}" ${item.enabled !== false ? 'checked' : ''}>
+          </label>
+        </td>
+        <td style="text-align: right;">
+          <button class="btn-secondary btn-nav-up" data-index="${index}" style="padding: 4px 8px;" title="Move Up" ${index === 0 ? 'disabled' : ''}>▲</button>
+          <button class="btn-secondary btn-nav-down" data-index="${index}" style="padding: 4px 8px;" title="Move Down" ${index === navItems.length - 1 ? 'disabled' : ''}>▼</button>
+          <button class="btn-secondary btn-nav-edit" data-index="${index}" style="padding: 4px 8px;">Edit</button>
+          <button class="btn-danger btn-nav-del" data-index="${index}" style="padding: 4px 8px;">✕</button>
+        </td>
+      `;
+      navTableBody.appendChild(row);
+    });
+
+    // Attach event listeners
+    navTableBody.querySelectorAll(".nav-toggle-enabled").forEach(cb => {
+      cb.addEventListener("change", (e) => {
+        const idx = parseInt(e.target.dataset.index, 10);
+        draftConfig.navigation[idx].enabled = e.target.checked;
+        showToast("Navigation status updated in draft.", "success");
+      });
+    });
+
+    navTableBody.querySelectorAll(".btn-nav-up").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (idx > 0) {
+          const temp = draftConfig.navigation[idx];
+          draftConfig.navigation[idx] = draftConfig.navigation[idx - 1];
+          draftConfig.navigation[idx - 1] = temp;
+          renderNavItemsTable(draftConfig.navigation);
+        }
+      });
+    });
+
+    navTableBody.querySelectorAll(".btn-nav-down").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (idx < draftConfig.navigation.length - 1) {
+          const temp = draftConfig.navigation[idx];
+          draftConfig.navigation[idx] = draftConfig.navigation[idx + 1];
+          draftConfig.navigation[idx + 1] = temp;
+          renderNavItemsTable(draftConfig.navigation);
+        }
+      });
+    });
+
+    navTableBody.querySelectorAll(".btn-nav-edit").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        const item = draftConfig.navigation[idx];
+        navModalTitle.textContent = "Edit Navigation Link";
+        navItemIndex.value = idx;
+        navItemLabel.value = item.label;
+        navItemUrl.value = item.url;
+        navItemTarget.value = item.target || "_self";
+        navItemEnabled.checked = item.enabled !== false;
+        navItemModal.classList.add("active");
+      });
+    });
+
+    navTableBody.querySelectorAll(".btn-nav-del").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        if (confirm(`Delete navigation item "${draftConfig.navigation[idx].label}"?`)) {
+          draftConfig.navigation.splice(idx, 1);
+          renderNavItemsTable(draftConfig.navigation);
+          showToast("Navigation item removed from draft.", "success");
+        }
+      });
+    });
+  }
+
+  if (btnAddNavItem) {
+    btnAddNavItem.addEventListener("click", () => {
+      navModalTitle.textContent = "Add Navigation Link / Button";
+      navItemIndex.value = "";
+      navItemForm.reset();
+      navItemEnabled.checked = true;
+      navItemModal.classList.add("active");
+    });
+  }
+
+  if (navItemForm) {
+    navItemForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const idxStr = navItemIndex.value;
+      draftConfig.navigation = draftConfig.navigation || [];
+
+      const newItem = {
+        id: `nav-${Date.now()}`,
+        label: navItemLabel.value.trim(),
+        url: navItemUrl.value.trim(),
+        target: navItemTarget.value,
+        enabled: navItemEnabled.checked
+      };
+
+      if (idxStr !== "") {
+        const idx = parseInt(idxStr, 10);
+        newItem.id = draftConfig.navigation[idx].id || newItem.id;
+        draftConfig.navigation[idx] = newItem;
+        showToast("Navigation link updated in draft.", "success");
+      } else {
+        draftConfig.navigation.push(newItem);
+        showToast("New navigation link added to draft.", "success");
+      }
+
+      navItemModal.classList.remove("active");
+      renderNavItemsTable(draftConfig.navigation);
+    });
+  }
+
+  // =========================================================================
+  // 6. FOOTER LINKS MANAGER
+  // =========================================================================
+  const footerLinksTableBody = document.getElementById("footerLinksTableBody");
+  const btnAddFooterLink = document.getElementById("btnAddFooterLink");
+
+  function renderFooterLinksTable(links) {
+    if (!footerLinksTableBody) return;
+    footerLinksTableBody.innerHTML = "";
+
+    links.forEach((link, idx) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td style="font-weight: 600;">${escapeHtml(link.label)}</td>
+        <td style="font-family: monospace; font-size: 0.85rem;">${escapeHtml(link.url)}</td>
+        <td>${link.target === '_blank' ? 'New Tab' : 'Same Tab'}</td>
+        <td style="text-align: right;">
+          <button class="btn-danger btn-foot-del" data-index="${idx}" style="padding: 4px 8px;">✕</button>
+        </td>
+      `;
+      footerLinksTableBody.appendChild(row);
+    });
+
+    footerLinksTableBody.querySelectorAll(".btn-foot-del").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        draftConfig.footer.links.splice(idx, 1);
+        renderFooterLinksTable(draftConfig.footer.links);
+      });
+    });
+  }
+
+  if (btnAddFooterLink) {
+    btnAddFooterLink.addEventListener("click", () => {
+      const label = prompt("Enter footer link label:");
+      if (!label || !label.trim()) return;
+      const url = prompt("Enter destination URL:", "https://");
+      if (!url || !url.trim()) return;
+
+      draftConfig.footer = draftConfig.footer || {};
+      draftConfig.footer.links = draftConfig.footer.links || [];
+      draftConfig.footer.links.push({
+        id: `foot-${Date.now()}`,
+        label: label.trim(),
+        url: url.trim(),
+        target: "_self",
+        enabled: true
+      });
+      renderFooterLinksTable(draftConfig.footer.links);
+      showToast("Footer link added to draft.", "success");
+    });
+  }
+
+  function toggleFeedbackUrlField() {
+    const action = document.getElementById("cfgFeedbackAction").value;
+    const urlField = document.getElementById("cfgFeedbackUrlField");
+    if (urlField) urlField.style.display = action === "custom_link" ? "block" : "none";
+  }
+  const feedbackActionSelect = document.getElementById("cfgFeedbackAction");
+  if (feedbackActionSelect) feedbackActionSelect.addEventListener("change", toggleFeedbackUrlField);
+
+  // =========================================================================
+  // 7. DOCUMENT REGISTRY CRUD (Rule 5: Authoritative Server Lookup)
+  // =========================================================================
+  const recordsTableBody = document.getElementById("recordsTableBody");
+  const recordSearchInput = document.getElementById("recordSearchInput");
+  const recordStatusFilter = document.getElementById("recordStatusFilter");
+  const btnAddNewRecord = document.getElementById("btnAddNewRecord");
+  const recordModal = document.getElementById("recordModal");
+  const recordForm = document.getElementById("recordForm");
+  const recordModalTitle = document.getElementById("recordModalTitle");
+
+  const statTotalVerified = document.getElementById("statTotalVerified");
+  const statTotalFlagged = document.getElementById("statTotalFlagged");
+
+  async function loadRecords() {
+    const q = recordSearchInput ? recordSearchInput.value.trim() : "";
+    const status = recordStatusFilter ? recordStatusFilter.value : "ALL";
+
+    try {
+      const res = await apiFetch(`/api/admin/records?q=${encodeURIComponent(q)}&status=${status}`);
+      if (res.ok) {
+        cachedRecords = await res.json();
+        renderRecordsTable(cachedRecords);
+        updateRecordStats(cachedRecords);
+      }
+    } catch {
+      showToast("Failed to load document records.", "error");
+    }
+  }
+
+  function updateRecordStats(records) {
+    const verified = records.filter(r => r.status === 'VERIFIED').length;
+    const flagged = records.filter(r => r.status === 'EXPIRED' || r.status === 'REVOKED').length;
+    if (statTotalVerified) statTotalVerified.textContent = verified;
+    if (statTotalFlagged) statTotalFlagged.textContent = flagged;
+  }
+
+  function renderRecordsTable(records) {
+    if (!recordsTableBody) return;
+    recordsTableBody.innerHTML = "";
+
+    if (records.length === 0) {
+      recordsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #6b7280; padding: 25px;">No matching documents registered.</td></tr>`;
+      return;
+    }
+
+    records.forEach(rec => {
+      const row = document.createElement("tr");
+      let statusClass = "badge-verified";
+      if (rec.status === 'EXPIRED') statusClass = "badge-expired";
+      if (rec.status === 'REVOKED') statusClass = "badge-revoked";
+      if (rec.status === 'SUSPENDED') statusClass = "badge-suspended";
+
+      row.innerHTML = `
+        <td style="font-weight: 700; font-family: monospace; color: #111827;">${escapeHtml(rec.docNumber)}</td>
+        <td style="font-weight: 600;">${escapeHtml(rec.applicantName)}</td>
+        <td style="color: #4b5563;">${escapeHtml(rec.documentType)}</td>
+        <td style="white-space: nowrap;">${escapeHtml(rec.issueDate)}</td>
+        <td><span class="badge-status ${statusClass}">${rec.status}</span></td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button class="btn-secondary btn-copy-qr" data-doc="${escapeHtml(rec.docNumber)}" data-date="${escapeHtml(rec.issueDate)}" style="padding: 4px 8px;" title="Copy QR Verification Link">
+            🔗 QR Link
+          </button>
+          <button class="btn-secondary btn-rec-edit" data-id="${rec.id}" style="padding: 4px 8px;">Edit</button>
+          <button class="btn-danger btn-rec-del" data-id="${rec.id}" style="padding: 4px 8px;">✕</button>
+        </td>
+      `;
+      recordsTableBody.appendChild(row);
+    });
+
+    // Copy QR Verification Link
+    recordsTableBody.querySelectorAll(".btn-copy-qr").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const doc = btn.dataset.doc;
+        const date = btn.dataset.date;
+        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}`;
+        navigator.clipboard.writeText(url).then(() => {
+          showToast(`Copied QR link for ${doc}`, "success");
+        }).catch(() => {
+          prompt("Copy this QR Verification Link:", url);
+        });
+      });
+    });
+
+    // Edit Record
+    recordsTableBody.querySelectorAll(".btn-rec-edit").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const rec = cachedRecords.find(r => r.id === id);
+        if (!rec) return;
+
+        recordModalTitle.textContent = "Edit Document Certificate";
+        document.getElementById("recordId").value = rec.id;
+        document.getElementById("recDocNumber").value = rec.docNumber;
+        document.getElementById("recApplicant").value = rec.applicantName;
+        document.getElementById("recDocType").value = rec.documentType;
+        document.getElementById("recIssueDate").value = rec.issueDate;
+        document.getElementById("recExpiryDate").value = rec.expiryDate || "";
+        document.getElementById("recAuthority").value = rec.issuingAuthority;
+        document.getElementById("recStatus").value = rec.status;
+        document.getElementById("recNotes").value = rec.notes || "";
+        recordModal.classList.add("active");
+      });
+    });
+
+    // Delete Record
+    recordsTableBody.querySelectorAll(".btn-rec-del").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (!confirm("Are you sure you want to permanently delete this document record?")) return;
+
+        try {
+          const res = await apiFetch(`/api/admin/records/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            showToast("Document deleted successfully.", "success");
+            await loadRecords();
+          } else {
+            showToast("Failed to delete record.", "error");
+          }
+        } catch {
+          showToast("Network error deleting record.", "error");
+        }
+      });
+    });
+  }
+
+  if (recordSearchInput) recordSearchInput.addEventListener("input", debounce(loadRecords, 300));
+  if (recordStatusFilter) recordStatusFilter.addEventListener("change", loadRecords);
+
+  if (btnAddNewRecord) {
+    btnAddNewRecord.addEventListener("click", () => {
+      recordModalTitle.textContent = "Register New Document Certificate";
+      document.getElementById("recordId").value = "";
+      recordForm.reset();
+      document.getElementById("recIssueDate").value = new Date().toISOString().split("T")[0];
+      recordModal.classList.add("active");
+    });
+  }
+
+  if (recordForm) {
+    recordForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const recId = document.getElementById("recordId").value;
+      const payload = {
+        docNumber: document.getElementById("recDocNumber").value.trim(),
+        applicantName: document.getElementById("recApplicant").value.trim(),
+        documentType: document.getElementById("recDocType").value.trim(),
+        issueDate: document.getElementById("recIssueDate").value,
+        expiryDate: document.getElementById("recExpiryDate").value,
+        issuingAuthority: document.getElementById("recAuthority").value.trim(),
+        status: document.getElementById("recStatus").value,
+        notes: document.getElementById("recNotes").value.trim()
+      };
+
+      try {
+        let res;
+        if (recId) {
+          res = await apiFetch(`/api/admin/records/${recId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          res = await apiFetch('/api/admin/records', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          recordModal.classList.remove("active");
+          showToast(recId ? "Document updated." : "Document registered.", "success");
+          await loadRecords();
+        } else {
+          showToast(data.message || "Failed to save document.", "error");
+        }
+      } catch {
+        showToast("Network error saving document.", "error");
+      }
+    });
+  }
+
+  // =========================================================================
+  // 8. THEME & COLOR PICKER CONTROLS
+  // =========================================================================
+  function syncColor(textInputId, initialVal) {
+    const textEl = document.getElementById(textInputId);
+    const pickerEl = document.getElementById(`${textInputId}Picker`);
+    if (textEl && pickerEl) {
+      textEl.value = initialVal;
+      pickerEl.value = initialVal.length === 7 ? initialVal : "#01411c";
+
+      pickerEl.addEventListener("input", () => { textEl.value = pickerEl.value; });
+      textEl.addEventListener("input", () => {
+        if (/^#[0-9A-Fa-f]{6}$/.test(textEl.value)) {
+          pickerEl.value = textEl.value;
+        }
+      });
+    }
+  }
+
+  const btnResetTheme = document.getElementById("btnResetThemeDefaults");
+  if (btnResetTheme) {
+    btnResetTheme.addEventListener("click", () => {
+      syncColor("cfgColorPrimary", "#01411c");
+      syncColor("cfgColorDark", "#003316");
+      syncColor("cfgColorFooter", "#1e2225");
+      syncColor("cfgColorBg", "#f8f9fb");
+      showToast("Colors reset to default green palette.", "success");
+    });
+  }
+
+  // =========================================================================
+  // 9. ADMIN SECURITY & PASSWORD
+  // =========================================================================
+  const passwordChangeForm = document.getElementById("passwordChangeForm");
+  if (passwordChangeForm) {
+    passwordChangeForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const currentPassword = document.getElementById("currentPassword").value;
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (newPassword !== confirmPassword) {
+        alert("New passwords do not match.");
+        return;
+      }
+
+      try {
+        const res = await apiFetch('/api/admin/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast("Password updated successfully.", "success");
+          passwordChangeForm.reset();
+        } else {
+          showToast(data.message || "Failed to update password.", "error");
+        }
+      } catch {
+        showToast("Error updating password.", "error");
+      }
+    });
+  }
+
+  // Modal close handlers
+  document.querySelectorAll("[data-close-modal]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const modalId = btn.getAttribute("data-close-modal");
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove("active");
+    });
+  });
+
+  // Helpers
+  function showToast(message, type = "success") {
+    const container = document.getElementById("toastContainer");
+    if (!container) return;
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span>${type === 'success' ? '✓' : '⚠'}</span> <span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(50px)';
+      setTimeout(() => toast.remove(), 250);
+    }, 3500);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[m]);
+  }
+
+  function adjustColorBrightness(hex, percent) {
+    let num = parseInt(hex.replace("#", ""), 16),
+      amt = Math.round(2.55 * percent),
+      R = (num >> 16) + amt,
+      G = (num >> 8 & 0x00FF) + amt,
+      B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
+  // Check auth on load
+  checkAuth();
+});

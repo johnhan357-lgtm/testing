@@ -1,0 +1,138 @@
+{
+  "branding": {
+    "authorityName": "Department of Verification & Legalization",
+    "authoritySubtitle": "Online Public Authentication Service",
+    "logoType": "default_svg",
+    "logoUrl": "",
+    "socialLinks": {
+      "facebook": "https://facebook.com",
+      "instagram": "https://instagram.com",
+      "twitter": "https://twitter.com",
+      "linkedin": "https://linkedin.com"
+    }
+  },
+  "theme": {
+    "primaryGreen": "#01411c",
+    "primaryGreenDark": "#003316",
+    "primaryGreenLight": "#0b5e2b",
+    "footerDark": "#1e2225",
+    "bgLight": "#f8f9fb"
+  },
+  "navigation": [
+    {
+      "id": "nav-1",
+      "label": "HOME",
+      "url": "#",
+      "target": "_self",
+      "enabled": true,
+      "isExternal": false
+    },
+    {
+      "id": "nav-2",
+      "label": "CHECKLIST",
+      "url": "#checklist",
+      "target": "_self",
+      "enabled": true,
+      "isExternal": false
+    },
+    {
+      "id": "nav-3",
+      "label": "DOCUMENTS",
+      "url": "#documents",
+      "target": "_self",
+      "enabled": true,
+      "isExternal": false
+    },
+    {
+      "id": "nav-4",
+      "label": "RECOGNIZED LIST",
+      "url": "#recognized",
+      "target": "_self",
+      "enabled": true,
+      "isExternal": false
+    },
+    {
+      "id": "nav-5",
+      "label": "FEE DETAILS",
+      "url": "#fees",
+      "target": "_self",
+      "enabled": true,
+      "isExternal": false
+    },
+    {
+      "id": "nav-6",
+      "label": "VERIFY ATTESTATION",
+      "url": "index.html",
+      "target": "_self",
+      "enabled": true,
+      "isExternal": false
+    },
+    {
+      "id": "nav-test-main-site",
+      "label": "Main Organization Portal",
+      "url": "https://myorganization.com/services",
+      "target": "_blank",
+      "enabled": true
+    }
+  ],
+  "hero": {
+    "title": "Verify an Official Document Certificate issued from the Verification Authority",
+    "subtitle": "Use this service if you want to verify either a paper or electronic certificate issued by the authority."
+  },
+  "verificationCard": {
+    "heading": "Please Enter the required details below",
+    "docNumberLabel": "Certificate Number",
+    "docNumberPlaceholder": "eg: ADG-HYUI-QRTY-BGHN",
+    "docDateLabel": "Date",
+    "verifyButtonText": "Verify",
+    "clearButtonText": "Clear data",
+    "supportEmail": "support@verification-portal.org",
+    "helpText": "If you need further help email support@verification-portal.org with the certificate number and date"
+  },
+  "noticeModal": {
+    "enabled": true,
+    "title": "IMPORTANT NOTICE",
+    "bodyEnglish": "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date and time for document processing.\n\nYour documents will only be processed on the date of your appointment. Applicants arriving before or after the scheduled date may not be facilitated.",
+    "bodyRegional": "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔",
+    "confirmButtonText": "Acknowledge & Proceed"
+  },
+  "floatingFeedback": {
+    "enabled": true,
+    "label": "Submit Feedback",
+    "actionType": "dialog",
+    "customUrl": ""
+  },
+  "footer": {
+    "authorityName": "Department of Verification & Legalization",
+    "authoritySubtitle": "Online Document Authentication Portal",
+    "links": [
+      {
+        "id": "foot-1",
+        "label": "Authorized Courier Companies",
+        "url": "#courier",
+        "target": "_self",
+        "enabled": true
+      },
+      {
+        "id": "foot-2",
+        "label": "FAQ",
+        "url": "#faq",
+        "target": "_self",
+        "enabled": true
+      },
+      {
+        "id": "foot-3",
+        "label": "Contact Us",
+        "url": "#contact",
+        "target": "_self",
+        "enabled": true
+      }
+    ],
+    "copyrightText": "Copyright © 2026 Department of Verification & Legalization. All Rights Reserved."
+  },
+  "metadata": {
+    "lastSavedAt": "2026-10-18T13:14:56.016Z",
+    "lastPublishedAt": "2026-10-18T13:14:56.042Z",
+    "version": 2
+  }
+}

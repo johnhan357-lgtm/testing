@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel & Visual CMS — Document Verification Portal</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. LOGIN OVERLAY (Hidden once authenticated)
+       ========================================================================= -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-emblem">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.1)" stroke="currentColor" stroke-width="3"/>
+          <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <h1 class="login-title">Portal Administration</h1>
+      <p class="login-subtitle">Sign in to manage portal content and document records</p>
+
+      <div class="login-alert" id="loginAlert"></div>
+
+      <form id="loginForm">
+        <div class="form-field">
+          <label class="form-label" for="loginUser">Administrator Username</label>
+          <input type="text" id="loginUser" class="form-input" placeholder="admin" required autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="loginPass">Password</label>
+          <input type="password" id="loginPass" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;" id="btnLoginSubmit">
+          Sign In to Dashboard
+        </button>
+      </form>
+      <p style="font-size: 0.78rem; color: #9ca3af; margin-top: 18px;">
+        Default Credentials: <code>admin</code> / <code>admin123</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. MAIN ADMIN APP INTERFACE
+       ========================================================================= -->
+  <div class="admin-wrapper" id="adminApp" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Portal CMS</h2>
+          <span>Admin Workspace</span>
+        </div>
+      </div>
+
+      <ul class="sidebar-nav">
+        <li>
+          <button class="nav-tab-btn active" data-tab="tab-overview">
+            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            Overview
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-branding">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Branding &amp; Identity
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-navigation">
+            <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+            Navigation &amp; External Links
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-content">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            Page Texts &amp; Form
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-records">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+            Document Registry (CRUD)
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-notice">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z"/></svg>
+            Notice Modal
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-footer">
+            <svg viewBox="0 0 24 24"><path d="M4 18h16v2H4zm0-4h16v2H4zm0-4h16v2H4zm0-6v2h16V4z"/></svg>
+            Floating Action &amp; Footer
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-theme">
+            <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+            Theme &amp; Colors
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" data-tab="tab-security">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            Admin Security
+          </button>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <span class="user-badge" id="loggedUserBadge">Logged in as admin</span>
+        <button class="btn-logout" id="btnLogout">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Top Action Bar -->
+      <header class="top-app-bar">
+        <div class="publishing-status-box">
+          <span class="status-pill pill-published" id="statusPill">
+            <span>●</span> All Changes Published
+          </span>
+          <span style="font-size: 0.8rem; color: #6b7280;" id="lastPublishedLabel"></span>
+        </div>
+
+        <div class="top-actions">
+          <a href="/" target="_blank" class="btn-secondary" title="Preview current public website in new tab">
+            👁 View Live Site
+          </a>
+          <button class="btn-secondary" id="btnDiscardDraft" title="Discard unsaved draft changes and revert to live version">
+            ↺ Discard Draft
+          </button>
+          <button class="btn-secondary" id="btnSaveDraft" title="Save changes as a draft without affecting the public site">
+            💾 Save Draft
+          </button>
+          <button class="btn-publish" id="btnPublishLive" title="Publish draft directly to live public portal">
+            🚀 Publish to Live Site
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="admin-content-area">
+
+        <!-- ===================================================================
+             TAB 1: OVERVIEW
+             =================================================================== -->
+        <section class="tab-pane active" id="tab-overview">
+          <div class="card">
+            <h2 class="card-title">Welcome to the Document Verification Portal CMS</h2>
+            <p class="card-desc">Manage all public website content, external links, and authoritative document records.</p>
+
+            <div class="grid-2">
+              <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 20px;">
+                <h3 style="color: #065f46; font-size: 1.1rem; margin-bottom: 6px;">Total Active Documents</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #065f46;" id="statTotalVerified">0</div>
+                <p style="font-size: 0.85rem; color: #047857; margin-top: 4px;">Authoritatively verified against registry</p>
+              </div>
+
+              <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px;">
+                <h3 style="color: #991b1b; font-size: 1.1rem; margin-bottom: 6px;">Revoked / Expired Records</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #991b1b;" id="statTotalFlagged">0</div>
+                <p style="font-size: 0.85rem; color: #b91c1c; margin-top: 4px;">Blocked from successful verification</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">CMS Publishing Workflow Guide</h3>
+            <div style="font-size: 0.9rem; color: #4b5563; line-height: 1.7;">
+              <p><strong>1. Draft Separation:</strong> Any edits made in the tabs are saved as a <em>Draft</em>. The public portal will NEVER see your changes until you explicitly click <strong>Publish to Live Site</strong>.</p>
+              <p><strong>2. Discard &amp; Rollback:</strong> Made a mistake? Click <strong>Discard Draft</strong> to reset your draft to the current live version. Previous versions are saved as snapshots.</p>
+              <p><strong>3. Custom Links:</strong> You can link any header tab or footer button to your existing main website (e.g. <code>https://myorganization.com</code>) by managing items in the <em>Navigation &amp; External Links</em> tab.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 2: BRANDING & IDENTITY
+             =================================================================== -->
+        <section class="tab-pane" id="tab-branding">
+          <div class="card">
+            <h2 class="card-title">Portal Identity &amp; Branding</h2>
+            <p class="card-desc">Configure the organization title, subtitle, logo, and social profile links.</p>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgAuthorityName">Authority / Organization Name</label>
+              <input type="text" id="cfgAuthorityName" class="form-input">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgAuthoritySubtitle">Department Subtitle / Tagline</label>
+              <input type="text" id="cfgAuthoritySubtitle" class="form-input">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Organization Logo</h3>
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 10px;">
+                <input type="radio" name="logoTypeRadio" value="default_svg" id="radioLogoDefault" checked>
+                Use Standard Institutional Emblem (Vector SVG)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+                <input type="radio" name="logoTypeRadio" value="custom_image" id="radioLogoCustom">
+                Upload Custom Logo Image (PNG, JPG, SVG, WebP — max 2MB)
+              </label>
+            </div>
+
+            <div id="customLogoUploadSection" style="margin-top: 15px; padding: 18px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db;">
+              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+              <div id="logoPreviewContainer" style="margin-top: 12px; display: flex; align-items: center; gap: 15px;">
+                <div style="width: 60px; height: 60px; border: 1px solid #e5e7eb; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                  <img id="logoPreviewImg" src="" alt="Logo Preview" style="max-width: 100%; max-height: 100%; display: none;">
+                </div>
+                <span id="logoStatusText" style="font-size: 0.85rem; color: #6b7280;">No custom logo selected.</span>
+              </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Social Media Profile Links</h3>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialFb">Facebook URL</label>
+                <input type="url" id="cfgSocialFb" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialIg">Instagram URL</label>
+                <input type="url" id="cfgSocialIg" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialTw">Twitter / X URL</label>
+                <input type="url" id="cfgSocialTw" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialLi">LinkedIn URL</label>
+                <input type="url" id="cfgSocialLi" class="form-input">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 3: NAVIGATION & EXTERNAL LINKS MANAGER (Dedicated Manager)
+             =================================================================== -->
+        <section class="tab-pane" id="tab-navigation">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <div>
+                <h2 class="card-title">Header Navigation &amp; External Website Integration</h2>
+                <p class="card-desc" style="margin-bottom: 0;">
+                  Add, edit, reorder, or point links to your existing website pages (e.g. <code>https://yourdomain.com</code>).
+                </p>
+              </div>
+              <button class="btn-primary" id="btnAddNavItem">
+                + Add Navigation Item
+              </button>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 60px;">Order</th>
+                    <th>Label</th>
+                    <th>Destination URL</th>
+                    <th style="width: 110px;">Target</th>
+                    <th style="width: 90px;">Status</th>
+                    <th style="width: 170px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="navItemsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 4: PAGE TEXTS & FORM
+             =================================================================== -->
+        <section class="tab-pane" id="tab-content">
+          <div class="card">
+            <h2 class="card-title">Hero Section Headline &amp; Instructions</h2>
+            <div class="form-field">
+              <label class="form-label" for="cfgHeroTitle">Hero Title</label>
+              <textarea id="cfgHeroTitle" class="form-textarea" rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="cfgHeroSubtitle">Hero Subtitle</label>
+              <textarea id="cfgHeroSubtitle" class="form-textarea" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Verification Search Card Labels</h2>
+            <div class="form-field">
+              <label class="form-label" for="cfgCardHeading">Card Heading</label>
+              <input type="text" id="cfgCardHeading" class="form-input">
+            </div>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgDocLabel">Document Number Label</label>
+                <input type="text" id="cfgDocLabel" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgDocPlaceholder">Document Number Placeholder</label>
+                <input type="text" id="cfgDocPlaceholder" class="form-input">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgDateLabel">Date Field Label</label>
+                <input type="text" id="cfgDateLabel" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgVerifyBtnText">Verify Button Label</label>
+                <input type="text" id="cfgVerifyBtnText" class="form-input">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgClearBtnText">Clear Data Button Label</label>
+                <input type="text" id="cfgClearBtnText" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSupportEmail">Support Desk Contact Email</label>
+                <input type="email" id="cfgSupportEmail" class="form-input">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 5: DOCUMENT REGISTRY (CRUD)
+             =================================================================== -->
+        <section class="tab-pane" id="tab-records">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">Authoritative Document Registry</h2>
+                <p class="card-desc" style="margin-bottom: 0;">Add and manage registered certificates, degrees, and attestations verified via QR or web.</p>
+              </div>
+              <button class="btn-primary" id="btnAddNewRecord">
+                + Register New Document
+              </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+              <input type="text" id="recordSearchInput" class="form-input" placeholder="Search by Document Number, Holder Name, or Type..." style="flex: 1;">
+              <select id="recordStatusFilter" class="form-select" style="width: 170px;">
+                <option value="ALL">All Statuses</option>
+                <option value="VERIFIED">Verified Only</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="REVOKED">Revoked</option>
+                <option value="SUSPENDED">Suspended</option>
+              </select>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Certificate Number</th>
+                    <th>Holder Name</th>
+                    <th>Document Type</th>
+                    <th>Issue Date</th>
+                    <th>Status</th>
+                    <th style="width: 220px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 6: NOTICE MODAL
+             =================================================================== -->
+        <section class="tab-pane" id="tab-notice">
+          <div class="card">
+            <h2 class="card-title">Announcement Popup Modal</h2>
+            <p class="card-desc">Configure the modal that greets users on arrival.</p>
+
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem;">
+                <input type="checkbox" id="cfgNoticeEnabled" style="width: 18px; height: 18px;">
+                Enable Announcement Popup Modal on Public Page
+              </label>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeTitle">Notice Title</label>
+              <input type="text" id="cfgNoticeTitle" class="form-input">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeBodyEn">English Notice Content</label>
+              <textarea id="cfgNoticeBodyEn" class="form-textarea" rows="4"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeBodyReg">Regional / Multilingual Notice Content (Urdu, Arabic, etc.)</label>
+              <textarea id="cfgNoticeBodyReg" class="form-textarea" rows="3" style="direction: rtl;"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeBtnText">Confirm / Dismiss Button Text</label>
+              <input type="text" id="cfgNoticeBtnText" class="form-input">
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 7: FLOATING ACTION & FOOTER
+             =================================================================== -->
+        <section class="tab-pane" id="tab-footer">
+          <div class="card">
+            <h2 class="card-title">Floating Feedback Pill Widget</h2>
+            <p class="card-desc">The pill button fixed to the right side of the screen.</p>
+
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem;">
+                <input type="checkbox" id="cfgFeedbackEnabled" style="width: 18px; height: 18px;">
+                Enable Floating Widget
+              </label>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgFeedbackLabel">Button Label</label>
+              <input type="text" id="cfgFeedbackLabel" class="form-input">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Action Mode</label>
+              <select id="cfgFeedbackAction" class="form-select">
+                <option value="dialog">Interactive Feedback Dialog</option>
+                <option value="custom_link">External Link / Custom Form URL</option>
+              </select>
+            </div>
+
+            <div class="form-field" id="cfgFeedbackUrlField" style="display: none;">
+              <label class="form-label" for="cfgFeedbackUrl">Destination Custom URL</label>
+              <input type="url" id="cfgFeedbackUrl" class="form-input" placeholder="https://example.com/contact">
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <div>
+                <h2 class="card-title">Footer Navigation Links</h2>
+                <p class="card-desc" style="margin-bottom: 0;">Links displayed in the dark charcoal footer tier.</p>
+              </div>
+              <button class="btn-primary" id="btnAddFooterLink">+ Add Footer Link</button>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Label</th>
+                    <th>Destination URL</th>
+                    <th>Target</th>
+                    <th style="width: 120px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="footerLinksTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <div class="form-field">
+              <label class="form-label" for="cfgFooterCopyright">Bottom Copyright Text</label>
+              <input type="text" id="cfgFooterCopyright" class="form-input">
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 8: THEME & COLORS
+             =================================================================== -->
+        <section class="tab-pane" id="tab-theme">
+          <div class="card">
+            <h2 class="card-title">Palette &amp; Color Scheme</h2>
+            <p class="card-desc">Control the primary branding green, footer tone, and page background.</p>
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgColorPrimary">Primary Green Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorPrimaryPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorPrimary" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cfgColorDark">Primary Dark Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorDarkPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorDark" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cfgColorFooter">Footer Dark Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorFooterPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorFooter" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cfgColorBg">Page Background Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorBgPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorBg" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn-secondary" id="btnResetThemeDefaults" style="margin-top: 10px;">
+              Reset Palette to Default Forest Green
+            </button>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 9: ADMIN SECURITY
+             =================================================================== -->
+        <section class="tab-pane" id="tab-security">
+          <div class="card" style="max-width: 600px;">
+            <h2 class="card-title">Change Administrator Password</h2>
+            <p class="card-desc">Keep your portal administration protected with a strong password.</p>
+
+            <form id="passwordChangeForm">
+              <div class="form-field">
+                <label class="form-label" for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" class="form-input" required>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="newPassword">New Password (min 6 characters)</label>
+                <input type="password" id="newPassword" class="form-input" required minlength="6">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                <input type="password" id="confirmPassword" class="form-input" required minlength="6">
+              </div>
+
+              <button type="submit" class="btn-primary" id="btnUpdatePassword">Update Password</button>
+            </form>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 1: ADD / EDIT NAVIGATION ITEM (CRITICAL REQUIREMENT #3)
+       ========================================================================= -->
+  <div class="admin-modal" id="navItemModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="navModalTitle">Navigation Link</h3>
+        <button class="admin-modal-close" data-close-modal="navItemModal">&times;</button>
+      </div>
+      <form id="navItemForm">
+        <input type="hidden" id="navItemIndex">
+        <div class="form-field">
+          <label class="form-label" for="navItemLabel">Button / Tab Label <span style="color: red;">*</span></label>
+          <input type="text" id="navItemLabel" class="form-input" placeholder="e.g. Main Website or Fee Details" required>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="navItemUrl">Destination URL <span style="color: red;">*</span></label>
+          <input type="text" id="navItemUrl" class="form-input" placeholder="e.g. https://myorganization.com or #checklist" required>
+          <small style="color: #6b7280; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Paste your existing main website address or an internal anchor.
+          </small>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="navItemTarget">Open Behavior</label>
+          <select id="navItemTarget" class="form-select">
+            <option value="_self">Same Browser Tab (_self)</option>
+            <option value="_blank">New Browser Tab (_blank)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem;">
+            <input type="checkbox" id="navItemEnabled" checked>
+            Enable this link on the public navigation bar
+          </label>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="navItemModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveNavItem">Save Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: ADD / EDIT DOCUMENT RECORD (CRITICAL REQUIREMENT #5)
+       ========================================================================= -->
+  <div class="admin-modal" id="recordModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="recordModalTitle">Register Document Certificate</h3>
+        <button class="admin-modal-close" data-close-modal="recordModal">&times;</button>
+      </div>
+      <form id="recordForm">
+        <input type="hidden" id="recordId">
+        <div class="form-field">
+          <label class="form-label" for="recDocNumber">Certificate / Document Number <span style="color: red;">*</span></label>
+          <input type="text" id="recDocNumber" class="form-input" placeholder="e.g. ADG-HYUI-QRTY-BGHN" required>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="recApplicant">Applicant / Holder Full Name <span style="color: red;">*</span></label>
+          <input type="text" id="recApplicant" class="form-input" placeholder="e.g. Muhammad Ahmed" required>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="recDocType">Document Type</label>
+          <input type="text" id="recDocType" class="form-input" placeholder="e.g. Official Educational Degree Attestation">
+        </div>
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recIssueDate">Issue Date <span style="color: red;">*</span></label>
+            <input type="date" id="recIssueDate" class="form-input" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recExpiryDate">Expiry Date (Optional)</label>
+            <input type="date" id="recExpiryDate" class="form-input">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recAuthority">Issuing Authority / Center</label>
+            <input type="text" id="recAuthority" class="form-input" placeholder="e.g. Directorate of Attestations">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recStatus">Verification Status</label>
+            <select id="recStatus" class="form-select">
+              <option value="VERIFIED">VERIFIED (Authentic)</option>
+              <option value="EXPIRED">EXPIRED (Expired Date)</option>
+              <option value="REVOKED">REVOKED (Officially Cancelled)</option>
+              <option value="SUSPENDED">SUSPENDED (Under Review)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="recNotes">Administrative Notes / Reason for Status</label>
+          <textarea id="recNotes" class="form-textarea" rows="2" placeholder="Internal remarks or revocation notice"></textarea>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="recordModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveRecord">Save Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

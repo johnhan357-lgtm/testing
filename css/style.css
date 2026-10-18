@@ -381,6 +381,24 @@ body {
   border: 1px solid #fecaca;
 }
 
+.status-expired {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.status-revoked {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #f87171;
+}
+
+.brand-emblem img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .result-table {
   width: 100%;
   border-collapse: collapse;
@@ -679,29 +697,210 @@ body {
 }
 
 /* ==========================================================================
-   9. RESPONSIVE DESIGN
+   HAMBURGER BUTTON & DATE SELECT GRID
+   ========================================================================== */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 8px 9px;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 42px;
+  height: 38px;
+  transition: border-color 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  border-color: #9ca3af;
+}
+
+.mobile-menu-btn span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: #4b5563;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn.active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.mobile-menu-btn.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-btn.active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Date Picker Dropdowns */
+.date-picker-grid {
+  width: 100%;
+}
+
+.date-row-top {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.date-row-top .select-wrapper {
+  flex: 1;
+}
+
+.date-row-bottom .select-wrapper-year {
+  width: calc(50% - 6px);
+}
+
+.date-select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  color: #1f2937;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: #f9fafb;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234b5563'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.date-select:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(1, 65, 28, 0.15);
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* ==========================================================================
+   9. RESPONSIVE DESIGN (Pixel-Accurate Mobile Reversal)
    ========================================================================== */
 @media (max-width: 900px) {
   .top-header {
-    padding: 12px 20px;
+    padding: 14px 18px;
+  }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .brand-section {
+    gap: 10px;
+  }
+
+  .brand-emblem {
+    width: 44px;
+    height: 44px;
+  }
+
+  .brand-title {
+    font-size: 1.05rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .social-links {
+    display: none !important;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  /* Collapsible Mobile Navigation Bar */
+  .main-navbar {
+    display: none;
+    box-shadow: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .main-navbar.mobile-open {
+    display: block;
+    animation: slideDownMenu 0.25s ease-out;
+  }
+
+  @keyframes slideDownMenu {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .nav-list {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 0 14px 0;
+  }
+
+  .nav-divider {
+    display: none !important;
   }
 
   .nav-link {
-    padding: 12px 14px;
-    font-size: 0.72rem;
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: left;
+    border-bottom: none;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Main Hero Section on Mobile */
+  .main-content {
+    padding: 35px 16px 50px 16px;
+  }
+
+  .hero-title-section {
+    margin-bottom: 25px;
   }
 
   .hero-title {
-    font-size: 1.75rem;
+    font-size: 1.45rem;
+    line-height: 1.35;
+    margin-bottom: 12px;
   }
 
+  .hero-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  /* Verification Card on Mobile */
   .verification-card {
-    padding: 30px 24px;
+    padding: 30px 20px 35px 20px;
+    border-radius: 12px;
+  }
+
+  .card-heading {
+    font-size: 1.25rem;
+    margin-bottom: 24px;
+    line-height: 1.35;
   }
 
   .form-group {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    margin-bottom: 20px;
   }
 
   .form-label {
@@ -709,66 +908,105 @@ body {
     width: 100%;
     margin-bottom: 6px;
     padding-right: 0;
+    font-size: 0.88rem;
+    color: #4b5563;
+    font-weight: 600;
+  }
+
+  .form-input {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  .form-actions {
+    margin-top: 25px;
+    gap: 12px;
+  }
+
+  .btn-verify {
+    width: 100%;
+    max-width: 190px;
+    padding: 13px 30px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    margin: 0 auto;
+  }
+
+  .btn-clear {
+    margin-top: 14px;
+    font-size: 0.95rem;
+    color: #111827;
+    text-decoration: underline;
+  }
+
+  .help-text {
+    font-size: 0.82rem;
+    line-height: 1.55;
+    padding: 0 10px;
+    margin-top: 25px;
+  }
+
+  /* Floating Feedback Widget on Mobile (Screenshots 1, 2, 3: Bottom-Right) */
+  .floating-feedback-btn {
+    top: auto;
+    bottom: 22px;
+    right: 16px;
+    transform: none;
+    border-radius: 50px;
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  }
+
+  .floating-feedback-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Footer on Mobile (Screenshot 2: Centered) */
+  .footer-top {
+    padding: 30px 20px;
   }
 
   .footer-top-container {
     flex-direction: column;
+    align-items: center;
     text-align: center;
-    gap: 15px;
+    gap: 20px;
+  }
+
+  .footer-brand {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .footer-brand .brand-emblem {
+    margin: 0 auto;
   }
 
   .footer-links {
+    flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 14px;
+    align-items: center;
+    gap: 8px 18px;
   }
 
   .footer-links .footer-divider {
-    display: none;
+    display: inline-block;
+    color: #6b7280;
   }
 
-  .floating-feedback-btn {
-    padding: 10px 14px;
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .header-container {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
-
-  .brand-section {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .nav-list {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .nav-divider {
-    display: none;
-  }
-
-  .nav-link {
-    width: 100%;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .hero-title {
-    font-size: 1.4rem;
-  }
-
-  .hero-subtitle {
+  .footer-links li a {
     font-size: 0.92rem;
   }
 
-  .modal-container {
-    padding: 25px 20px;
+  .footer-bottom {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    padding: 14px 16px;
   }
 }
+
