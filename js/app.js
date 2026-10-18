@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (elWatermark && cv.watermarkText) {
         const wmText = encodeURIComponent(cv.watermarkText);
-        elWatermark.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='75' viewBox='0 0 240 75'%3E%3Ctext x='10' y='42' transform='rotate(-20 120 37)' font-family='Arial, sans-serif' font-weight='800' font-size='13' fill='rgba(1, 65, 28, 0.055)' letter-spacing='2'%3E${wmText}%3C/text%3E%3C/svg%3E")`;
+        elWatermark.style.backgroundImage = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='165' height='28' viewBox='0 0 165 28'%3E%3Ctext x='5' y='19' font-family='Arial, sans-serif' font-weight='800' font-size='12.5' fill='rgba(0, 0, 0, 0.055)' letter-spacing='1'%3E${wmText}%3C/text%3E%3C/svg%3E")`;
       }
 
       if (elPdfSection) {

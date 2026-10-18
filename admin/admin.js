@@ -1083,11 +1083,218 @@ document.addEventListener("DOMContentLoaded", () => {
           recordModal.classList.remove("active");
           showToast(recId ? "Document updated." : "Document registered.", "success");
           await loadRecords();
+          if (data.record) {
+            displayGeneratedCertificateLink(data.record);
+          }
         } else {
           showToast(data.message || "Failed to save document.", "error");
         }
       } catch {
         showToast("Network error saving document.", "error");
+      }
+    });
+  }
+
+  // =========================================================================
+  // QUICK CERTIFICATE GENERATOR & INSTANT QR SHARE BOX
+  // =========================================================================
+  function generateRandomApostilleId() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const randPart = (len) => Array.from({length: len}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return `APO-${randPart(4)}-${randPart(4)}-${randPart(4)}`;
+  }
+
+  function displayGeneratedCertificateLink(rec) {
+    const resultBox = document.getElementById("certGeneratedResultBox");
+    const numEl = document.getElementById("genResultDocNum");
+    const urlInput = document.getElementById("genResultUrlInput");
+    const openCertBtn = document.getElementById("btnOpenGenCert");
+    const openPdfBtn = document.getElementById("btnOpenGenPdf");
+    const qrContainer = document.getElementById("genResultQrCode");
+
+    if (!resultBox || !rec) return;
+
+    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+
+    if (numEl) numEl.textContent = rec.docNumber;
+    if (urlInput) urlInput.value = pubUrl;
+    if (openCertBtn) openCertBtn.href = pubUrl;
+
+    if (openPdfBtn) {
+      const pdfUrl = rec.pdfUrl || (rec.pdfFileName ? `/uploads/${rec.pdfFileName}` : "");
+      if (pdfUrl) {
+        openPdfBtn.href = pdfUrl;
+        openPdfBtn.style.display = "inline-block";
+      } else {
+        openPdfBtn.style.display = "none";
+      }
+    }
+
+    if (qrContainer) {
+      qrContainer.innerHTML = "";
+      if (typeof renderQRCodeSVG === 'function') {
+        qrContainer.innerHTML = renderQRCodeSVG(pubUrl, 110, 110);
+      } else {
+        const qrImg = document.createElement("img");
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(pubUrl)}`;
+        qrImg.style.width = "100%";
+        qrImg.style.height = "100%";
+        qrContainer.appendChild(qrImg);
+      }
+    }
+
+    resultBox.style.display = "block";
+    resultBox.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  const btnRandomDocNum = document.getElementById("btnRandomDocNum");
+  if (btnRandomDocNum) {
+    btnRandomDocNum.addEventListener("click", () => {
+      const docInput = document.getElementById("qgDocNumber");
+      if (docInput) {
+        docInput.value = generateRandomApostilleId();
+        showToast(`Generated ID: ${docInput.value}`, "info");
+      }
+    });
+  }
+
+  const quickGenFileInput = document.getElementById("quickGenFileInput");
+  if (quickGenFileInput) {
+    quickGenFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        showToast("Only PDF documents are allowed.", "error");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        showToast("PDF file exceeds 10MB limit.", "error");
+        return;
+      }
+
+      const statusEl = document.getElementById("quickGenFileStatus");
+      if (statusEl) statusEl.textContent = `Uploading ${file.name}...`;
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const res = await apiFetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: file.name,
+              fileData: reader.result
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            document.getElementById("quickGenPdfFileName").value = file.name;
+            document.getElementById("quickGenPdfUrl").value = data.fileUrl;
+            if (statusEl) {
+              statusEl.innerHTML = `<span style="color: #059669; font-weight: 700;">✓ Ready:</span> ${file.name}`;
+            }
+            showToast("Document PDF uploaded.", "success");
+          } else {
+            if (statusEl) statusEl.textContent = "Upload failed.";
+            showToast(data.message || "PDF upload failed.", "error");
+          }
+        } catch {
+          if (statusEl) statusEl.textContent = "Upload network error.";
+          showToast("Network error uploading PDF.", "error");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const quickGenForm = document.getElementById("quickGenForm");
+  if (quickGenForm) {
+    quickGenForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById("btnQuickGenSubmit");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Creating Certificate...";
+      }
+
+      const payload = {
+        docNumber: document.getElementById("qgDocNumber").value.trim().toUpperCase(),
+        applicantName: document.getElementById("qgApplicant").value.trim(),
+        documentCategory: document.getElementById("qgDocCategory").value.trim(),
+        country: document.getElementById("qgCountry").value.trim() || "Pakistan",
+        signedBy: document.getElementById("qgSignedBy").value.trim() || "N/A",
+        capacity: document.getElementById("qgCapacity").value.trim() || "Registrar",
+        sealOf: document.getElementById("qgSealOf").value.trim() || "Preston University",
+        issuePlace: document.getElementById("qgIssuePlace").value.trim() || "Lahore Pakistan",
+        issueDate: document.getElementById("qgIssueDate").value,
+        expiryDate: "",
+        issuingAuthority: document.getElementById("qgAuthority").value.trim() || "Ministry of Foreign Affairs",
+        signatoryOfficer: document.getElementById("qgSignatoryOfficer").value.trim() || "Ali Faraz",
+        documentType: document.getElementById("qgDocCategory").value.trim(),
+        status: document.getElementById("qgStatus").value || "VERIFIED",
+        pdfFileName: document.getElementById("quickGenPdfFileName").value.trim(),
+        pdfUrl: document.getElementById("quickGenPdfUrl").value.trim(),
+        notes: "Generated via Admin Certificate Template"
+      };
+
+      try {
+        const res = await apiFetch('/api/admin/records', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast("Certificate generated & link ready!", "success");
+          await loadRecords();
+          displayGeneratedCertificateLink(data.record);
+        } else {
+          showToast(data.message || "Failed to generate certificate.", "error");
+        }
+      } catch {
+        showToast("Network error generating certificate.", "error");
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "⚡ Create Certificate & Generate Link";
+        }
+      }
+    });
+  }
+
+  const btnCopyGenUrl = document.getElementById("btnCopyGenUrl");
+  if (btnCopyGenUrl) {
+    btnCopyGenUrl.addEventListener("click", () => {
+      const urlInput = document.getElementById("genResultUrlInput");
+      if (urlInput && urlInput.value) {
+        navigator.clipboard.writeText(urlInput.value).then(() => {
+          showToast("Verification link copied to clipboard!", "success");
+        }).catch(() => {
+          prompt("Copy this Verification Link:", urlInput.value);
+        });
+      }
+    });
+  }
+
+  const btnCloseGenBox = document.getElementById("btnCloseGenBox");
+  if (btnCloseGenBox) {
+    btnCloseGenBox.addEventListener("click", () => {
+      const box = document.getElementById("certGeneratedResultBox");
+      if (box) box.style.display = "none";
+    });
+  }
+
+  const btnToggleGenForm = document.getElementById("btnToggleGenForm");
+  if (btnToggleGenForm && quickGenForm) {
+    btnToggleGenForm.addEventListener("click", () => {
+      if (quickGenForm.style.display === "none") {
+        quickGenForm.style.display = "block";
+        btnToggleGenForm.textContent = "▲ Hide Generator";
+      } else {
+        quickGenForm.style.display = "none";
+        btnToggleGenForm.textContent = "▼ Show Generator";
       }
     });
   }

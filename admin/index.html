@@ -370,6 +370,157 @@
              TAB 5: DOCUMENT REGISTRY (CRUD)
              =================================================================== -->
         <section class="tab-pane" id="tab-records">
+          <!-- Instant Result & Share Link Box (Hidden by default, shown upon creation or share click) -->
+          <div class="card" id="certGeneratedResultBox" style="display: none; border-left: 5px solid #059669; background: #f0fdf4; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+              <div style="flex: 1; min-width: 280px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <span style="background: #059669; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">ACTIVE CERTIFICATE</span>
+                  <span style="font-weight: 700; font-family: monospace; font-size: 1rem; color: #065f46;" id="genResultDocNum">APO-KTAQ-NWSP-VDSJ</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #064e3b; font-size: 1.1rem;">Direct Verification Link &amp; Scannable QR Code</h3>
+                <p style="font-size: 0.85rem; color: #047857; margin-bottom: 12px;">
+                  Anyone scanning this QR code or opening this link will see the authentic Apostille certificate and attached document.
+                </p>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+                  <input type="text" id="genResultUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 0.85rem; background: #ffffff; color: #111827; flex: 1;">
+                  <button type="button" class="btn-primary" id="btnCopyGenUrl" style="white-space: nowrap; padding: 8px 16px;">
+                    📋 Copy Link
+                  </button>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <a href="#" target="_blank" class="btn-secondary" id="btnOpenGenCert" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem;">
+                    👁️ Open Public Certificate
+                  </a>
+                  <a href="#" target="_blank" class="btn-secondary" id="btnOpenGenPdf" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem; display: none;">
+                    📄 View Attached PDF
+                  </a>
+                  <button type="button" class="btn-secondary" id="btnCloseGenBox" style="padding: 6px 14px; font-size: 0.85rem; color: #6b7280;">
+                    Close
+                  </button>
+                </div>
+              </div>
+              <div style="text-align: center; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <div id="genResultQrCode" style="width: 110px; height: 110px; margin: 0 auto 6px auto;"></div>
+                <span style="font-size: 0.72rem; color: #059669; font-weight: 700; display: block;">LIVE SCANNABLE QR</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apostille Document Upload & Certificate Generator Template -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom: 4px;">⚡ Document Certificate Template &amp; Direct Uploader</h2>
+                <p class="card-desc" style="margin-bottom: 0;">Directly upload a document PDF and generate its verified Apostille certificate and instant scannable link.</p>
+              </div>
+              <button type="button" class="btn-secondary" id="btnToggleGenForm">
+                ▼ Show / Hide Generator
+              </button>
+            </div>
+
+            <form id="quickGenForm">
+              <!-- Upload Box -->
+              <div style="background: #f8fafc; border: 2px dashed #94a3b8; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                <div style="margin-bottom: 8px;">
+                  <span style="font-size: 2rem;">📄</span>
+                </div>
+                <h4 style="margin: 0 0 6px 0; font-size: 0.95rem; color: #1e293b;">Upload Attached Document File (PDF)</h4>
+                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">Select the official document or degree to attach to this verification link (max 10MB).</p>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <label class="btn-primary" style="cursor: pointer; margin: 0;">
+                    Choose PDF Document
+                    <input type="file" id="quickGenFileInput" accept=".pdf" style="display: none;">
+                  </label>
+                  <span id="quickGenFileStatus" style="font-size: 0.85rem; font-family: monospace; color: #475569;">Sample: wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf</span>
+                </div>
+                <input type="hidden" id="quickGenPdfFileName" value="wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf">
+                <input type="hidden" id="quickGenPdfUrl" value="/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf">
+              </div>
+
+              <!-- Certificate Fields Template -->
+              <div class="grid-2">
+                <div class="form-field">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label class="form-label" for="qgDocNumber" style="margin-bottom: 0;">Apostille / Certificate Number <span style="color: red;">*</span></label>
+                    <button type="button" class="btn-secondary" id="btnRandomDocNum" style="padding: 2px 8px; font-size: 0.75rem;">🎲 Auto-Generate ID</button>
+                  </div>
+                  <input type="text" id="qgDocNumber" class="form-input" placeholder="e.g. APO-KTAQ-NWSP-VDSJ" value="APO-KTAQ-NWSP-VDSJ" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgApplicant">Applicant / Candidate Full Name <span style="color: red;">*</span></label>
+                  <input type="text" id="qgApplicant" class="form-input" placeholder="e.g. Attestation Candidate" value="Attestation Candidate" required>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgDocCategory">Classification / Category (Box 1 Right) <span style="color: red;">*</span></label>
+                  <input type="text" id="qgDocCategory" class="form-input" placeholder="e.g. Personal Document" value="Personal Document" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgCountry">Origin Country (Box 1 Left)</label>
+                  <input type="text" id="qgCountry" class="form-input" placeholder="e.g. Pakistan" value="Pakistan">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgSignedBy">Signed By (Box 2)</label>
+                  <input type="text" id="qgSignedBy" class="form-input" placeholder="e.g. N/A or Official Name" value="N/A">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgCapacity">Acting in Capacity Of (Box 3)</label>
+                  <input type="text" id="qgCapacity" class="form-input" placeholder="e.g. Registrar" value="Registrar">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgSealOf">Bears Seal / Stamp Of (Box 4)</label>
+                  <input type="text" id="qgSealOf" class="form-input" placeholder="e.g. Preston University" value="Preston University">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgIssuePlace">Certified At Location (Box 5)</label>
+                  <input type="text" id="qgIssuePlace" class="form-input" placeholder="e.g. Lahore Pakistan" value="Lahore Pakistan">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgIssueDate">Issue Date (Box 6) <span style="color: red;">*</span></label>
+                  <input type="date" id="qgIssueDate" class="form-input" value="2026-06-09" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgAuthority">Issuing Authority (Box 7)</label>
+                  <input type="text" id="qgAuthority" class="form-input" placeholder="e.g. Ministry of Foreign Affairs" value="Ministry of Foreign Affairs">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgSignatoryOfficer">Approving Officer / Signatory Name (Box 10)</label>
+                  <input type="text" id="qgSignatoryOfficer" class="form-input" placeholder="e.g. Ali Faraz" value="Ali Faraz">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgStatus">Verification Status</label>
+                  <select id="qgStatus" class="form-select">
+                    <option value="VERIFIED">VERIFIED (Authentic)</option>
+                    <option value="EXPIRED">EXPIRED (Expired Date)</option>
+                    <option value="REVOKED">REVOKED (Officially Cancelled)</option>
+                    <option value="SUSPENDED">SUSPENDED (Under Review)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px;">
+                <button type="submit" class="btn-primary" id="btnQuickGenSubmit" style="padding: 10px 24px; font-weight: 700; font-size: 0.95rem;">
+                  ⚡ Create Certificate &amp; Generate Link
+                </button>
+              </div>
+            </form>
+          </div>
+
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
               <div>
@@ -922,6 +1073,7 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
+  <script src="../js/qrcode.min.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
