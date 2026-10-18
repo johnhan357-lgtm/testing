@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "cfgCertCertifiedWord": [".cert-box-title", "#aposCertified"],
     "cfgCertSignatoryOfficer": ["#certOfficerVal", "#aposSignatory"],
     "cfgCertDisclaimer": [".cert-disclaimer-box", "#aposDisclaimer"],
+    "cfgCertVerifyUrl": [".cert-footer-url", "#aposVerifyUrl"],
     "cfgCertVerificationUrl": [".cert-footer-url", "#aposVerifyUrl"],
     "cfgNoticeTitle": ["#modalTitle"],
     "cfgNoticeBodyEn": [".modal-body-text"],
