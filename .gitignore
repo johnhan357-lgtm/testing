@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+Thumbs.db
+data_backup_before_apostille/
+data_backup_before_sidebar/
+_backup_initial/
+data/sessions.json
+data/config.history/
