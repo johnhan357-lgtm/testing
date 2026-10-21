@@ -10,7 +10,7 @@ const crypto = require('crypto');
 const { URL } = require('url');
 
 const PORT = process.env.PORT || 3000;
-const ROOT_DIR = __dirname;
+const ROOT_DIR = process.cwd();
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const HISTORY_DIR = path.join(DATA_DIR, 'config.history');
@@ -361,7 +361,7 @@ const MIME_TYPES = {
   '.pdf': 'application/pdf'
 };
 
-const server = http.createServer(async (req, res) => {
+async function requestHandler(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
   const method = req.method;
@@ -909,14 +909,18 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('404 Not Found');
   }
-});
+}
 
-module.exports = server;
+const server = http.createServer(requestHandler);
 
-server.listen(PORT, () => {
-  console.log(`=======================================================`);
-  console.log(`  Document Verification Portal & CMS Server Running     `);
-  console.log(`  Public Portal: http://localhost:${PORT}/             `);
-  console.log(`  Admin CMS:     http://localhost:${PORT}/admin/        `);
-  console.log(`=======================================================`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`=======================================================`);
+    console.log(`  Document Verification Portal & CMS Server Running     `);
+    console.log(`  Public Portal: http://localhost:${PORT}/             `);
+    console.log(`  Admin CMS:     http://localhost:${PORT}/admin/        `);
+    console.log(`=======================================================`);
+  });
+}
+
+module.exports = requestHandler;
