@@ -888,23 +888,29 @@ async function requestHandler(req, res) {
   if (cleanPath === '' || cleanPath === '/') cleanPath = '/index.html';
   if (cleanPath === '/admin' || cleanPath === '/admin/') cleanPath = '/admin/index.html';
 
-  const fullPath = path.join(ROOT_DIR, cleanPath);
+  let targetFile = path.join(ROOT_DIR, cleanPath);
+  if (!fs.existsSync(targetFile) || !fs.statSync(targetFile).isFile()) {
+    const pubFile = path.join(ROOT_DIR, 'public', cleanPath);
+    if (fs.existsSync(pubFile) && fs.statSync(pubFile).isFile()) {
+      targetFile = pubFile;
+    }
+  }
 
   // Security check: ensure path is within ROOT_DIR
-  if (!fullPath.startsWith(ROOT_DIR)) {
+  if (!targetFile.startsWith(ROOT_DIR)) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     return res.end('Access Denied');
   }
 
-  if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
-    const ext = path.extname(fullPath).toLowerCase();
+  if (fs.existsSync(targetFile) && fs.statSync(targetFile).isFile()) {
+    const ext = path.extname(targetFile).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
     const responseHeaders = { 'Content-Type': contentType };
     if (ext === '.pdf') {
       responseHeaders['Content-Disposition'] = 'inline';
     }
     res.writeHead(200, responseHeaders);
-    fs.createReadStream(fullPath).pipe(res);
+    fs.createReadStream(targetFile).pipe(res);
   } else {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('404 Not Found');

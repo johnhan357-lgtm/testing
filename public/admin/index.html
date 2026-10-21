@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel & Visual CMS — Document Verification Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. LOGIN OVERLAY (Hidden once authenticated)
+       ========================================================================= -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-emblem">
+        <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.1)" stroke="currentColor" stroke-width="3"/>
+          <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <h1 class="login-title">Portal Administration</h1>
+      <p class="login-subtitle">Sign in to manage portal content and document records</p>
+
+      <div class="login-alert" id="loginAlert"></div>
+
+      <form id="loginForm">
+        <div class="form-field">
+          <label class="form-label" for="loginUser">Administrator Username</label>
+          <input type="text" id="loginUser" class="form-input" placeholder="admin" required autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="loginPass">Password</label>
+          <input type="password" id="loginPass" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;" id="btnLoginSubmit">
+          Sign In to Dashboard
+        </button>
+      </form>
+      <p style="font-size: 0.78rem; color: #9ca3af; margin-top: 18px;">
+        Default Credentials: <code>admin</code> / <code>admin123</code>
+      </p>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. MAIN ADMIN APP INTERFACE
+       ========================================================================= -->
+  <div class="admin-wrapper" id="adminApp" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="none" stroke="currentColor" stroke-width="3"/>
+            <path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Portal CMS</h2>
+          <span>Admin Workspace</span>
+        </div>
+      </div>
+
+      <!-- Dynamic Text-Only Admin Sidebar Navigation -->
+      <ul class="sidebar-nav" id="adminSidebarNav">
+        <!-- Rendered dynamically by admin.js from data/admin-nav.json -->
+      </ul>
+
+      <div class="sidebar-footer">
+        <span class="user-badge" id="loggedUserBadge">Logged in as admin</span>
+        <button class="btn-logout" id="btnLogout">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Top Action Bar -->
+      <header class="top-app-bar">
+        <div class="publishing-status-box">
+          <span class="status-pill pill-published" id="statusPill">
+            <span>●</span> All Changes Published
+          </span>
+          <span style="font-size: 0.8rem; color: #6b7280;" id="lastPublishedLabel"></span>
+        </div>
+
+        <div class="top-actions">
+          <a href="/" target="_blank" class="btn-secondary" title="Preview current public website in new tab">
+            👁 View Live Site
+          </a>
+          <button class="btn-secondary" id="btnDiscardDraft" title="Discard unsaved draft changes and revert to live version">
+            ↺ Discard Draft
+          </button>
+          <button class="btn-secondary" id="btnSaveDraft" title="Save changes as a draft without affecting the public site">
+            💾 Save Draft
+          </button>
+          <button class="btn-publish" id="btnPublishLive" title="Publish draft directly to live public portal">
+            🚀 Publish to Live Site
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="admin-content-area">
+
+        <!-- ===================================================================
+             TAB 1: OVERVIEW
+             =================================================================== -->
+        <section class="tab-pane active" id="tab-overview">
+          <div class="card">
+            <h2 class="card-title">Welcome to the Document Verification Portal CMS</h2>
+            <p class="card-desc">Manage all public website content, external links, and authoritative document records.</p>
+
+            <div class="grid-2">
+              <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 20px;">
+                <h3 style="color: #065f46; font-size: 1.1rem; margin-bottom: 6px;">Total Active Documents</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #065f46;" id="statTotalVerified">0</div>
+                <p style="font-size: 0.85rem; color: #047857; margin-top: 4px;">Authoritatively verified against registry</p>
+              </div>
+
+              <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px;">
+                <h3 style="color: #991b1b; font-size: 1.1rem; margin-bottom: 6px;">Revoked / Expired Records</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; color: #991b1b;" id="statTotalFlagged">0</div>
+                <p style="font-size: 0.85rem; color: #b91c1c; margin-top: 4px;">Blocked from successful verification</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">CMS Publishing Workflow Guide</h3>
+            <div style="font-size: 0.9rem; color: #4b5563; line-height: 1.7;">
+              <p><strong>1. Draft Separation:</strong> Any edits made in the tabs are saved as a <em>Draft</em>. The public portal will NEVER see your changes until you explicitly click <strong>Publish to Live Site</strong>.</p>
+              <p><strong>2. Discard &amp; Rollback:</strong> Made a mistake? Click <strong>Discard Draft</strong> to reset your draft to the current live version. Previous versions are saved as snapshots.</p>
+              <p><strong>3. Custom Links:</strong> You can link any header tab or footer button to your existing main website (e.g. <code>https://myorganization.com</code>) by managing items in the <em>Navigation &amp; External Links</em> tab.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 2: BRANDING & IDENTITY
+             =================================================================== -->
+        <section class="tab-pane" id="tab-branding">
+          <div class="card">
+            <h2 class="card-title">Portal Identity &amp; Branding</h2>
+            <p class="card-desc">Configure the organization title, subtitle, logo, and social profile links.</p>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgAuthorityName">Authority / Organization Name</label>
+              <input type="text" id="cfgAuthorityName" class="form-input">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgAuthoritySubtitle">Department Subtitle / Tagline</label>
+              <input type="text" id="cfgAuthoritySubtitle" class="form-input">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Organization Logo</h3>
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 10px;">
+                <input type="radio" name="logoTypeRadio" value="default_svg" id="radioLogoDefault" checked>
+                Use Standard Institutional Emblem (Vector SVG)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
+                <input type="radio" name="logoTypeRadio" value="custom_image" id="radioLogoCustom">
+                Upload Custom Logo Image (PNG, JPG, SVG, WebP — max 2MB)
+              </label>
+            </div>
+
+            <div id="customLogoUploadSection" style="margin-top: 15px; padding: 18px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db;">
+              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+              <div id="logoPreviewContainer" style="margin-top: 12px; display: flex; align-items: center; gap: 15px;">
+                <div style="width: 60px; height: 60px; border: 1px solid #e5e7eb; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                  <img id="logoPreviewImg" src="" alt="Logo Preview" style="max-width: 100%; max-height: 100%; display: none;">
+                </div>
+                <span id="logoStatusText" style="font-size: 0.85rem; color: #6b7280;">No custom logo selected.</span>
+              </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Social Media Profile Links</h3>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialFb">Facebook URL</label>
+                <input type="url" id="cfgSocialFb" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialIg">Instagram URL</label>
+                <input type="url" id="cfgSocialIg" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialTw">Twitter / X URL</label>
+                <input type="url" id="cfgSocialTw" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSocialLi">LinkedIn URL</label>
+                <input type="url" id="cfgSocialLi" class="form-input">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 3: NAVIGATION & EXTERNAL LINKS MANAGER (Dedicated Manager)
+             =================================================================== -->
+        <section class="tab-pane" id="tab-navigation">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <div>
+                <h2 class="card-title">Header Navigation &amp; External Website Integration</h2>
+                <p class="card-desc" style="margin-bottom: 0;">
+                  Add, edit, reorder, or point links to your existing website pages (e.g. <code>https://yourdomain.com</code>).
+                </p>
+              </div>
+              <button class="btn-primary" id="btnAddNavItem">
+                + Add Navigation Item
+              </button>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 60px;">Order</th>
+                    <th>Label</th>
+                    <th>Destination URL</th>
+                    <th style="width: 110px;">Target</th>
+                    <th style="width: 90px;">Status</th>
+                    <th style="width: 170px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="navItemsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 4: PAGE TEXTS & FORM
+             =================================================================== -->
+        <section class="tab-pane" id="tab-content">
+          <div class="card">
+            <h2 class="card-title">Hero Section Headline &amp; Instructions</h2>
+            <div class="form-field">
+              <label class="form-label" for="cfgHeroTitle">Hero Title</label>
+              <textarea id="cfgHeroTitle" class="form-textarea" rows="2"></textarea>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="cfgHeroSubtitle">Hero Subtitle</label>
+              <textarea id="cfgHeroSubtitle" class="form-textarea" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Verification Search Card Labels</h2>
+            <div class="form-field">
+              <label class="form-label" for="cfgCardHeading">Card Heading</label>
+              <input type="text" id="cfgCardHeading" class="form-input">
+            </div>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgDocLabel">Document Number Label</label>
+                <input type="text" id="cfgDocLabel" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgDocPlaceholder">Document Number Placeholder</label>
+                <input type="text" id="cfgDocPlaceholder" class="form-input">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgDateLabel">Date Field Label</label>
+                <input type="text" id="cfgDateLabel" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgVerifyBtnText">Verify Button Label</label>
+                <input type="text" id="cfgVerifyBtnText" class="form-input">
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgClearBtnText">Clear Data Button Label</label>
+                <input type="text" id="cfgClearBtnText" class="form-input">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgSupportEmail">Support Desk Contact Email</label>
+                <input type="email" id="cfgSupportEmail" class="form-input">
+              </div>
+            <div class="form-field" style="margin-top: 15px;">
+              <label class="form-label" for="cfgHelpText">Verification Help Desk Note / Text</label>
+              <textarea id="cfgHelpText" class="form-textarea" rows="2" placeholder="If you need further help email support@verification-portal.org with the certificate number and date"></textarea>
+              <span class="form-hint" style="font-size: 0.82rem; color: #6b7280; display: block; margin-top: 4px;">Customize the help text displayed below the verification result. Any email address will automatically be rendered as a clickable link.</span>
+            </div>
+          </div>
+
+          <!-- Apostille Certificate & QR Result View Settings -->
+          <div class="card" style="margin-top: 24px;">
+            <h2 class="card-title">Apostille Certificate & QR Result View Settings</h2>
+            <p class="card-desc">Configure the public verification result layout, convention titles, security watermark, and PDF document viewer.</p>
+            
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertPageTitle">Certificate Result Page Title</label>
+                <input type="text" id="cfgCertPageTitle" class="form-input" placeholder="e.g. QR Code Verification Apostille Certificate">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertStatusText">Verified Status Badge Label</label>
+                <input type="text" id="cfgCertStatusText" class="form-input" placeholder="e.g. Document Certificate Verified">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertBreadcrumb">Breadcrumb Path</label>
+              <input type="text" id="cfgCertBreadcrumb" class="form-input" placeholder="e.g. Home / Apostille verification">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertIssuerStatement">Authority Issuer Statement</label>
+              <input type="text" id="cfgCertIssuerStatement" class="form-input" placeholder="e.g. This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertSummaryTemplate">Dynamic Reference Statement Template</label>
+              <input type="text" id="cfgCertSummaryTemplate" class="form-input" placeholder="e.g. This apostille refers to {category} and issued on {date} and is Approved by {authority}">
+              <small style="color: #6b7280; font-size: 0.8rem;">Variables: <code>{category}</code>, <code>{date}</code>, <code>{authority}</code></small>
+            </div>
+
+            <div class="grid-3">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertWatermark">Background Watermark Text</label>
+                <input type="text" id="cfgCertWatermark" class="form-input" placeholder="e.g. GOVTOFPAKISTAN">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertConventionTitle">Convention Header</label>
+                <input type="text" id="cfgCertConventionTitle" class="form-input" placeholder="e.g. APOSTILLE">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertCountry">Default Origin Country</label>
+                <input type="text" id="cfgCertCountry" class="form-input" placeholder="e.g. Pakistan">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertConventionSubtitle">Convention Subtitle</label>
+                <input type="text" id="cfgCertConventionSubtitle" class="form-input" placeholder="e.g. (Convention de La Haye du 5 October 1961)">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgCertSignatory">Default Signatory Officer</label>
+                <input type="text" id="cfgCertSignatory" class="form-input" placeholder="e.g. Ali Faraz">
+              </div>
+            </div>
+
+            <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px;">
+              <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Default Signatory Signature Graphic (PNG, JPG, SVG, WEBP)</label>
+              <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                <div id="cfgCertSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+                  <img id="cfgCertSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+                <input type="text" id="cfgCertSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+                <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+                  Upload Signature
+                  <input type="file" id="cfgCertSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+                </label>
+              </div>
+              <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+                Default signature image used on generated certificates when none is specifically uploaded. Supports transparent PNG, JPG, SVG, and WEBP.
+              </small>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertDisclaimer">Statutory Legal Disclaimer Note</label>
+              <textarea id="cfgCertDisclaimer" class="form-textarea" rows="2" placeholder="This apostille is not intended for use in Pakistan..."></textarea>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgCertVerifyUrl">Verification URL Note</label>
+                <input type="text" id="cfgCertVerifyUrl" class="form-input" placeholder="e.g. To verify this apostille, visit www.apostille.mofa.gov.pk">
+              </div>
+              <div class="form-field" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer;">
+                  <input type="checkbox" id="cfgCertEnablePdf" checked>
+                  Enable Attached PDF Document Viewer on Verification Result
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 5: DOCUMENT REGISTRY (CRUD)
+             =================================================================== -->
+        <section class="tab-pane" id="tab-records">
+          <!-- Instant Result & Share Link Box (Hidden by default, shown upon creation or share click) -->
+          <div class="card" id="certGeneratedResultBox" style="display: none; border-left: 5px solid #059669; background: #f0fdf4; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+              <div style="flex: 1; min-width: 280px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <span style="background: #059669; color: #fff; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;">ACTIVE CERTIFICATE</span>
+                  <span style="font-weight: 700; font-family: monospace; font-size: 1rem; color: #065f46;" id="genResultDocNum">APO-KTAQ-NWSP-VDSJ</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #064e3b; font-size: 1.1rem;">Direct Verification Link &amp; Scannable QR Code</h3>
+                <p style="font-size: 0.85rem; color: #047857; margin-bottom: 12px;">
+                  Anyone scanning this QR code or opening this link will see the authentic Apostille certificate and attached document.
+                </p>
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+                  <input type="text" id="genResultUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 0.85rem; background: #ffffff; color: #111827; flex: 1;">
+                  <button type="button" class="btn-primary" id="btnCopyGenUrl" style="white-space: nowrap; padding: 8px 16px;">
+                    📋 Copy Link
+                  </button>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                  <a href="#" target="_blank" class="btn-secondary" id="btnOpenGenCert" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem;">
+                    👁️ Open Public Certificate
+                  </a>
+                  <a href="#" target="_blank" class="btn-secondary" id="btnOpenGenPdf" style="text-decoration: none; padding: 6px 14px; font-size: 0.85rem; display: none;">
+                    📄 View Attached PDF
+                  </a>
+                  <button type="button" class="btn-secondary" id="btnCloseGenBox" style="padding: 6px 14px; font-size: 0.85rem; color: #6b7280;">
+                    Close
+                  </button>
+                </div>
+              </div>
+              <div style="text-align: center; background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <div id="genResultQrCode" style="width: 110px; height: 110px; margin: 0 auto 6px auto;"></div>
+                <span style="font-size: 0.72rem; color: #059669; font-weight: 700; display: block;">LIVE SCANNABLE QR</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apostille Document Upload & Certificate Generator Template -->
+          <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom: 4px;">⚡ Document Certificate Template &amp; Direct Uploader</h2>
+                <p class="card-desc" style="margin-bottom: 0;">Directly upload a document PDF and generate its verified Apostille certificate and instant scannable link.</p>
+              </div>
+              <button type="button" class="btn-secondary" id="btnToggleGenForm">
+                ▼ Show / Hide Generator
+              </button>
+            </div>
+
+            <form id="quickGenForm">
+              <!-- Upload Box -->
+              <div style="background: #f8fafc; border: 2px dashed #94a3b8; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                <div style="margin-bottom: 8px;">
+                  <span style="font-size: 2rem;">📄</span>
+                </div>
+                <h4 style="margin: 0 0 6px 0; font-size: 0.95rem; color: #1e293b;">Upload Attached Document File (PDF)</h4>
+                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">Select the official document or degree to attach to this verification link (max 10MB).</p>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <label class="btn-primary" style="cursor: pointer; margin: 0;">
+                    Choose PDF Document
+                    <input type="file" id="quickGenFileInput" accept=".pdf" style="display: none;">
+                  </label>
+                  <span id="quickGenFileStatus" style="font-size: 0.85rem; font-family: monospace; color: #475569;">Sample: wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf</span>
+                </div>
+                <input type="hidden" id="quickGenPdfFileName" value="wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf">
+                <input type="hidden" id="quickGenPdfUrl" value="/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf">
+              </div>
+
+              <!-- Certificate Fields Template -->
+              <div class="grid-2">
+                <div class="form-field">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label class="form-label" for="qgDocNumber" style="margin-bottom: 0;">Apostille / Certificate Number <span style="color: red;">*</span></label>
+                    <button type="button" class="btn-secondary" id="btnRandomDocNum" style="padding: 2px 8px; font-size: 0.75rem;">🎲 Auto-Generate ID</button>
+                  </div>
+                  <input type="text" id="qgDocNumber" class="form-input" placeholder="e.g. APO-KTAQ-NWSP-VDSJ" value="APO-KTAQ-NWSP-VDSJ" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgApplicant">Applicant / Candidate Full Name <span style="color: red;">*</span></label>
+                  <input type="text" id="qgApplicant" class="form-input" placeholder="e.g. Attestation Candidate" value="Attestation Candidate" required>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgDocCategory">Classification / Category (Box 1 Right) <span style="color: red;">*</span></label>
+                  <input type="text" id="qgDocCategory" class="form-input" placeholder="e.g. Personal Document" value="Personal Document" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgCountry">Origin Country (Box 1 Left)</label>
+                  <input type="text" id="qgCountry" class="form-input" placeholder="e.g. Pakistan" value="Pakistan">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgSignedBy">Signed By (Box 2)</label>
+                  <input type="text" id="qgSignedBy" class="form-input" placeholder="e.g. N/A or Official Name" value="N/A">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgCapacity">Acting in Capacity Of (Box 3)</label>
+                  <input type="text" id="qgCapacity" class="form-input" placeholder="e.g. Registrar" value="Registrar">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgSealOf">Bears Seal / Stamp Of (Box 4)</label>
+                  <input type="text" id="qgSealOf" class="form-input" placeholder="e.g. Preston University" value="Preston University">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgIssuePlace">Certified At Location (Box 5)</label>
+                  <input type="text" id="qgIssuePlace" class="form-input" placeholder="e.g. Lahore Pakistan" value="Lahore Pakistan">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgIssueDate">Issue Date (Box 6) <span style="color: red;">*</span></label>
+                  <input type="date" id="qgIssueDate" class="form-input" value="2026-06-09" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgAuthority">Issuing Authority (Box 7)</label>
+                  <input type="text" id="qgAuthority" class="form-input" placeholder="e.g. Ministry of Foreign Affairs" value="Ministry of Foreign Affairs">
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-field">
+                  <label class="form-label" for="qgSignatoryOfficer">Approving Officer / Signatory Name (Box 10)</label>
+                  <input type="text" id="qgSignatoryOfficer" class="form-input" placeholder="e.g. Ali Faraz" value="Ali Faraz">
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="qgStatus">Verification Status</label>
+                  <select id="qgStatus" class="form-select">
+                    <option value="VERIFIED">VERIFIED (Authentic)</option>
+                    <option value="EXPIRED">EXPIRED (Expired Date)</option>
+                    <option value="REVOKED">REVOKED (Officially Cancelled)</option>
+                    <option value="SUSPENDED">SUSPENDED (Under Review)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Officer Signature Graphic for Quick Generator -->
+              <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px;">
+                <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Officer Signature Graphic (PNG, JPG, SVG, WEBP)</label>
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                  <div id="qgSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+                    <img id="qgSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                  </div>
+                  <input type="text" id="qgSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+                  <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+                    Upload Signature
+                    <input type="file" id="qgSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+                  </label>
+                </div>
+                <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+                  Upload any signature format (PNG, JPG, SVG, WEBP) to attach directly to this certificate.
+                </small>
+              </div>
+
+              <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px;">
+                <button type="submit" class="btn-primary" id="btnQuickGenSubmit" style="padding: 10px 24px; font-weight: 700; font-size: 0.95rem;">
+                  ⚡ Create Certificate &amp; Generate Link
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">Authoritative Document Registry</h2>
+                <p class="card-desc" style="margin-bottom: 0;">Add and manage registered certificates, degrees, and attestations verified via QR or web.</p>
+              </div>
+              <button class="btn-primary" id="btnAddNewRecord">
+                + Register New Document
+              </button>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+              <input type="text" id="recordSearchInput" class="form-input" placeholder="Search by Document Number, Holder Name, or Type..." style="flex: 1;">
+              <select id="recordStatusFilter" class="form-select" style="width: 170px;">
+                <option value="ALL">All Statuses</option>
+                <option value="VERIFIED">Verified Only</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="REVOKED">Revoked</option>
+                <option value="SUSPENDED">Suspended</option>
+              </select>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Apostille / Doc Number</th>
+                    <th>Classification</th>
+                    <th>Institution / Seal</th>
+                    <th>Issue Date</th>
+                    <th>Status</th>
+                    <th>PDF</th>
+                    <th style="width: 200px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 6: NOTICE MODAL
+             =================================================================== -->
+        <section class="tab-pane" id="tab-notice">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom: 4px;">Announcement Notice Popup Modal</h2>
+                <p class="card-desc" style="margin: 0;">Configure the official announcement notice that greets visitors when the website is loaded or refreshed.</p>
+              </div>
+              <button type="button" class="btn-secondary" id="btnTestNoticeModal" style="padding: 7px 15px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+                <span>👁️</span> Test / Preview Popup
+              </button>
+            </div>
+
+            <!-- Display Controls -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+              <div class="form-field" style="margin-bottom: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer;">
+                  <input type="checkbox" id="cfgNoticeEnabled" style="width: 18px; height: 18px;">
+                  Enable Announcement Popup Modal on Public Website
+                </label>
+              </div>
+
+              <div class="grid-2" style="margin-top: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.88rem; cursor: pointer; color: #334155;">
+                  <input type="checkbox" id="cfgNoticeAlwaysShow" checked style="width: 16px; height: 16px;">
+                  Always show notice popup on EVERY page reload / refresh
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.88rem; cursor: pointer; color: #334155;">
+                  <input type="checkbox" id="cfgNoticeShowOnDirectVerify" style="width: 16px; height: 16px;">
+                  Also show notice when opened via direct QR code link
+                </label>
+              </div>
+            </div>
+
+            <!-- Organization / Authority Header inside Modal -->
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgNoticePortalTitle">Notice Authority / Institution Name</label>
+                <input type="text" id="cfgNoticePortalTitle" class="form-input" placeholder="e.g. Department of Verification & Legalization">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgNoticePortalSub">Notice Subtitle / Service Description</label>
+                <input type="text" id="cfgNoticePortalSub" class="form-input" placeholder="e.g. Public Document Services">
+              </div>
+            </div>
+
+            <!-- Notice Emblem / Logo Options -->
+            <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 14px; border-radius: 6px; margin-bottom: 20px;">
+              <label class="form-label" style="font-weight: 600; margin-bottom: 8px;">Notice Popup Header Emblem / Logo</label>
+              <div style="display: flex; gap: 18px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; cursor: pointer;">
+                  <input type="radio" name="noticeLogoType" id="radioNoticeLogoDefault" value="default_svg" checked>
+                  Default Institutional Shield (SVG)
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; cursor: pointer;">
+                  <input type="radio" name="noticeLogoType" id="radioNoticeLogoBrand" value="use_brand_logo">
+                  Use Main Website Brand Logo
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; cursor: pointer;">
+                  <input type="radio" name="noticeLogoType" id="radioNoticeLogoCustom" value="custom_image">
+                  Upload Custom Notice Logo / Emblem
+                </label>
+              </div>
+
+              <!-- Custom Notice Logo Upload Row -->
+              <div id="noticeCustomLogoUploadRow" style="display: none; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
+                <div id="noticeLogoPreviewBox" style="width: 50px; height: 50px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden;">
+                  <img id="noticeLogoPreview" src="" alt="Notice Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+                <input type="text" id="cfgNoticeLogoUrl" class="form-input" placeholder="/uploads/your-notice-logo.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+                <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+                  Upload Logo
+                  <input type="file" id="noticeLogoFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+                </label>
+              </div>
+            </div>
+
+            <!-- Notice Badge & Content -->
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeTitle">Notice Badge / Header Title</label>
+              <input type="text" id="cfgNoticeTitle" class="form-input" placeholder="e.g. IMPORTANT NOTICE">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeBodyEn">Primary Notice Content (English / Multiline)</label>
+              <textarea id="cfgNoticeBodyEn" class="form-textarea" rows="4" placeholder="Dear Applicants, please visit the verification authority centers only on your scheduled appointment date..."></textarea>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeBodyReg">Regional / Multilingual Content (Urdu, Arabic, etc.)</label>
+              <textarea id="cfgNoticeBodyReg" class="form-textarea" rows="3" style="direction: rtl;" placeholder="محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔"></textarea>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgNoticeBtnText">Confirm / Dismiss Button Text</label>
+              <input type="text" id="cfgNoticeBtnText" class="form-input" placeholder="e.g. Acknowledge & Proceed">
+            </div>
+
+            <!-- Mini Live Visual Preview Box inside Admin -->
+            <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <span>📱</span> Live Notice Modal Preview
+              </h3>
+              <div id="adminNoticeLivePreviewCard" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); text-align: center;">
+                <div id="prevNoticeEmblem" style="width: 48px; height: 48px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;"></div>
+                <div id="prevNoticePortalTitle" style="font-size: 0.95rem; font-weight: 700; color: #01411C;">Department of Verification & Legalization</div>
+                <div id="prevNoticePortalSub" style="font-size: 0.78rem; color: #64748b; margin-bottom: 12px;">Public Document Services</div>
+                <div style="display: inline-block; background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 9999px; letter-spacing: 0.5px; margin-bottom: 12px;" id="prevNoticeTitle">IMPORTANT NOTICE</div>
+                <div style="font-size: 0.82rem; color: #334155; line-height: 1.5; margin-bottom: 12px; text-align: left;" id="prevNoticeBodyEn">Dear Applicants...</div>
+                <div style="font-size: 0.88rem; color: #01411C; line-height: 1.5; margin-bottom: 16px; direction: rtl; text-align: right;" id="prevNoticeBodyReg">محترم درخواست گزاران...</div>
+                <div style="background: #01411C; color: #ffffff; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block;" id="prevNoticeBtn">Acknowledge & Proceed</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 7: FLOATING ACTION & FOOTER
+             =================================================================== -->
+        <section class="tab-pane" id="tab-footer">
+          <div class="card">
+            <h2 class="card-title">Floating Feedback Pill Widget</h2>
+            <p class="card-desc">The pill button fixed to the right side of the screen.</p>
+
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem;">
+                <input type="checkbox" id="cfgFeedbackEnabled" style="width: 18px; height: 18px;">
+                Enable Floating Widget
+              </label>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgFeedbackLabel">Button Label</label>
+              <input type="text" id="cfgFeedbackLabel" class="form-input">
+            </div>
+
+            <div class="form-field">
+              <label class="form-label">Action Mode</label>
+              <select id="cfgFeedbackAction" class="form-select">
+                <option value="dialog">Interactive Feedback Dialog</option>
+                <option value="custom_link">External Link / Custom Form URL</option>
+              </select>
+            </div>
+
+            <div class="form-field" id="cfgFeedbackUrlField" style="display: none;">
+              <label class="form-label" for="cfgFeedbackUrl">Destination Custom URL</label>
+              <input type="url" id="cfgFeedbackUrl" class="form-input" placeholder="https://example.com/contact">
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+              <div>
+                <h2 class="card-title">Footer Navigation Links</h2>
+                <p class="card-desc" style="margin-bottom: 0;">Links displayed in the dark charcoal footer tier.</p>
+              </div>
+              <button class="btn-primary" id="btnAddFooterLink">+ Add Footer Link</button>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">Order</th>
+                    <th>Label</th>
+                    <th>Destination URL</th>
+                    <th>Target</th>
+                    <th style="width: 80px;">Visible</th>
+                    <th style="width: 170px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="footerLinksTableBody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgFooterAuthorityName">Footer Department / Authority Title</label>
+                <input type="text" id="cfgFooterAuthorityName" class="form-input" placeholder="e.g. Department of Verification & Legalization">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgFooterAuthoritySubtitle">Footer Subtitle / Department Slogan</label>
+                <input type="text" id="cfgFooterAuthoritySubtitle" class="form-input" placeholder="e.g. Online Document Authentication Portal">
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgFooterCopyright">Bottom Copyright Text</label>
+              <input type="text" id="cfgFooterCopyright" class="form-input">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
+
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Footer Emblem / Logo</h3>
+            <div class="form-field">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 10px; cursor: pointer;">
+                <input type="radio" name="footerLogoTypeRadio" value="default_svg" id="radioFooterLogoDefault" checked>
+                Use Standard Shield Emblem (Vector SVG)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="radio" name="footerLogoTypeRadio" value="custom_image" id="radioFooterLogoCustom">
+                Upload Custom Footer Logo (PNG, JPG, SVG, WebP)
+              </label>
+            </div>
+
+            <div id="customFooterLogoUploadSection" style="margin-top: 15px; margin-bottom: 20px; padding: 18px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db; display: none;">
+              <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div id="footerLogoPreviewContainer" style="width: 60px; height: 60px; border: 1px solid #374151; background: #1f2937; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+                  <img id="footerLogoPreviewImg" src="" alt="Footer Logo Preview" style="max-width: 100%; max-height: 100%; display: none; object-fit: contain;">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                  <label class="btn-secondary" style="margin: 0; cursor: pointer; display: inline-block;">
+                    Upload Footer Logo
+                    <input type="file" id="footerLogoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+                  </label>
+                  <input type="text" id="cfgFooterLogoUrl" class="form-input" placeholder="/uploads/logo_...png" style="margin-top: 8px; font-family: monospace; font-size: 0.85rem;">
+                </div>
+              </div>
+              <span id="footerLogoStatusText" style="font-size: 0.85rem; color: #6b7280; display: block; margin-top: 8px;">No custom footer logo uploaded yet.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 8: THEME & COLORS
+             =================================================================== -->
+        <section class="tab-pane" id="tab-theme">
+          <div class="card">
+            <h2 class="card-title">Palette &amp; Color Scheme</h2>
+            <p class="card-desc">Control the primary branding green, footer tone, and page background.</p>
+
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgColorPrimary">Primary Green Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorPrimaryPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorPrimary" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cfgColorDark">Primary Dark Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorDarkPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorDark" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cfgColorFooter">Footer Dark Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorFooterPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorFooter" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="cfgColorBg">Page Background Tone</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="color" id="cfgColorBgPicker" style="width: 44px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                  <input type="text" id="cfgColorBg" class="form-input" style="font-family: monospace;">
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn-secondary" id="btnResetThemeDefaults" style="margin-top: 10px;">
+              Reset Palette to Default Forest Green
+            </button>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <h2 class="card-title">Global Typography &amp; Portal Font</h2>
+            <p class="card-desc">Set the base font family across the entire public verification portal. Individual fields can still have their own custom font override.</p>
+            <div class="form-field">
+              <label class="form-label" for="cfgGlobalFont">Global Website Font</label>
+              <select id="cfgGlobalFont" class="form-input">
+                <option value="">Default (-apple-system / System Sans)</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                <option value="Times">Times (Times New Roman)</option>
+                <option value="Poppins">Poppins</option>
+                <option value="Fair">Fair (Playfair Display)</option>
+                <option value="Helvetica">Helvetica</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 9: ADMIN SECURITY
+             =================================================================== -->
+        <section class="tab-pane" id="tab-security">
+          <div class="card" style="max-width: 600px;">
+            <h2 class="card-title">Change Administrator Password</h2>
+            <p class="card-desc">Keep your portal administration protected with a strong password.</p>
+
+            <form id="passwordChangeForm">
+              <div class="form-field">
+                <label class="form-label" for="currentPassword">Current Password</label>
+                <input type="password" id="currentPassword" class="form-input" required>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="newPassword">New Password (min 6 characters)</label>
+                <input type="password" id="newPassword" class="form-input" required minlength="6">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="confirmPassword">Confirm New Password</label>
+                <input type="password" id="confirmPassword" class="form-input" required minlength="6">
+              </div>
+
+              <button type="submit" class="btn-primary" id="btnUpdatePassword">Update Password</button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             TAB 10: ADMIN SIDEBAR MANAGEMENT (ISOLATED SYSTEM)
+             =================================================================== -->
+        <section class="tab-pane" id="tab-admin-sidebar">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2 class="card-title">Admin Panel Sidebar Management</h2>
+                <p class="card-desc" style="margin-bottom: 0;">
+                  Reorder existing tabs, rename tab labels, show or hide tabs, organize items into groups, and add or remove custom admin links.
+                </p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn-secondary" id="btnResetAdminNav">
+                  ↺ Restore Default Tabs
+                </button>
+                <button type="button" class="btn-primary" id="btnAddAdminNavItem">
+                  + Add Custom Sidebar Link
+                </button>
+              </div>
+            </div>
+
+            <div class="data-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">Order</th>
+                    <th>Group Heading</th>
+                    <th>Tab Label</th>
+                    <th style="width: 120px;">Type</th>
+                    <th>Destination / Target</th>
+                    <th style="width: 80px;">Visible</th>
+                    <th style="width: 170px; text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminNavTableBody">
+                  <!-- Populated dynamically by admin.js from data/admin-nav.json -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 1: ADD / EDIT NAVIGATION ITEM (CRITICAL REQUIREMENT #3)
+       ========================================================================= -->
+  <div class="admin-modal" id="navItemModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="navModalTitle">Navigation Link</h3>
+        <button class="admin-modal-close" data-close-modal="navItemModal">&times;</button>
+      </div>
+      <form id="navItemForm">
+        <input type="hidden" id="navItemIndex">
+        <div class="form-field">
+          <label class="form-label" for="navItemLabel">Button / Tab Label <span style="color: red;">*</span></label>
+          <input type="text" id="navItemLabel" class="form-input" placeholder="e.g. Main Website or Fee Details" required>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="navItemGroup">Group / Section Heading (Optional)</label>
+          <input type="text" id="navItemGroup" class="form-input" placeholder="e.g. Main Services or Information">
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="navItemUrl">Destination URL <span style="color: red;">*</span></label>
+          <input type="text" id="navItemUrl" class="form-input" placeholder="e.g. https://myorganization.com or #checklist" required>
+          <small style="color: #6b7280; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Paste your existing main website address or an internal anchor.
+          </small>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="navItemTarget">Open Behavior</label>
+          <select id="navItemTarget" class="form-select">
+            <option value="_self">Same Browser Tab (_self)</option>
+            <option value="_blank">New Browser Tab (_blank)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem;">
+            <input type="checkbox" id="navItemEnabled" checked>
+            Enable this link on the public navigation bar
+          </label>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="navItemModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveNavItem">Save Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: ADD / EDIT FOOTER LINK
+       ========================================================================= -->
+  <div class="admin-modal" id="footerLinkModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="footerLinkModalTitle">Footer Navigation Link</h3>
+        <button class="admin-modal-close" data-close-modal="footerLinkModal">&times;</button>
+      </div>
+      <form id="footerLinkForm">
+        <input type="hidden" id="footerLinkIndex">
+        <div class="form-field">
+          <label class="form-label" for="footerLinkLabel">Button / Link Label <span style="color: red;">*</span></label>
+          <input type="text" id="footerLinkLabel" class="form-input" placeholder="e.g. Authorized Courier Companies or Contact Us" required>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="footerLinkUrl">Destination URL <span style="color: red;">*</span></label>
+          <input type="text" id="footerLinkUrl" class="form-input" placeholder="e.g. https://your-main-website.com/services or #contact" required>
+          <small style="color: #6b7280; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Paste any custom URL from your main website, social profile, or an internal anchor.
+          </small>
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="footerLinkTarget">Open Behavior</label>
+          <select id="footerLinkTarget" class="form-select">
+            <option value="_self">Same Browser Tab (_self)</option>
+            <option value="_blank">New Browser Tab (_blank)</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem;">
+            <input type="checkbox" id="footerLinkEnabled" checked>
+            Enable this link on the public footer
+          </label>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="footerLinkModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveFooterLink">Save Footer Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: ADD / EDIT DOCUMENT RECORD (CRITICAL REQUIREMENT #5)
+       ========================================================================= -->
+  <div class="admin-modal" id="recordModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="recordModalTitle">Register Document Certificate</h3>
+        <button class="admin-modal-close" data-close-modal="recordModal">&times;</button>
+      </div>
+      <form id="recordForm">
+        <input type="hidden" id="recordId">
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recDocNumber">Apostille / Certificate Number <span style="color: red;">*</span></label>
+            <input type="text" id="recDocNumber" class="form-input" placeholder="e.g. APO-KTAQ-NWSP-VDSJ" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recApplicant">Applicant / Holder Full Name <span style="color: red;">*</span></label>
+            <input type="text" id="recApplicant" class="form-input" placeholder="e.g. Attestation Candidate" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recDocCategory">Classification / Category (Box 1 Right) <span style="color: red;">*</span></label>
+            <input type="text" id="recDocCategory" class="form-input" placeholder="e.g. Personal Document" value="Personal Document" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recCountry">Origin Country (Box 1 Left)</label>
+            <input type="text" id="recCountry" class="form-input" placeholder="e.g. Pakistan" value="Pakistan">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recSignedBy">Signed By (Box 2)</label>
+            <input type="text" id="recSignedBy" class="form-input" placeholder="e.g. N/A or Official Name" value="N/A">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recCapacity">Acting in Capacity Of (Box 3)</label>
+            <input type="text" id="recCapacity" class="form-input" placeholder="e.g. Registrar" value="Registrar">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recSealOf">Bears Seal / Stamp Of (Box 4)</label>
+            <input type="text" id="recSealOf" class="form-input" placeholder="e.g. Preston University" value="Preston University">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recIssuePlace">Certified At Location (Box 5)</label>
+            <input type="text" id="recIssuePlace" class="form-input" placeholder="e.g. Lahore Pakistan" value="Lahore Pakistan">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recIssueDate">Issue Date (Box 6) <span style="color: red;">*</span></label>
+            <input type="date" id="recIssueDate" class="form-input" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recExpiryDate">Expiry Date (Optional)</label>
+            <input type="date" id="recExpiryDate" class="form-input">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recAuthority">Issuing Authority (Box 7)</label>
+            <input type="text" id="recAuthority" class="form-input" placeholder="e.g. Ministry of Foreign Affairs" value="Ministry of Foreign Affairs">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recSignatoryOfficer">Approving Officer / Signature</label>
+            <input type="text" id="recSignatoryOfficer" class="form-input" placeholder="e.g. Ali Faraz" value="Ali Faraz">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-field">
+            <label class="form-label" for="recDocType">General Document Name</label>
+            <input type="text" id="recDocType" class="form-input" placeholder="e.g. Other Documents or Degree Certificate" value="Other Documents">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="recStatus">Verification Status</label>
+            <select id="recStatus" class="form-select">
+              <option value="VERIFIED">VERIFIED (Authentic)</option>
+              <option value="EXPIRED">EXPIRED (Expired Date)</option>
+              <option value="REVOKED">REVOKED (Officially Cancelled)</option>
+              <option value="SUSPENDED">SUSPENDED (Under Review)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Attached Document PDF -->
+        <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Attached Document PDF (Desktop Embed & Mobile Box)</label>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="recPdfFileName" class="form-input" placeholder="e.g. wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+            <input type="hidden" id="recPdfUrl">
+            <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+              Upload PDF
+              <input type="file" id="recPdfFileInput" accept=".pdf" style="display: none;">
+            </label>
+          </div>
+          <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Select a PDF from your computer or keep the sample Preston University document.
+          </small>
+        </div>
+
+        <!-- Officer Signature Graphic -->
+        <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-top: 10px;">
+          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Officer Signature Graphic (PNG, JPG, SVG, WEBP)</label>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <div id="recSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
+              <img id="recSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+            </div>
+            <input type="text" id="recSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+            <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+              Upload Signature
+              <input type="file" id="recSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+            </label>
+          </div>
+          <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
+            Upload any custom official signature (PNG with transparent background, JPG, SVG, or WEBP).
+          </small>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="recNotes">Administrative Notes / Revocation Reason</label>
+          <textarea id="recNotes" class="form-textarea" rows="2" placeholder="Internal remarks or revocation notice"></textarea>
+        </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="recordModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveRecord">Save Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 3: ADD / EDIT ADMIN SIDEBAR ITEM (DEDICATED ADMIN NAV SYSTEM)
+       ========================================================================= -->
+  <div class="admin-modal" id="adminNavModal">
+    <div class="admin-modal-card">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title" id="adminNavModalTitle">Sidebar Item</h3>
+        <button class="admin-modal-close" data-close-modal="adminNavModal">&times;</button>
+      </div>
+      <form id="adminNavForm">
+        <input type="hidden" id="adminNavIndex">
+        <input type="hidden" id="adminNavId">
+        <input type="hidden" id="adminNavType" value="built_in">
+
+        <div class="form-field">
+          <label class="form-label" for="adminNavLabel">Tab / Link Label <span style="color: red;">*</span></label>
+          <input type="text" id="adminNavLabel" class="form-input" placeholder="e.g. Overview or Analytics Portal" required>
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="adminNavGroup">Group Heading (Optional)</label>
+          <input type="text" id="adminNavGroup" class="form-input" placeholder="e.g. Core Management, Public Website, External Tools">
+        </div>
+
+        <div class="form-field" id="adminNavUrlContainer" style="display: none;">
+          <label class="form-label" for="adminNavUrl">Destination URL <span style="color: red;">*</span></label>
+          <input type="text" id="adminNavUrl" class="form-input" placeholder="e.g. https://myorganization.com or /admin/analytics">
+        </div>
+
+        <div class="form-field" id="adminNavTargetContainer" style="display: none;">
+          <label class="form-label" for="adminNavTarget">Open Behavior</label>
+          <select id="adminNavTarget" class="form-select">
+            <option value="_self">Same Window (_self)</option>
+            <option value="_blank">New Browser Tab (_blank)</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem;">
+            <input type="checkbox" id="adminNavEnabled" checked>
+            Show this tab in the Admin Panel sidebar
+          </label>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="adminNavModal">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSaveAdminNav">Save Sidebar Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="../js/qrcode.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
