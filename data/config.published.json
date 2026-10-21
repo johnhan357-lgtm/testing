@@ -91,6 +91,12 @@
   },
   "noticeModal": {
     "enabled": true,
+    "alwaysShowOnRefresh": true,
+    "showOnDirectVerify": false,
+    "portalTitle": "Department of Verification & Legalization",
+    "portalSub": "Public Document Services",
+    "logoType": "default_svg",
+    "logoUrl": "",
     "title": "IMPORTANT NOTICE",
     "bodyEnglish": "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date and time for document processing.\n\nYour documents will only be processed on the date of your appointment. Applicants arriving before or after the scheduled date may not be facilitated.",
     "bodyRegional": "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔",
@@ -134,6 +140,7 @@
   },
   "certificateView": {
     "pageTitle": "QR Code Verification Apostille Certificate",
+    "statusBadgeText": "Document Certificate Verified",
     "breadcrumbText": "Home / Apostille verification",
     "issuerStatement": "This apostille refers to Other Documents and issued on N/A and is Approved by Ministry of Foreign Affairs Pakistan",
     "summaryTemplate": "This apostille refers to {category} and issued on {date} and is Approved by {authority}",
@@ -152,8 +159,8 @@
     "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-18T20:19:25.808Z",
-    "lastPublishedAt": "2026-10-18T20:19:25.819Z",
-    "version": 56
+    "lastSavedAt": "2026-10-21T15:31:52.120Z",
+    "lastPublishedAt": "2026-10-21T15:31:52.130Z",
+    "version": 63
   }
 }

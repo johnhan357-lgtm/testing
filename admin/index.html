@@ -311,9 +311,14 @@
                 <input type="text" id="cfgCertPageTitle" class="form-input" placeholder="e.g. QR Code Verification Apostille Certificate">
               </div>
               <div class="form-field">
-                <label class="form-label" for="cfgCertBreadcrumb">Breadcrumb Path</label>
-                <input type="text" id="cfgCertBreadcrumb" class="form-input" placeholder="e.g. Home / Apostille verification">
+                <label class="form-label" for="cfgCertStatusText">Verified Status Badge Label</label>
+                <input type="text" id="cfgCertStatusText" class="form-input" placeholder="e.g. Document Certificate Verified">
               </div>
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="cfgCertBreadcrumb">Breadcrumb Path</label>
+              <input type="text" id="cfgCertBreadcrumb" class="form-input" placeholder="e.g. Home / Apostille verification">
             </div>
 
             <div class="form-field">
@@ -612,34 +617,115 @@
              =================================================================== -->
         <section class="tab-pane" id="tab-notice">
           <div class="card">
-            <h2 class="card-title">Announcement Popup Modal</h2>
-            <p class="card-desc">Configure the modal that greets users on arrival.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom: 4px;">Announcement Notice Popup Modal</h2>
+                <p class="card-desc" style="margin: 0;">Configure the official announcement notice that greets visitors when the website is loaded or refreshed.</p>
+              </div>
+              <button type="button" class="btn-secondary" id="btnTestNoticeModal" style="padding: 7px 15px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+                <span>👁️</span> Test / Preview Popup
+              </button>
+            </div>
 
+            <!-- Display Controls -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+              <div class="form-field" style="margin-bottom: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer;">
+                  <input type="checkbox" id="cfgNoticeEnabled" style="width: 18px; height: 18px;">
+                  Enable Announcement Popup Modal on Public Website
+                </label>
+              </div>
+
+              <div class="grid-2" style="margin-top: 10px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.88rem; cursor: pointer; color: #334155;">
+                  <input type="checkbox" id="cfgNoticeAlwaysShow" checked style="width: 16px; height: 16px;">
+                  Always show notice popup on EVERY page reload / refresh
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.88rem; cursor: pointer; color: #334155;">
+                  <input type="checkbox" id="cfgNoticeShowOnDirectVerify" style="width: 16px; height: 16px;">
+                  Also show notice when opened via direct QR code link
+                </label>
+              </div>
+            </div>
+
+            <!-- Organization / Authority Header inside Modal -->
+            <div class="grid-2">
+              <div class="form-field">
+                <label class="form-label" for="cfgNoticePortalTitle">Notice Authority / Institution Name</label>
+                <input type="text" id="cfgNoticePortalTitle" class="form-input" placeholder="e.g. Department of Verification & Legalization">
+              </div>
+              <div class="form-field">
+                <label class="form-label" for="cfgNoticePortalSub">Notice Subtitle / Service Description</label>
+                <input type="text" id="cfgNoticePortalSub" class="form-input" placeholder="e.g. Public Document Services">
+              </div>
+            </div>
+
+            <!-- Notice Emblem / Logo Options -->
+            <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 14px; border-radius: 6px; margin-bottom: 20px;">
+              <label class="form-label" style="font-weight: 600; margin-bottom: 8px;">Notice Popup Header Emblem / Logo</label>
+              <div style="display: flex; gap: 18px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; cursor: pointer;">
+                  <input type="radio" name="noticeLogoType" id="radioNoticeLogoDefault" value="default_svg" checked>
+                  Default Institutional Shield (SVG)
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; cursor: pointer;">
+                  <input type="radio" name="noticeLogoType" id="radioNoticeLogoBrand" value="use_brand_logo">
+                  Use Main Website Brand Logo
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.88rem; cursor: pointer;">
+                  <input type="radio" name="noticeLogoType" id="radioNoticeLogoCustom" value="custom_image">
+                  Upload Custom Notice Logo / Emblem
+                </label>
+              </div>
+
+              <!-- Custom Notice Logo Upload Row -->
+              <div id="noticeCustomLogoUploadRow" style="display: none; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap;">
+                <div id="noticeLogoPreviewBox" style="width: 50px; height: 50px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden;">
+                  <img id="noticeLogoPreview" src="" alt="Notice Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+                <input type="text" id="cfgNoticeLogoUrl" class="form-input" placeholder="/uploads/your-notice-logo.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+                <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
+                  Upload Logo
+                  <input type="file" id="noticeLogoFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
+                </label>
+              </div>
+            </div>
+
+            <!-- Notice Badge & Content -->
             <div class="form-field">
-              <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem;">
-                <input type="checkbox" id="cfgNoticeEnabled" style="width: 18px; height: 18px;">
-                Enable Announcement Popup Modal on Public Page
-              </label>
+              <label class="form-label" for="cfgNoticeTitle">Notice Badge / Header Title</label>
+              <input type="text" id="cfgNoticeTitle" class="form-input" placeholder="e.g. IMPORTANT NOTICE">
             </div>
 
             <div class="form-field">
-              <label class="form-label" for="cfgNoticeTitle">Notice Title</label>
-              <input type="text" id="cfgNoticeTitle" class="form-input">
+              <label class="form-label" for="cfgNoticeBodyEn">Primary Notice Content (English / Multiline)</label>
+              <textarea id="cfgNoticeBodyEn" class="form-textarea" rows="4" placeholder="Dear Applicants, please visit the verification authority centers only on your scheduled appointment date..."></textarea>
             </div>
 
             <div class="form-field">
-              <label class="form-label" for="cfgNoticeBodyEn">English Notice Content</label>
-              <textarea id="cfgNoticeBodyEn" class="form-textarea" rows="4"></textarea>
-            </div>
-
-            <div class="form-field">
-              <label class="form-label" for="cfgNoticeBodyReg">Regional / Multilingual Notice Content (Urdu, Arabic, etc.)</label>
-              <textarea id="cfgNoticeBodyReg" class="form-textarea" rows="3" style="direction: rtl;"></textarea>
+              <label class="form-label" for="cfgNoticeBodyReg">Regional / Multilingual Content (Urdu, Arabic, etc.)</label>
+              <textarea id="cfgNoticeBodyReg" class="form-textarea" rows="3" style="direction: rtl;" placeholder="محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔"></textarea>
             </div>
 
             <div class="form-field">
               <label class="form-label" for="cfgNoticeBtnText">Confirm / Dismiss Button Text</label>
-              <input type="text" id="cfgNoticeBtnText" class="form-input">
+              <input type="text" id="cfgNoticeBtnText" class="form-input" placeholder="e.g. Acknowledge & Proceed">
+            </div>
+
+            <!-- Mini Live Visual Preview Box inside Admin -->
+            <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+              <h3 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <span>📱</span> Live Notice Modal Preview
+              </h3>
+              <div id="adminNoticeLivePreviewCard" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; max-width: 480px; margin: 0 auto; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); text-align: center;">
+                <div id="prevNoticeEmblem" style="width: 48px; height: 48px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;"></div>
+                <div id="prevNoticePortalTitle" style="font-size: 0.95rem; font-weight: 700; color: #01411C;">Department of Verification & Legalization</div>
+                <div id="prevNoticePortalSub" style="font-size: 0.78rem; color: #64748b; margin-bottom: 12px;">Public Document Services</div>
+                <div style="display: inline-block; background: #FEF3C7; color: #92400E; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 9999px; letter-spacing: 0.5px; margin-bottom: 12px;" id="prevNoticeTitle">IMPORTANT NOTICE</div>
+                <div style="font-size: 0.82rem; color: #334155; line-height: 1.5; margin-bottom: 12px; text-align: left;" id="prevNoticeBodyEn">Dear Applicants...</div>
+                <div style="font-size: 0.88rem; color: #01411C; line-height: 1.5; margin-bottom: 16px; direction: rtl; text-align: right;" id="prevNoticeBodyReg">محترم درخواست گزاران...</div>
+                <div style="background: #01411C; color: #ffffff; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; display: inline-block;" id="prevNoticeBtn">Acknowledge & Proceed</div>
+              </div>
             </div>
           </div>
         </section>

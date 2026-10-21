@@ -76,6 +76,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     "cfgCertDisclaimer": [".cert-disclaimer-box", "#aposDisclaimer"],
     "cfgCertVerifyUrl": [".cert-footer-url", "#aposVerifyUrl"],
     "cfgCertVerificationUrl": [".cert-footer-url", "#aposVerifyUrl"],
+    "cfgCertStatusText": ["#statusTitle"],
+    "cfgNoticePortalTitle": ["#modalPortalTitle", ".modal-portal-title"],
+    "cfgNoticePortalSub": ["#modalPortalSub", ".modal-portal-sub"],
     "cfgNoticeTitle": ["#modalTitle"],
     "cfgNoticeBodyEn": [".modal-body-text"],
     "cfgNoticeBodyReg": [".modal-regional-text"],
@@ -234,6 +237,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (cfg.branding) {
       if (brandTitleEl) brandTitleEl.textContent = cfg.branding.authorityName;
       if (brandSubtitleEl) brandSubtitleEl.textContent = cfg.branding.authoritySubtitle;
+      if (cfg.branding.authorityName) {
+        document.title = cfg.branding.authorityName;
+      }
 
       // Handle custom uploaded logo or default SVG
       if (cfg.branding.logoType === 'custom_image' && cfg.branding.logoUrl && brandEmblemEl) {
@@ -308,23 +314,55 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (cfg.noticeModal.enabled === false) {
         if (noticeModal) noticeModal.style.display = 'none';
       } else {
+        if (noticeModal) noticeModal.style.display = '';
         const modalTitle = document.getElementById("modalTitle");
         const modalBody = document.querySelector(".modal-body-text");
         const modalRegional = document.querySelector(".modal-regional-text");
         const modalBtn = document.getElementById("modalAcknowledgeBtn");
+        const modalPortalTitle = document.getElementById("modalPortalTitle") || document.querySelector(".modal-portal-title");
+        const modalPortalSub = document.getElementById("modalPortalSub") || document.querySelector(".modal-portal-sub");
+        const modalEmblem = document.getElementById("modalEmblem") || document.querySelector(".modal-emblem");
 
+        if (modalPortalTitle) modalPortalTitle.textContent = cfg.noticeModal.portalTitle || (cfg.branding && cfg.branding.authorityName) || "Department of Verification & Legalization";
+        if (modalPortalSub) modalPortalSub.textContent = cfg.noticeModal.portalSub || (cfg.branding && cfg.branding.authoritySubtitle) || "Public Document Services";
         if (modalTitle && cfg.noticeModal.title) modalTitle.textContent = cfg.noticeModal.title;
         if (modalBody && cfg.noticeModal.bodyEnglish) modalBody.innerHTML = cfg.noticeModal.bodyEnglish.replace(/\n/g, '<br>');
         if (modalRegional && cfg.noticeModal.bodyRegional) modalRegional.textContent = cfg.noticeModal.bodyRegional;
         if (modalBtn && cfg.noticeModal.confirmButtonText) modalBtn.textContent = cfg.noticeModal.confirmButtonText;
 
-        // Clear any past session flag and always show modal on page load / refresh
-        try {
-          sessionStorage.removeItem("notice_dismissed");
-          localStorage.removeItem("notice_dismissed");
-        } catch (_) {}
+        // Handle Notice Emblem / Logo
+        if (modalEmblem) {
+          if (cfg.noticeModal.logoType === 'custom_image' && cfg.noticeModal.logoUrl) {
+            modalEmblem.innerHTML = `<img src="${cfg.noticeModal.logoUrl}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+          } else if (cfg.noticeModal.logoType === 'use_brand_logo' && cfg.branding && cfg.branding.logoUrl) {
+            modalEmblem.innerHTML = `<img src="${cfg.branding.logoUrl}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+          } else {
+            modalEmblem.innerHTML = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/><path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/></svg>`;
+          }
+        }
 
-        if (noticeModal) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isDirectVerify = !!(urlParams.get("doc") || urlParams.get("id") || urlParams.get("cert") || urlParams.get("verify"));
+        const shouldShowOnDirect = cfg.noticeModal.showOnDirectVerify === true;
+        const alwaysShow = cfg.noticeModal.alwaysShowOnRefresh !== false;
+
+        let shouldDisplay = true;
+        if (isDirectVerify && !shouldShowOnDirect) {
+          shouldDisplay = false;
+        } else if (!alwaysShow) {
+          try {
+            if (sessionStorage.getItem("notice_dismissed") === "1") {
+              shouldDisplay = false;
+            }
+          } catch (_) {}
+        } else {
+          // Always show on refresh: clear past flags
+          try {
+            sessionStorage.removeItem("notice_dismissed");
+          } catch (_) {}
+        }
+
+        if (shouldDisplay && noticeModal) {
           setTimeout(() => {
             noticeModal.classList.add("active");
           }, 350);
@@ -424,6 +462,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   function dismissNotice() {
     if (noticeModal) {
       noticeModal.classList.remove("active");
+      try {
+        sessionStorage.setItem("notice_dismissed", "1");
+      } catch (_) {}
     }
   }
 
@@ -497,11 +538,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (data.status === "VERIFIED" && data.record) {
       // Official Authentic Apostille Result View matching target government portal
       statusBadge.style.display = "none";
-      const heroSection = document.getElementById("heroSection");
-      const verifFormCard = document.getElementById("verifFormCard");
+      const heroSection = document.getElementById("heroSection") || document.querySelector(".hero-title-section");
+      const searchCard = document.getElementById("searchCard");
       const resultActions = document.getElementById("resultActions");
       if (heroSection) heroSection.style.display = "none";
-      if (verifFormCard) verifFormCard.style.display = "none";
+      if (searchCard) searchCard.style.display = "none";
       if (resultActions) resultActions.style.display = "none";
       resultCard.classList.add("cert-page-view");
 
@@ -512,6 +553,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const rec = data.record;
       const formattedDate = formatDateDisplay(rec.issueDate);
+
+      if (statusTitle && currentConfig?.certificateView?.statusBadgeText) {
+        statusTitle.textContent = currentConfig.certificateView.statusBadgeText;
+      }
+      if (currentConfig?.certificateView?.pageTitle) {
+        document.title = `${currentConfig.certificateView.pageTitle} - ${rec.docNumber}`;
+      }
 
       // Dynamic Reference Statement
       if (resSummaryCategory) resSummaryCategory.textContent = rec.documentType || rec.documentCategory || "Other Documents";

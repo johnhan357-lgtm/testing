@@ -29,14 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setupFieldFontSelectors() {
     const targetInputs = document.querySelectorAll(
-      '.tab-content input[type="text"], .tab-content input[type="email"], .tab-content textarea, #recordModal input[type="text"]'
+      '.tab-pane input[type="text"]:not([readonly]), .tab-pane input[type="email"], .tab-pane textarea, #recordModal input[type="text"]:not([readonly])'
     );
 
     targetInputs.forEach(input => {
       if (input.type === "color" || input.type === "file") return;
       if (input.readOnly && !input.id.startsWith("cfg")) return;
       if (input.id === "cfgColorPrimary" || input.id === "cfgColorDark" || input.id === "cfgColorFooter" || input.id === "cfgColorBg") return;
-      if (input.id === "cfgFooterLogoUrl" || input.id === "cfgCertSignatureUrl" || input.id === "qgSignatureUrl" || input.id === "recSignatureUrl") return;
+      if (input.id === "cfgFooterLogoUrl" || input.id === "cfgCertSignatureUrl" || input.id === "qgSignatureUrl" || input.id === "recSignatureUrl" || input.id === "cfgNoticeLogoUrl") return;
 
       const parentField = input.closest('.form-field');
       if (!parentField) return;
@@ -338,10 +338,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // Tab 6: Notice Modal
     if (cfg.noticeModal) {
       document.getElementById("cfgNoticeEnabled").checked = cfg.noticeModal.enabled !== false;
+      const alwaysShowEl = document.getElementById("cfgNoticeAlwaysShow");
+      if (alwaysShowEl) alwaysShowEl.checked = cfg.noticeModal.alwaysShowOnRefresh !== false;
+      const showDirectEl = document.getElementById("cfgNoticeShowOnDirectVerify");
+      if (showDirectEl) showDirectEl.checked = cfg.noticeModal.showOnDirectVerify === true;
+
+      const portalTitleEl = document.getElementById("cfgNoticePortalTitle");
+      if (portalTitleEl) portalTitleEl.value = cfg.noticeModal.portalTitle || "";
+      const portalSubEl = document.getElementById("cfgNoticePortalSub");
+      if (portalSubEl) portalSubEl.value = cfg.noticeModal.portalSub || "";
+
       document.getElementById("cfgNoticeTitle").value = cfg.noticeModal.title || "";
       document.getElementById("cfgNoticeBodyEn").value = cfg.noticeModal.bodyEnglish || "";
       document.getElementById("cfgNoticeBodyReg").value = cfg.noticeModal.bodyRegional || "";
       document.getElementById("cfgNoticeBtnText").value = cfg.noticeModal.confirmButtonText || "";
+
+      // Notice Logo / Emblem
+      const noticeLogoType = cfg.noticeModal.logoType || "default_svg";
+      const radNoticeDef = document.getElementById("radioNoticeLogoDefault");
+      const radNoticeBrand = document.getElementById("radioNoticeLogoBrand");
+      const radNoticeCust = document.getElementById("radioNoticeLogoCustom");
+      if (noticeLogoType === "custom_image" && radNoticeCust) radNoticeCust.checked = true;
+      else if (noticeLogoType === "use_brand_logo" && radNoticeBrand) radNoticeBrand.checked = true;
+      else if (radNoticeDef) radNoticeDef.checked = true;
+
+      const noticeLogoUrlInput = document.getElementById("cfgNoticeLogoUrl");
+      if (noticeLogoUrlInput) noticeLogoUrlInput.value = cfg.noticeModal.logoUrl || "";
+      const noticeLogoPrev = document.getElementById("noticeLogoPreview");
+      if (noticeLogoPrev) noticeLogoPrev.src = cfg.noticeModal.logoUrl || "";
+
+      handleNoticeLogoRadioToggle();
+      updateNoticeLivePreview();
     }
 
     // Tab 7: Floating & Footer
@@ -408,6 +435,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const elEnablePdf = document.getElementById("cfgCertEnablePdf");
 
       if (elPageTitle) elPageTitle.value = cv.pageTitle || "QR Code Verification Apostille Certificate";
+      const elStatusText = document.getElementById("cfgCertStatusText");
+      if (elStatusText) elStatusText.value = cv.statusBadgeText || "Document Certificate Verified";
       if (elBreadcrumb) elBreadcrumb.value = cv.breadcrumbText || "Home / Apostille verification";
       if (elIssuer) elIssuer.value = cv.issuerStatement || "This apostille certificate is issued by Ministry of Foreign Affairs Pakistan.";
       if (elSummary) elSummary.value = cv.summaryTemplate || "This apostille refers to {category} and issued on {date} and is Approved by {authority}";
@@ -497,6 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (elPageTitle) {
       updated.certificateView = {
         pageTitle: elPageTitle.value.trim() || "QR Code Verification Apostille Certificate",
+        statusBadgeText: (document.getElementById("cfgCertStatusText")?.value || "").trim() || "Document Certificate Verified",
         breadcrumbText: (document.getElementById("cfgCertBreadcrumb")?.value || "").trim() || "Home / Apostille verification",
         issuerStatement: (document.getElementById("cfgCertIssuerStatement")?.value || "").trim(),
         summaryTemplate: (document.getElementById("cfgCertSummaryTemplate")?.value || "").trim(),
@@ -517,8 +547,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Notice Modal
+    const radNoticeBrand = document.getElementById("radioNoticeLogoBrand");
+    const radNoticeCust = document.getElementById("radioNoticeLogoCustom");
+    let noticeLogoType = "default_svg";
+    if (radNoticeCust && radNoticeCust.checked) noticeLogoType = "custom_image";
+    else if (radNoticeBrand && radNoticeBrand.checked) noticeLogoType = "use_brand_logo";
+
     updated.noticeModal = {
       enabled: document.getElementById("cfgNoticeEnabled").checked,
+      alwaysShowOnRefresh: document.getElementById("cfgNoticeAlwaysShow") ? document.getElementById("cfgNoticeAlwaysShow").checked : true,
+      showOnDirectVerify: document.getElementById("cfgNoticeShowOnDirectVerify") ? document.getElementById("cfgNoticeShowOnDirectVerify").checked : false,
+      portalTitle: (document.getElementById("cfgNoticePortalTitle")?.value || "").trim(),
+      portalSub: (document.getElementById("cfgNoticePortalSub")?.value || "").trim(),
+      logoType: noticeLogoType,
+      logoUrl: (document.getElementById("cfgNoticeLogoUrl")?.value || "").trim(),
       title: document.getElementById("cfgNoticeTitle").value.trim(),
       bodyEnglish: document.getElementById("cfgNoticeBodyEn").value.trim(),
       bodyRegional: document.getElementById("cfgNoticeBodyReg").value.trim(),
@@ -826,6 +868,173 @@ document.addEventListener("DOMContentLoaded", () => {
       const prev = document.getElementById("cfgCertSigPreview");
       if (prev && e.target.value.trim()) prev.src = e.target.value.trim();
     });
+  }
+
+  // =========================================================================
+  // NOTICE MODAL LOGO, PREVIEW & TEST POPUP HANDLERS
+  // =========================================================================
+  const noticeLogoRadios = document.querySelectorAll('input[name="noticeLogoType"]');
+  noticeLogoRadios.forEach(r => r.addEventListener("change", handleNoticeLogoRadioToggle));
+
+  function handleNoticeLogoRadioToggle() {
+    const isCustom = document.getElementById("radioNoticeLogoCustom")?.checked;
+    const uploadRow = document.getElementById("noticeCustomLogoUploadRow");
+    if (uploadRow) uploadRow.style.display = isCustom ? "flex" : "none";
+    updateNoticeLivePreview();
+  }
+
+  const noticeLogoFileInput = document.getElementById("noticeLogoFileInput");
+  if (noticeLogoFileInput) {
+    noticeLogoFileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File size exceeds 2MB limit.");
+        noticeLogoFileInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          showToast("Uploading notice logo...", "info");
+          const res = await apiFetch('/api/admin/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileData: reader.result, fileName: file.name, fileType: 'logo' })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            const urlInput = document.getElementById("cfgNoticeLogoUrl");
+            if (urlInput) urlInput.value = data.fileUrl;
+            const prev = document.getElementById("noticeLogoPreview");
+            if (prev) prev.src = data.fileUrl;
+            updateNoticeLivePreview();
+            showToast("Notice logo uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
+            await checkPublishingStatus();
+          } else {
+            showToast(data.message || "Upload failed.", "error");
+          }
+        } catch {
+          showToast("Network error uploading notice logo.", "error");
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const cfgNoticeLogoUrlInput = document.getElementById("cfgNoticeLogoUrl");
+  if (cfgNoticeLogoUrlInput) {
+    cfgNoticeLogoUrlInput.addEventListener("input", (e) => {
+      const prev = document.getElementById("noticeLogoPreview");
+      if (prev) prev.src = e.target.value.trim();
+      updateNoticeLivePreview();
+    });
+  }
+
+  // Bind live preview updating to all notice inputs
+  [
+    "cfgNoticePortalTitle", "cfgNoticePortalSub", "cfgNoticeTitle",
+    "cfgNoticeBodyEn", "cfgNoticeBodyReg", "cfgNoticeBtnText"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", updateNoticeLivePreview);
+  });
+
+  function updateNoticeLivePreview() {
+    const portalTitle = document.getElementById("cfgNoticePortalTitle")?.value.trim() || document.getElementById("cfgAuthorityName")?.value.trim() || "Department of Verification & Legalization";
+    const portalSub = document.getElementById("cfgNoticePortalSub")?.value.trim() || document.getElementById("cfgAuthoritySubtitle")?.value.trim() || "Public Document Services";
+    const badgeTitle = document.getElementById("cfgNoticeTitle")?.value.trim() || "IMPORTANT NOTICE";
+    const bodyEn = document.getElementById("cfgNoticeBodyEn")?.value.trim() || "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date...";
+    const bodyReg = document.getElementById("cfgNoticeBodyReg")?.value.trim() || "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔";
+    const btnText = document.getElementById("cfgNoticeBtnText")?.value.trim() || "Acknowledge & Proceed";
+
+    const prevPortalTitle = document.getElementById("prevNoticePortalTitle");
+    const prevPortalSub = document.getElementById("prevNoticePortalSub");
+    const prevTitle = document.getElementById("prevNoticeTitle");
+    const prevBodyEn = document.getElementById("prevNoticeBodyEn");
+    const prevBodyReg = document.getElementById("prevNoticeBodyReg");
+    const prevBtn = document.getElementById("prevNoticeBtn");
+    const prevEmblem = document.getElementById("prevNoticeEmblem");
+
+    if (prevPortalTitle) prevPortalTitle.textContent = portalTitle;
+    if (prevPortalSub) prevPortalSub.textContent = portalSub;
+    if (prevTitle) prevTitle.textContent = badgeTitle;
+    if (prevBodyEn) prevBodyEn.innerHTML = escapeHtml(bodyEn).replace(/\n/g, '<br>');
+    if (prevBodyReg) prevBodyReg.textContent = bodyReg;
+    if (prevBtn) prevBtn.textContent = btnText;
+
+    if (prevEmblem) {
+      const isCustom = document.getElementById("radioNoticeLogoCustom")?.checked;
+      const isBrand = document.getElementById("radioNoticeLogoBrand")?.checked;
+      const customUrl = document.getElementById("cfgNoticeLogoUrl")?.value.trim();
+      const brandLogoUrl = document.getElementById("logoPreviewImg")?.src || "";
+
+      if (isCustom && customUrl) {
+        prevEmblem.innerHTML = `<img src="${customUrl}" alt="Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+      } else if (isBrand && brandLogoUrl) {
+        prevEmblem.innerHTML = `<img src="${brandLogoUrl}" alt="Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+      } else {
+        prevEmblem.innerHTML = `<svg viewBox="0 0 100 100" width="36" height="36" fill="none" stroke="#01411C" stroke-width="2.5"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="#01411C" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="#01411C"/><path d="M30 65 Q50 78 70 65" stroke="#01411C" stroke-width="3"/></svg>`;
+      }
+    }
+  }
+
+  // Test Notice Modal Button
+  const btnTestNoticeModal = document.getElementById("btnTestNoticeModal");
+  if (btnTestNoticeModal) {
+    btnTestNoticeModal.addEventListener("click", showTestNoticeModalPopup);
+  }
+
+  function showTestNoticeModalPopup() {
+    const portalTitle = document.getElementById("cfgNoticePortalTitle")?.value.trim() || document.getElementById("cfgAuthorityName")?.value.trim() || "Department of Verification & Legalization";
+    const portalSub = document.getElementById("cfgNoticePortalSub")?.value.trim() || document.getElementById("cfgAuthoritySubtitle")?.value.trim() || "Public Document Services";
+    const badgeTitle = document.getElementById("cfgNoticeTitle")?.value.trim() || "IMPORTANT NOTICE";
+    const bodyEn = document.getElementById("cfgNoticeBodyEn")?.value.trim() || "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date...";
+    const bodyReg = document.getElementById("cfgNoticeBodyReg")?.value.trim() || "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔";
+    const btnText = document.getElementById("cfgNoticeBtnText")?.value.trim() || "Acknowledge & Proceed";
+
+    const isCustom = document.getElementById("radioNoticeLogoCustom")?.checked;
+    const isBrand = document.getElementById("radioNoticeLogoBrand")?.checked;
+    const customUrl = document.getElementById("cfgNoticeLogoUrl")?.value.trim();
+    const brandLogoUrl = document.getElementById("logoPreviewImg")?.src || "";
+
+    let emblemHtml = `<svg viewBox="0 0 100 100" width="46" height="46" fill="none" stroke="#01411C" stroke-width="2.5"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="#01411C" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="#01411C"/><path d="M30 65 Q50 78 70 65" stroke="#01411C" stroke-width="3"/></svg>`;
+    if (isCustom && customUrl) {
+      emblemHtml = `<img src="${customUrl}" alt="Emblem" style="max-height: 48px; max-width: 48px; object-fit: contain;">`;
+    } else if (isBrand && brandLogoUrl) {
+      emblemHtml = `<img src="${brandLogoUrl}" alt="Emblem" style="max-height: 48px; max-width: 48px; object-fit: contain;">`;
+    }
+
+    let testModal = document.getElementById("adminTestNoticeModalOverlay");
+    if (!testModal) {
+      testModal = document.createElement("div");
+      testModal.id = "adminTestNoticeModalOverlay";
+      testModal.style.cssText = "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); z-index: 99999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);";
+      document.body.appendChild(testModal);
+    }
+
+    testModal.innerHTML = `
+      <div style="background: #ffffff; border-radius: 12px; width: 100%; max-width: 520px; padding: 32px 30px; position: relative; box-shadow: 0 20px 30px rgba(0,0,0,0.2); text-align: center; margin: 16px;">
+        <button type="button" id="adminCloseTestModalBtn" style="position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 1.6rem; cursor: pointer; color: #64748b; line-height: 1;">&times;</button>
+        <div style="width: 56px; height: 56px; margin: 0 auto 10px auto; display: flex; align-items: center; justify-content: center;">
+          ${emblemHtml}
+        </div>
+        <div style="font-size: 1.05rem; font-weight: 700; color: #01411C;">${escapeHtml(portalTitle)}</div>
+        <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">${escapeHtml(portalSub)}</div>
+        <div style="display: inline-block; background: #FEF3C7; color: #92400E; font-size: 0.82rem; font-weight: 700; padding: 4px 14px; border-radius: 9999px; letter-spacing: 0.5px; margin-bottom: 14px;">${escapeHtml(badgeTitle)}</div>
+        <div style="font-size: 0.88rem; color: #334155; line-height: 1.6; margin-bottom: 14px; text-align: left;">${escapeHtml(bodyEn).replace(/\n/g, '<br>')}</div>
+        <div style="font-size: 0.95rem; color: #01411C; line-height: 1.6; margin-bottom: 20px; direction: rtl; text-align: right;">${escapeHtml(bodyReg)}</div>
+        <button type="button" id="adminAcknowledgeTestModalBtn" style="background: #01411C; color: #ffffff; padding: 10px 24px; border-radius: 6px; font-size: 0.95rem; font-weight: 600; border: none; cursor: pointer;">${escapeHtml(btnText)}</button>
+      </div>
+    `;
+
+    testModal.style.display = "flex";
+    const closeBtn = document.getElementById("adminCloseTestModalBtn");
+    const ackBtn = document.getElementById("adminAcknowledgeTestModalBtn");
+    const close = () => { testModal.style.display = "none"; };
+    if (closeBtn) closeBtn.onclick = close;
+    if (ackBtn) ackBtn.onclick = close;
+    testModal.onclick = (e) => { if (e.target === testModal) close(); };
   }
 
   // =========================================================================
