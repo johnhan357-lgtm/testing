@@ -911,6 +911,8 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+module.exports = server;
+
 server.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(`  Document Verification Portal & CMS Server Running     `);

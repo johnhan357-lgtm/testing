@@ -6,3 +6,4 @@ data_backup_before_sidebar/
 _backup_initial/
 data/sessions.json
 data/config.history/
+cloudflared.exe
