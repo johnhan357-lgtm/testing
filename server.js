@@ -969,11 +969,18 @@ async function requestHandler(req, res) {
       const prefix = ext === '.pdf' ? 'doc_' : (isSignature ? 'sig_' : 'logo_');
       const safeName = `${prefix}${Date.now()}${ext}`;
       const destPath = path.join(UPLOADS_DIR, safeName);
-      fs.writeFileSync(destPath, buffer);
+      let fileUrl = `/uploads/${safeName}`;
+      try {
+        fs.writeFileSync(destPath, buffer);
+      } catch (fsErr) {
+        // Safe fallback for serverless read-only filesystems (e.g. Vercel)
+        console.warn('[Upload] Read-only disk detected. Returning Data URI for serverless compatibility.');
+        fileUrl = data.fileData.startsWith('data:') ? data.fileData : `data:${mimeType};base64,${data.fileData}`;
+      }
 
       return sendJson(res, 200, {
         success: true,
-        fileUrl: `/uploads/${safeName}`,
+        fileUrl: fileUrl,
         fileName: safeName
       });
     } catch (err) {
