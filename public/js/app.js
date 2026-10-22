@@ -323,8 +323,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const modalPortalSub = document.getElementById("modalPortalSub") || document.querySelector(".modal-portal-sub");
         const modalEmblem = document.getElementById("modalEmblem") || document.querySelector(".modal-emblem");
 
-        if (modalPortalTitle) modalPortalTitle.textContent = cfg.noticeModal.portalTitle || (cfg.branding && cfg.branding.authorityName) || "Department of Verification & Legalization";
-        if (modalPortalSub) modalPortalSub.textContent = cfg.noticeModal.portalSub || (cfg.branding && cfg.branding.authoritySubtitle) || "Public Document Services";
+        if (modalPortalTitle) modalPortalTitle.textContent = cfg.noticeModal.portalTitle || (cfg.branding && cfg.branding.authorityName) || "Ministry of Foreign Affairs";
+        if (modalPortalSub) modalPortalSub.textContent = cfg.noticeModal.portalSub || (cfg.branding && cfg.branding.authoritySubtitle) || "Government of Pakistan";
         if (modalTitle && cfg.noticeModal.title) modalTitle.textContent = cfg.noticeModal.title;
         if (modalBody && cfg.noticeModal.bodyEnglish) modalBody.innerHTML = cfg.noticeModal.bodyEnglish.replace(/\n/g, '<br>');
         if (modalRegional && cfg.noticeModal.bodyRegional) modalRegional.textContent = cfg.noticeModal.bodyRegional;
@@ -332,12 +332,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Handle Notice Emblem / Logo
         if (modalEmblem) {
+          const brandLogo = (cfg.branding && cfg.branding.logoUrl) ? cfg.branding.logoUrl : '/uploads/logo_1792329381447.svg';
           if (cfg.noticeModal.logoType === 'custom_image' && cfg.noticeModal.logoUrl) {
             modalEmblem.innerHTML = `<img src="${cfg.noticeModal.logoUrl}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
-          } else if (cfg.noticeModal.logoType === 'use_brand_logo' && cfg.branding && cfg.branding.logoUrl) {
-            modalEmblem.innerHTML = `<img src="${cfg.branding.logoUrl}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
-          } else {
+          } else if (cfg.noticeModal.logoType === 'use_brand_logo') {
+            modalEmblem.innerHTML = `<img src="${brandLogo}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+          } else if (cfg.noticeModal.logoType === 'default_svg') {
             modalEmblem.innerHTML = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/><path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/></svg>`;
+          } else if (cfg.noticeModal.logoUrl) {
+            modalEmblem.innerHTML = `<img src="${cfg.noticeModal.logoUrl}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+          } else {
+            modalEmblem.innerHTML = `<img src="${brandLogo}" alt="Notice Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
           }
         }
 

@@ -553,18 +553,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (radNoticeCust && radNoticeCust.checked) noticeLogoType = "custom_image";
     else if (radNoticeBrand && radNoticeBrand.checked) noticeLogoType = "use_brand_logo";
 
+    let noticeLogoUrl = (document.getElementById("cfgNoticeLogoUrl")?.value || "").trim();
+    if (radNoticeCust && radNoticeCust.checked && !noticeLogoUrl) {
+      noticeLogoUrl = updated.branding?.logoUrl || "/uploads/logo_1792329381447.svg";
+    }
+
     updated.noticeModal = {
       enabled: document.getElementById("cfgNoticeEnabled").checked,
       alwaysShowOnRefresh: document.getElementById("cfgNoticeAlwaysShow") ? document.getElementById("cfgNoticeAlwaysShow").checked : true,
       showOnDirectVerify: document.getElementById("cfgNoticeShowOnDirectVerify") ? document.getElementById("cfgNoticeShowOnDirectVerify").checked : false,
-      portalTitle: (document.getElementById("cfgNoticePortalTitle")?.value || "").trim(),
-      portalSub: (document.getElementById("cfgNoticePortalSub")?.value || "").trim(),
+      portalTitle: (document.getElementById("cfgNoticePortalTitle")?.value || "").trim() || "Ministry of Foreign Affairs",
+      portalSub: (document.getElementById("cfgNoticePortalSub")?.value || "").trim() || "Government of Pakistan",
       logoType: noticeLogoType,
-      logoUrl: (document.getElementById("cfgNoticeLogoUrl")?.value || "").trim(),
-      title: document.getElementById("cfgNoticeTitle").value.trim(),
+      logoUrl: noticeLogoUrl,
+      title: document.getElementById("cfgNoticeTitle").value.trim() || "IMPORTANT NOTICE",
       bodyEnglish: document.getElementById("cfgNoticeBodyEn").value.trim(),
       bodyRegional: document.getElementById("cfgNoticeBodyReg").value.trim(),
-      confirmButtonText: document.getElementById("cfgNoticeBtnText").value.trim()
+      confirmButtonText: document.getElementById("cfgNoticeBtnText").value.trim() || "Acknowledge & Proceed"
     };
 
     // Floating Action & Footer
@@ -643,8 +648,12 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify(draftConfig)
         });
 
-        // Trigger publish
-        const res = await apiFetch('/api/admin/config/publish', { method: 'POST' });
+        // Trigger publish (passing draftConfig directly so serverless receives it without depending on disk)
+        const res = await apiFetch('/api/admin/config/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draftConfig)
+        });
         const data = await res.json();
 
         if (res.ok && data.success) {
@@ -880,6 +889,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isCustom = document.getElementById("radioNoticeLogoCustom")?.checked;
     const uploadRow = document.getElementById("noticeCustomLogoUploadRow");
     if (uploadRow) uploadRow.style.display = isCustom ? "flex" : "none";
+    if (typeof markDraftDirty === 'function') markDraftDirty();
     updateNoticeLivePreview();
   }
 
@@ -908,7 +918,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (urlInput) urlInput.value = data.fileUrl;
             const prev = document.getElementById("noticeLogoPreview");
             if (prev) prev.src = data.fileUrl;
+            
+            // Auto-select custom logo radio button
+            const custRadio = document.getElementById("radioNoticeLogoCustom");
+            if (custRadio) custRadio.checked = true;
+            handleNoticeLogoRadioToggle();
             updateNoticeLivePreview();
+            if (typeof markDraftDirty === 'function') markDraftDirty();
             showToast("Notice logo uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
             await checkPublishingStatus();
           } else {
@@ -925,8 +941,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const cfgNoticeLogoUrlInput = document.getElementById("cfgNoticeLogoUrl");
   if (cfgNoticeLogoUrlInput) {
     cfgNoticeLogoUrlInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
       const prev = document.getElementById("noticeLogoPreview");
-      if (prev) prev.src = e.target.value.trim();
+      if (prev) prev.src = val;
+      if (val) {
+        const custRadio = document.getElementById("radioNoticeLogoCustom");
+        if (custRadio) custRadio.checked = true;
+        handleNoticeLogoRadioToggle();
+      }
+      if (typeof markDraftDirty === 'function') markDraftDirty();
       updateNoticeLivePreview();
     });
   }
@@ -937,12 +960,15 @@ document.addEventListener("DOMContentLoaded", () => {
     "cfgNoticeBodyEn", "cfgNoticeBodyReg", "cfgNoticeBtnText"
   ].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener("input", updateNoticeLivePreview);
+    if (el) el.addEventListener("input", () => {
+      if (typeof markDraftDirty === 'function') markDraftDirty();
+      updateNoticeLivePreview();
+    });
   });
 
   function updateNoticeLivePreview() {
-    const portalTitle = document.getElementById("cfgNoticePortalTitle")?.value.trim() || document.getElementById("cfgAuthorityName")?.value.trim() || "Department of Verification & Legalization";
-    const portalSub = document.getElementById("cfgNoticePortalSub")?.value.trim() || document.getElementById("cfgAuthoritySubtitle")?.value.trim() || "Public Document Services";
+    const portalTitle = document.getElementById("cfgNoticePortalTitle")?.value.trim() || document.getElementById("cfgAuthorityName")?.value.trim() || "Ministry of Foreign Affairs";
+    const portalSub = document.getElementById("cfgNoticePortalSub")?.value.trim() || document.getElementById("cfgAuthoritySubtitle")?.value.trim() || "Government of Pakistan";
     const badgeTitle = document.getElementById("cfgNoticeTitle")?.value.trim() || "IMPORTANT NOTICE";
     const bodyEn = document.getElementById("cfgNoticeBodyEn")?.value.trim() || "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date...";
     const bodyReg = document.getElementById("cfgNoticeBodyReg")?.value.trim() || "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔";
@@ -967,7 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const isCustom = document.getElementById("radioNoticeLogoCustom")?.checked;
       const isBrand = document.getElementById("radioNoticeLogoBrand")?.checked;
       const customUrl = document.getElementById("cfgNoticeLogoUrl")?.value.trim();
-      const brandLogoUrl = document.getElementById("logoPreviewImg")?.src || "";
+      const brandLogoUrl = draftConfig?.branding?.logoUrl || document.getElementById("logoPreviewImg")?.src || "/uploads/logo_1792329381447.svg";
 
       if (isCustom && customUrl) {
         prevEmblem.innerHTML = `<img src="${customUrl}" alt="Emblem" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
@@ -986,8 +1012,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showTestNoticeModalPopup() {
-    const portalTitle = document.getElementById("cfgNoticePortalTitle")?.value.trim() || document.getElementById("cfgAuthorityName")?.value.trim() || "Department of Verification & Legalization";
-    const portalSub = document.getElementById("cfgNoticePortalSub")?.value.trim() || document.getElementById("cfgAuthoritySubtitle")?.value.trim() || "Public Document Services";
+    const portalTitle = document.getElementById("cfgNoticePortalTitle")?.value.trim() || document.getElementById("cfgAuthorityName")?.value.trim() || "Ministry of Foreign Affairs";
+    const portalSub = document.getElementById("cfgNoticePortalSub")?.value.trim() || document.getElementById("cfgAuthoritySubtitle")?.value.trim() || "Government of Pakistan";
     const badgeTitle = document.getElementById("cfgNoticeTitle")?.value.trim() || "IMPORTANT NOTICE";
     const bodyEn = document.getElementById("cfgNoticeBodyEn")?.value.trim() || "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date...";
     const bodyReg = document.getElementById("cfgNoticeBodyReg")?.value.trim() || "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔";
@@ -996,7 +1022,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isCustom = document.getElementById("radioNoticeLogoCustom")?.checked;
     const isBrand = document.getElementById("radioNoticeLogoBrand")?.checked;
     const customUrl = document.getElementById("cfgNoticeLogoUrl")?.value.trim();
-    const brandLogoUrl = document.getElementById("logoPreviewImg")?.src || "";
+    const brandLogoUrl = draftConfig?.branding?.logoUrl || document.getElementById("logoPreviewImg")?.src || "/uploads/logo_1792329381447.svg";
 
     let emblemHtml = `<svg viewBox="0 0 100 100" width="46" height="46" fill="none" stroke="#01411C" stroke-width="2.5"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="#01411C" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="#01411C"/><path d="M30 65 Q50 78 70 65" stroke="#01411C" stroke-width="3"/></svg>`;
     if (isCustom && customUrl) {

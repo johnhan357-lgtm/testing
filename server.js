@@ -62,24 +62,70 @@ const SERVER_SECRET = process.env.SESSION_SECRET || 'mofa-apostille-portal-secre
 // =========================================================================
 // ATOMIC FILE STORAGE HELPERS (Safe against serverless EROFS)
 // =========================================================================
+// In-memory cache store for serverless execution
+const memoryStore = new Map();
+
+function getTmpPath(filePath) {
+  try {
+    const filename = path.basename(filePath);
+    return path.join('/tmp', filename);
+  } catch {
+    return null;
+  }
+}
+
 function atomicWriteJson(filePath, data) {
+  // Always update in-memory cache immediately
+  memoryStore.set(filePath, data);
+
+  let success = false;
+  // 1. Try writing to primary path (local environment)
   try {
     const tempPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).substring(2, 7)}`;
     const content = JSON.stringify(data, null, 2);
     fs.writeFileSync(tempPath, content, 'utf8');
     fs.renameSync(tempPath, filePath);
-    return true;
+    success = true;
   } catch (err) {
-    console.warn(`[Storage Warning] Cannot write to ${filePath} (${err.code || err.message}). Operating in read-only / ephemeral mode.`);
-    return false;
+    // Read-only filesystem in serverless environments (e.g. Vercel)
   }
+
+  // 2. Also mirror to /tmp in serverless environment
+  try {
+    const tmpPath = getTmpPath(filePath);
+    if (tmpPath) {
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8');
+      success = true;
+    }
+  } catch (err) {}
+
+  return success;
 }
 
 function readJsonSafe(filePath, fallback = {}) {
+  // 1. Check in-memory cache first
+  if (memoryStore.has(filePath)) {
+    return memoryStore.get(filePath);
+  }
+
+  // 2. Check /tmp if available
+  try {
+    const tmpPath = getTmpPath(filePath);
+    if (tmpPath && fs.existsSync(tmpPath)) {
+      const content = fs.readFileSync(tmpPath, 'utf8');
+      const parsed = JSON.parse(content);
+      memoryStore.set(filePath, parsed);
+      return parsed;
+    }
+  } catch (err) {}
+
+  // 3. Fallback to primary file on disk
   try {
     if (!fs.existsSync(filePath)) return fallback;
     const content = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(content);
+    const parsed = JSON.parse(content);
+    memoryStore.set(filePath, parsed);
+    return parsed;
   } catch (err) {
     console.error(`Error reading ${filePath}:`, err.message);
     return fallback;
@@ -233,6 +279,12 @@ const DEFAULT_CONFIG = {
   },
   noticeModal: {
     enabled: true,
+    alwaysShowOnRefresh: true,
+    showOnDirectVerify: false,
+    portalTitle: "Ministry of Foreign Affairs",
+    portalSub: "Government of Pakistan",
+    logoType: "use_brand_logo",
+    logoUrl: "/uploads/logo_1792329381447.svg",
     title: "IMPORTANT NOTICE",
     bodyEnglish: "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date and time for document processing.\n\nYour documents will only be processed on the date of your appointment. Applicants arriving before or after the scheduled date may not be facilitated.",
     bodyRegional: "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔",
@@ -717,7 +769,10 @@ async function requestHandler(req, res) {
     // Publish (Validates draft, creates snapshot backup, updates live site)
     if (pathname === '/api/admin/config/publish' && method === 'POST') {
       try {
-        const draft = readJsonSafe(DRAFT_CONFIG_FILE);
+        let draft = await parseBody(req);
+        if (!draft || !draft.branding) {
+          draft = readJsonSafe(DRAFT_CONFIG_FILE);
+        }
         if (!draft || !draft.branding) {
           return sendJson(res, 400, { success: false, message: "Draft data is invalid or empty." });
         }

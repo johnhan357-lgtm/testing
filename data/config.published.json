@@ -93,10 +93,10 @@
     "enabled": true,
     "alwaysShowOnRefresh": true,
     "showOnDirectVerify": false,
-    "portalTitle": "Department of Verification & Legalization",
-    "portalSub": "Public Document Services",
-    "logoType": "default_svg",
-    "logoUrl": "",
+    "portalTitle": "Ministry of Foreign Affairs",
+    "portalSub": "Government of Pakistan",
+    "logoType": "use_brand_logo",
+    "logoUrl": "/uploads/logo_1792329381447.svg",
     "title": "IMPORTANT NOTICE",
     "bodyEnglish": "Dear Applicants, please visit the verification authority centers only on your scheduled appointment date and time for document processing.\n\nYour documents will only be processed on the date of your appointment. Applicants arriving before or after the scheduled date may not be facilitated.",
     "bodyRegional": "محترم درخواست گزاران، برائے کرم تصدیقی دستاویزات کے لیے اپنی مقررہ تاریخ اور وقت پر تشریف لائیں۔",
@@ -159,8 +159,8 @@
     "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-22T18:00:11.651Z",
-    "lastPublishedAt": "2026-10-22T18:00:11.660Z",
-    "version": 74
+    "lastSavedAt": "2026-10-22T18:30:25.451Z",
+    "lastPublishedAt": "2026-10-22T18:30:25.460Z",
+    "version": 82
   }
 }
