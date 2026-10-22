@@ -931,9 +931,10 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            document.getElementById("cfgCertSignatureUrl").value = data.fileUrl;
+            const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
+            document.getElementById("cfgCertSignatureUrl").value = sigUrl;
             const prev = document.getElementById("cfgCertSigPreview");
-            if (prev) prev.src = data.fileUrl;
+            if (prev) prev.src = sigUrl;
             showToast("Default signature uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
             await checkPublishingStatus();
           } else {
@@ -1692,9 +1693,10 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            document.getElementById("recSignatureUrl").value = data.fileUrl;
+            const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
+            document.getElementById("recSignatureUrl").value = sigUrl;
             const prev = document.getElementById("recSigPreview");
-            if (prev) prev.src = data.fileUrl;
+            if (prev) prev.src = sigUrl;
             showToast("Signature uploaded successfully.", "success");
           } else {
             showToast(data.message || "Failed to upload signature.", "error");
@@ -1907,9 +1909,10 @@ document.addEventListener("DOMContentLoaded", () => {
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            document.getElementById("qgSignatureUrl").value = data.fileUrl;
+            const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
+            document.getElementById("qgSignatureUrl").value = sigUrl;
             const prev = document.getElementById("qgSigPreview");
-            if (prev) prev.src = data.fileUrl;
+            if (prev) prev.src = sigUrl;
             showToast("Signature uploaded successfully.", "success");
           } else {
             showToast(data.message || "Failed to upload signature.", "error");

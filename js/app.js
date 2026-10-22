@@ -472,6 +472,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const elSigImg = document.getElementById("aposSigImg");
       if (elSigImg && cv.signatureUrl) {
+        elSigImg.onerror = function() {
+          this.onerror = null;
+          this.src = "/uploads/signature_ali_faraz_clean.png";
+        };
         elSigImg.src = cv.signatureUrl;
       }
     }
@@ -606,11 +610,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Officer Signature Graphic
       const aposSigImg = document.getElementById("aposSigImg");
       const aposSigGraphic = document.getElementById("aposSigGraphic");
-      const sigSrc = rec.signatureUrl || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.signatureUrl) || "/uploads/signature_ali_faraz_clean.png";
+      const cleanFallbackSig = "/uploads/signature_ali_faraz_clean.png";
+      const sigSrc = rec.signatureUrl || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.signatureUrl) || cleanFallbackSig;
       if (aposSigImg) {
+        aposSigImg.onerror = function() {
+          this.onerror = null;
+          this.src = cleanFallbackSig;
+        };
         aposSigImg.src = sigSrc;
       } else if (aposSigGraphic) {
-        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="Signature">`;
+        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="Signature" onerror="this.onerror=null; this.src='${cleanFallbackSig}';">`;
       }
 
       // Live Scannable QR Code linking to verification endpoint

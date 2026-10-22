@@ -64,8 +64,10 @@ const SERVER_SECRET = process.env.SESSION_SECRET || 'mofa-apostille-portal-secre
 // =========================================================================
 // In-memory cache store for serverless execution
 const memoryStore = new Map();
+const IS_SERVERLESS = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
 
 function getTmpPath(filePath) {
+  if (!IS_SERVERLESS) return null;
   try {
     const filename = path.basename(filePath);
     return path.join('/tmp', filename);
@@ -91,13 +93,15 @@ function atomicWriteJson(filePath, data) {
   }
 
   // 2. Also mirror to /tmp in serverless environment
-  try {
-    const tmpPath = getTmpPath(filePath);
-    if (tmpPath) {
-      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8');
-      success = true;
-    }
-  } catch (err) {}
+  if (IS_SERVERLESS) {
+    try {
+      const tmpPath = getTmpPath(filePath);
+      if (tmpPath) {
+        fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf8');
+        success = true;
+      }
+    } catch (err) {}
+  }
 
   return success;
 }
@@ -108,16 +112,18 @@ function readJsonSafe(filePath, fallback = {}) {
     return memoryStore.get(filePath);
   }
 
-  // 2. Check /tmp if available
-  try {
-    const tmpPath = getTmpPath(filePath);
-    if (tmpPath && fs.existsSync(tmpPath)) {
-      const content = fs.readFileSync(tmpPath, 'utf8');
-      const parsed = JSON.parse(content);
-      memoryStore.set(filePath, parsed);
-      return parsed;
-    }
-  } catch (err) {}
+  // 2. If in serverless environment, check /tmp override
+  if (IS_SERVERLESS) {
+    try {
+      const tmpPath = getTmpPath(filePath);
+      if (tmpPath && fs.existsSync(tmpPath)) {
+        const content = fs.readFileSync(tmpPath, 'utf8');
+        const parsed = JSON.parse(content);
+        memoryStore.set(filePath, parsed);
+        return parsed;
+      }
+    } catch (err) {}
+  }
 
   // 3. Fallback to primary file on disk
   try {
@@ -1029,6 +1035,10 @@ async function requestHandler(req, res) {
       let fileUrl = `/uploads/${safeName}`;
       try {
         fs.writeFileSync(destPath, buffer);
+        try {
+          const pubDestPath = path.join(ROOT_DIR, 'public', 'uploads', safeName);
+          fs.writeFileSync(pubDestPath, buffer);
+        } catch (pubErr) {}
       } catch (fsErr) {
         // Safe fallback for serverless read-only filesystems (e.g. Vercel)
         console.warn('[Upload] Read-only disk detected. Returning Data URI for serverless compatibility.');
@@ -1058,6 +1068,11 @@ async function requestHandler(req, res) {
     const pubFile = path.join(ROOT_DIR, 'public', cleanPath);
     if (fs.existsSync(pubFile) && fs.statSync(pubFile).isFile()) {
       targetFile = pubFile;
+    } else if (cleanPath.startsWith('/uploads/sig_')) {
+      const fallbackSig = path.join(ROOT_DIR, 'uploads', 'signature_ali_faraz_clean.png');
+      if (fs.existsSync(fallbackSig) && fs.statSync(fallbackSig).isFile()) {
+        targetFile = fallbackSig;
+      }
     }
   }
 
