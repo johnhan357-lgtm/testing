@@ -286,7 +286,23 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("cfgAuthorityName").value = cfg.branding.authorityName || "";
       document.getElementById("cfgAuthoritySubtitle").value = cfg.branding.authoritySubtitle || "";
 
-      if (cfg.branding.logoType === 'custom_image') {
+      // Logo Click Destination URL & Target
+      const logoLinkUrl = cfg.branding.logoLinkUrl || "https://apostille.mofa.gov.pk/";
+      const logoLinkTarget = cfg.branding.logoLinkTarget || "_self";
+      const cfgLogoLinkUrlEl = document.getElementById("cfgLogoLinkUrl");
+      if (cfgLogoLinkUrlEl) cfgLogoLinkUrlEl.value = logoLinkUrl;
+      const cfgLogoLinkTargetEl = document.getElementById("cfgLogoLinkTarget");
+      if (cfgLogoLinkTargetEl) cfgLogoLinkTargetEl.value = logoLinkTarget;
+
+      const tabNavLogoLinkDisplayEl = document.getElementById("tabNavLogoLinkDisplay");
+      if (tabNavLogoLinkDisplayEl) tabNavLogoLinkDisplayEl.textContent = logoLinkUrl;
+
+      // Direct Logo Image URL & Upload
+      const logoUrl = cfg.branding.logoUrl || "/uploads/logo_1792329381447.svg";
+      const cfgLogoUrlEl = document.getElementById("cfgLogoUrl");
+      if (cfgLogoUrlEl) cfgLogoUrlEl.value = logoUrl;
+
+      if (cfg.branding.logoType === 'custom_image' || logoUrl) {
         document.getElementById("radioLogoCustom").checked = true;
       } else {
         document.getElementById("radioLogoDefault").checked = true;
@@ -295,10 +311,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const logoImg = document.getElementById("logoPreviewImg");
       const logoText = document.getElementById("logoStatusText");
-      if (cfg.branding.logoUrl) {
-        logoImg.src = cfg.branding.logoUrl;
+      if (logoUrl) {
+        logoImg.src = logoUrl;
         logoImg.style.display = "block";
-        logoText.textContent = "Custom logo active.";
+        logoText.textContent = "Custom logo active: " + logoUrl;
       } else {
         logoImg.style.display = "none";
         logoText.textContent = "No custom logo uploaded.";
@@ -489,6 +505,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updated.branding.authorityName = document.getElementById("cfgAuthorityName").value.trim();
     updated.branding.authoritySubtitle = document.getElementById("cfgAuthoritySubtitle").value.trim();
     updated.branding.logoType = document.querySelector('input[name="logoTypeRadio"]:checked')?.value || "default_svg";
+    updated.branding.logoUrl = (document.getElementById("cfgLogoUrl")?.value || "").trim() || updated.branding.logoUrl || "/uploads/logo_1792329381447.svg";
+    updated.branding.logoLinkUrl = (document.getElementById("cfgLogoLinkUrl")?.value || "").trim() || "https://apostille.mofa.gov.pk/";
+    updated.branding.logoLinkTarget = document.getElementById("cfgLogoLinkTarget")?.value || "_self";
     updated.branding.socialLinks = {
       facebook: document.getElementById("cfgSocialFb").value.trim(),
       instagram: document.getElementById("cfgSocialIg").value.trim(),
@@ -730,10 +749,16 @@ document.addEventListener("DOMContentLoaded", () => {
             draftConfig.branding.logoType = 'custom_image';
             document.getElementById("radioLogoCustom").checked = true;
 
+            const logoUrlInput = document.getElementById("cfgLogoUrl");
+            if (logoUrlInput) logoUrlInput.value = data.fileUrl;
+
             const logoImg = document.getElementById("logoPreviewImg");
-            logoImg.src = data.fileUrl;
-            logoImg.style.display = "block";
+            if (logoImg) {
+              logoImg.src = data.fileUrl;
+              logoImg.style.display = "block";
+            }
             document.getElementById("logoStatusText").textContent = `Uploaded: ${data.fileName}`;
+            if (typeof markDraftDirty === 'function') markDraftDirty();
             showToast("Custom logo uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
             await checkPublishingStatus();
           } else {
@@ -744,6 +769,57 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Direct Logo URL Input Listener
+  const cfgLogoUrlInput = document.getElementById("cfgLogoUrl");
+  if (cfgLogoUrlInput) {
+    cfgLogoUrlInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      const logoImg = document.getElementById("logoPreviewImg");
+      if (logoImg) {
+        logoImg.src = val || "/uploads/logo_1792329381447.svg";
+        logoImg.style.display = "block";
+      }
+      if (val) {
+        const custRadio = document.getElementById("radioLogoCustom");
+        if (custRadio) custRadio.checked = true;
+        handleLogoRadioToggle();
+      }
+      if (typeof markDraftDirty === 'function') markDraftDirty();
+    });
+  }
+
+  // Update Tab 3 indicator when cfgLogoLinkUrl is edited in Tab 2
+  const cfgLogoLinkUrlInput = document.getElementById("cfgLogoLinkUrl");
+  if (cfgLogoLinkUrlInput) {
+    cfgLogoLinkUrlInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      const tabNavDisplay = document.getElementById("tabNavLogoLinkDisplay");
+      if (tabNavDisplay) tabNavDisplay.textContent = val || "https://apostille.mofa.gov.pk/";
+      if (typeof markDraftDirty === 'function') markDraftDirty();
+    });
+  }
+
+  const cfgLogoLinkTargetEl = document.getElementById("cfgLogoLinkTarget");
+  if (cfgLogoLinkTargetEl) {
+    cfgLogoLinkTargetEl.addEventListener("change", () => {
+      if (typeof markDraftDirty === 'function') markDraftDirty();
+    });
+  }
+
+  // Quick jump button from Tab 3 to Tab 2 Logo config
+  const btnGoToLogoLinkConfig = document.getElementById("btnGoToLogoLinkConfig");
+  if (btnGoToLogoLinkConfig) {
+    btnGoToLogoLinkConfig.addEventListener("click", () => {
+      const brandTabBtn = document.querySelector('[data-tab="tab-branding"]');
+      if (brandTabBtn) brandTabBtn.click();
+      const linkInput = document.getElementById("cfgLogoLinkUrl");
+      if (linkInput) {
+        linkInput.focus();
+        linkInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     });
   }
 

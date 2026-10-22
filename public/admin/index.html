@@ -159,26 +159,63 @@
 
             <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
 
-            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px;">Organization Logo</h3>
+            <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 6px;">Main Home Logo &amp; Destination Link</h3>
+            <p class="card-desc" style="margin-bottom: 14px;">Configure the main header logo image, its clickable destination URL, and link behavior.</p>
+
+            <!-- Logo Click Destination Link URL (Full Control) -->
+            <div class="grid-2" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 14px 16px; border-radius: 8px; margin-bottom: 18px;">
+              <div class="form-field" style="margin-bottom: 0;">
+                <label class="form-label" for="cfgLogoLinkUrl" style="color: #166534; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                  <span>🔗</span> Logo Click Destination Link (URL)
+                </label>
+                <input type="text" id="cfgLogoLinkUrl" class="form-input" placeholder="e.g. https://apostille.mofa.gov.pk/ or index.html" value="https://apostille.mofa.gov.pk/">
+                <span style="font-size: 0.8rem; color: #15803d; display: block; margin-top: 4px;">
+                  Where visitors are redirected when clicking the main logo in the top header.
+                </span>
+              </div>
+              <div class="form-field" style="margin-bottom: 0;">
+                <label class="form-label" for="cfgLogoLinkTarget" style="color: #166534; font-weight: 700;">
+                  Link Open Behavior
+                </label>
+                <select id="cfgLogoLinkTarget" class="form-select">
+                  <option value="_self">Open in Same Window / Tab (_self)</option>
+                  <option value="_blank">Open in New Window / Tab (_blank)</option>
+                </select>
+                <span style="font-size: 0.8rem; color: #15803d; display: block; margin-top: 4px;">
+                  Target browser window when clicking the header logo.
+                </span>
+              </div>
+            </div>
+
+            <!-- Logo Source Type -->
             <div class="form-field">
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 10px;">
-                <input type="radio" name="logoTypeRadio" value="default_svg" id="radioLogoDefault" checked>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 10px; cursor: pointer;">
+                <input type="radio" name="logoTypeRadio" value="default_svg" id="radioLogoDefault">
                 Use Standard Institutional Emblem (Vector SVG)
               </label>
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem;">
-                <input type="radio" name="logoTypeRadio" value="custom_image" id="radioLogoCustom">
-                Upload Custom Logo Image (PNG, JPG, SVG, WebP — max 2MB)
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer;">
+                <input type="radio" name="logoTypeRadio" value="custom_image" id="radioLogoCustom" checked>
+                Use Custom Logo Image (Upload file or edit image URL directly)
               </label>
             </div>
 
-            <div id="customLogoUploadSection" style="margin-top: 15px; padding: 18px; background: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db;">
-              <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp">
-              <div id="logoPreviewContainer" style="margin-top: 12px; display: flex; align-items: center; gap: 15px;">
-                <div style="width: 60px; height: 60px; border: 1px solid #e5e7eb; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
-                  <img id="logoPreviewImg" src="" alt="Logo Preview" style="max-width: 100%; max-height: 100%; display: none;">
+            <div id="customLogoUploadSection" style="margin-top: 15px; padding: 18px; background: #f9fafb; border-radius: 8px; border: 1px dashed #cbd5e1;">
+              <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                <div style="width: 64px; height: 64px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 6px; overflow: hidden; flex-shrink: 0;">
+                  <img id="logoPreviewImg" src="/uploads/logo_1792329381447.svg" alt="Logo Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                 </div>
-                <span id="logoStatusText" style="font-size: 0.85rem; color: #6b7280;">No custom logo selected.</span>
+                <div style="flex: 1; min-width: 260px;">
+                  <label class="form-label" for="cfgLogoUrl" style="margin-bottom: 6px; font-weight: 600;">Logo Image Path / Direct URL</label>
+                  <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="cfgLogoUrl" class="form-input" placeholder="/uploads/logo_1792329381447.svg" style="font-family: monospace; font-size: 0.88rem; flex: 1;">
+                    <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
+                      <span>📁</span> Upload File
+                      <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display: none;">
+                    </label>
+                  </div>
+                </div>
               </div>
+              <span id="logoStatusText" style="font-size: 0.85rem; color: #475569; display: block; margin-top: 8px; font-weight: 500;">Custom logo active.</span>
             </div>
 
             <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 25px 0;">
@@ -219,6 +256,20 @@
               </div>
               <button class="btn-primary" id="btnAddNavItem">
                 + Add Navigation Item
+              </button>
+            </div>
+
+            <!-- Main Home Logo Quick Link Indicator -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.2rem;">🏛️</span>
+                <div>
+                  <strong style="font-size: 0.92rem; color: #166534;">Main Home Logo Click Destination:</strong>
+                  <span id="tabNavLogoLinkDisplay" style="font-family: monospace; font-size: 0.88rem; color: #01411c; margin-left: 6px; font-weight: 600;">https://apostille.mofa.gov.pk/</span>
+                </div>
+              </div>
+              <button type="button" class="btn-secondary" id="btnGoToLogoLinkConfig" style="font-size: 0.82rem; padding: 5px 12px; display: inline-flex; align-items: center; gap: 6px;">
+                <span>⚙️</span> Edit Home Logo &amp; Link
               </button>
             </div>
 

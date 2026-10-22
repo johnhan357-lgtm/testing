@@ -235,15 +235,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Apply Branding
     if (cfg.branding) {
-      if (brandTitleEl) brandTitleEl.textContent = cfg.branding.authorityName;
-      if (brandSubtitleEl) brandSubtitleEl.textContent = cfg.branding.authoritySubtitle;
+      if (brandTitleEl) brandTitleEl.textContent = cfg.branding.authorityName || "Ministry of Foreign Affairs";
+      if (brandSubtitleEl) brandSubtitleEl.textContent = cfg.branding.authoritySubtitle || "Government of Pakistan";
       if (cfg.branding.authorityName) {
         document.title = cfg.branding.authorityName;
       }
 
+      // Handle logo click link URL & target (Full control)
+      const brandLinkEl = document.getElementById("brandSectionLink") || document.querySelector(".brand-section");
+      if (brandLinkEl) {
+        const linkUrl = cfg.branding.logoLinkUrl || "https://apostille.mofa.gov.pk/";
+        brandLinkEl.href = linkUrl;
+        if (cfg.branding.logoLinkTarget === '_blank') {
+          brandLinkEl.target = "_blank";
+          brandLinkEl.rel = "noopener noreferrer";
+        } else {
+          brandLinkEl.removeAttribute("target");
+          brandLinkEl.removeAttribute("rel");
+        }
+      }
+
       // Handle custom uploaded logo or default SVG
-      if (cfg.branding.logoType === 'custom_image' && cfg.branding.logoUrl && brandEmblemEl) {
-        brandEmblemEl.innerHTML = `<img src="${cfg.branding.logoUrl}" alt="Brand Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+      const activeLogoUrl = cfg.branding.logoUrl || '/uploads/logo_1792329381447.svg';
+      if (cfg.branding.logoType === 'custom_image' || activeLogoUrl) {
+        if (brandEmblemEl) {
+          brandEmblemEl.innerHTML = `<img src="${activeLogoUrl}" alt="Brand Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+        }
+      } else if (brandEmblemEl) {
+        brandEmblemEl.innerHTML = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/><path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/><path d="M35 55 Q50 66 65 55" stroke="currentColor" stroke-width="2"/></svg>`;
       }
 
       // Social Links

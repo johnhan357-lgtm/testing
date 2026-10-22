@@ -9,7 +9,9 @@
       "instagram": "https://instagram.com",
       "twitter": "https://twitter.com",
       "linkedin": "https://linkedin.com"
-    }
+    },
+    "logoLinkUrl": "https://apostille.mofa.gov.pk/",
+    "logoLinkTarget": "_self"
   },
   "theme": {
     "primaryGreen": "#01411c",
@@ -159,8 +161,8 @@
     "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
   },
   "metadata": {
-    "lastSavedAt": "2026-10-22T18:30:25.451Z",
-    "lastPublishedAt": "2026-10-22T18:30:25.460Z",
-    "version": 82
+    "lastSavedAt": "2026-10-22T21:20:44.187Z",
+    "lastPublishedAt": "2026-10-22T21:21:06.624Z",
+    "version": 87
   }
 }

@@ -235,10 +235,12 @@ function initAuth() {
 // =========================================================================
 const DEFAULT_CONFIG = {
   branding: {
-    authorityName: "Department of Verification & Legalization",
-    authoritySubtitle: "Online Public Authentication Service",
-    logoType: "default_svg", // 'default_svg' or 'custom_image'
-    logoUrl: "",
+    authorityName: "Ministry of Foreign Affairs",
+    authoritySubtitle: "Government of Pakistan",
+    logoType: "custom_image", // 'default_svg' or 'custom_image'
+    logoUrl: "/uploads/logo_1792329381447.svg",
+    logoLinkUrl: "https://apostille.mofa.gov.pk/",
+    logoLinkTarget: "_self", // '_self' or '_blank'
     socialLinks: {
       facebook: "https://facebook.com",
       instagram: "https://instagram.com",
