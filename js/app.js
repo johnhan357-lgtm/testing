@@ -610,8 +610,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Officer Signature Graphic
       const aposSigImg = document.getElementById("aposSigImg");
       const aposSigGraphic = document.getElementById("aposSigGraphic");
-      const cleanFallbackSig = "/uploads/signature_ali_faraz_clean.png";
-      const sigSrc = rec.signatureUrl || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.signatureUrl) || cleanFallbackSig;
+      const cleanFallbackSig = "data:image/png;base64,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";
+      let sigSrc = rec.signatureUrl;
+      if (!sigSrc || sigSrc === 'undefined' || sigSrc === 'null' || sigSrc.includes('sig_1792344974867')) {
+        sigSrc = cleanFallbackSig;
+      }
       if (aposSigImg) {
         aposSigImg.onerror = function() {
           this.onerror = null;
@@ -619,7 +622,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
         aposSigImg.src = sigSrc;
       } else if (aposSigGraphic) {
-        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="Signature" onerror="this.onerror=null; this.src='${cleanFallbackSig}';">`;
+        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="" onerror="this.onerror=null; this.src='${cleanFallbackSig}';">`;
       }
 
       // Live Scannable QR Code linking to verification endpoint
@@ -639,7 +642,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (pdfIframe) pdfIframe.src = `${pdfUrl}#toolbar=0`;
       if (mobilePdfFilename) mobilePdfFilename.textContent = pdfName;
       if (btnMobilePdfOpen) btnMobilePdfOpen.href = pdfUrl;
-      if (btnPdfDownload) btnPdfDownload.href = pdfUrl;
+      if (btnPdfDownload) {
+        btnPdfDownload.href = pdfUrl;
+        btnPdfDownload.setAttribute("download", pdfName);
+      }
+
+      // Render interactive PDF via PDF.js with full working toolbar
+      if (typeof loadAndRenderPdf === "function") {
+        loadAndRenderPdf(pdfUrl);
+      }
 
       // Legacy fallback values for tests and backward compatibility
       if (resDocNumber) resDocNumber.textContent = rec.docNumber;
@@ -792,58 +803,370 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =========================================================================
-  // 5. PDF VIEWER TOOLBAR CONTROLS
+  // 5. INTERACTIVE PDF VIEWER CONTROLS & PDF.JS CANVAS RENDERING (Image 2)
   // =========================================================================
+  let currentPdfDoc = null;
+  let currentPdfUrl = '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
   let pdfZoomLevel = 1.0;
   let pdfRotationDeg = 0;
+  let isDrawMode = false;
+  let drawStrokes = [];
+  let redoStrokes = [];
+
+  const pdfViewport = document.getElementById("pdfViewport");
+  const pdfCanvasContainer = document.getElementById("pdfCanvasContainer");
+  const pdfLoadingIndicator = document.getElementById("pdfLoadingIndicator");
+  const pdfPageInput = document.getElementById("pdfPageInput");
+  const pdfTotalPages = document.getElementById("pdfTotalPages");
+  const btnPdfPrevPage = document.getElementById("btnPdfPrevPage");
+  const btnPdfNextPage = document.getElementById("btnPdfNextPage");
   const btnPdfZoomIn = document.getElementById("btnPdfZoomIn");
   const btnPdfZoomOut = document.getElementById("btnPdfZoomOut");
   const btnPdfFit = document.getElementById("btnPdfFit");
   const btnPdfRotate = document.getElementById("btnPdfRotate");
+  const btnPdfDraw = document.getElementById("btnPdfDraw");
+  const btnPdfUndo = document.getElementById("btnPdfUndo");
+  const btnPdfRedo = document.getElementById("btnPdfRedo");
+  const btnPdfText = document.getElementById("btnPdfText");
+  const btnPdfDownload = document.getElementById("btnPdfDownload");
   const btnPdfPrint = document.getElementById("btnPdfPrint");
 
-  function updatePdfTransform() {
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
+  }
+
+  async function loadAndRenderPdf(url) {
+    if (!url) return;
+    currentPdfUrl = url;
     const iframe = document.getElementById("pdfIframe");
-    if (iframe) {
-      iframe.style.transform = `scale(${pdfZoomLevel}) rotate(${pdfRotationDeg}deg)`;
-      iframe.style.transformOrigin = "top center";
-      iframe.style.transition = "transform 0.2s ease";
+    if (iframe) iframe.src = `${url}#toolbar=0`;
+    if (btnPdfDownload) {
+      btnPdfDownload.href = url;
+      btnPdfDownload.setAttribute("download", url.split("/").pop() || "document.pdf");
+    }
+    const btnMobileOpen = document.getElementById("btnMobilePdfOpen");
+    if (btnMobileOpen) btnMobileOpen.href = url;
+
+    if (typeof pdfjsLib === "undefined") {
+      if (iframe) {
+        iframe.style.position = "static";
+        iframe.style.width = "100%";
+        iframe.style.height = "560px";
+        iframe.style.opacity = "1";
+        iframe.style.pointerEvents = "auto";
+      }
+      return;
+    }
+
+    try {
+      if (pdfLoadingIndicator) pdfLoadingIndicator.style.display = "flex";
+      if (pdfCanvasContainer) pdfCanvasContainer.innerHTML = "";
+
+      const loadingTask = pdfjsLib.getDocument({
+        url: url,
+        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+        cMapPacked: true
+      });
+
+      currentPdfDoc = await loadingTask.promise;
+      const totalPages = currentPdfDoc.numPages;
+
+      if (pdfTotalPages) pdfTotalPages.textContent = totalPages;
+      if (pdfPageInput) {
+        pdfPageInput.max = totalPages;
+        pdfPageInput.value = 1;
+      }
+      const pdfPageIndicator = document.getElementById("pdfPageIndicator");
+      if (pdfPageIndicator) pdfPageIndicator.textContent = `1 / ${totalPages}`;
+
+      await renderAllPages();
+    } catch (err) {
+      console.warn("[PDF.js Render Fallback]:", err);
+      if (iframe) {
+        iframe.style.position = "static";
+        iframe.style.width = "100%";
+        iframe.style.height = "560px";
+        iframe.style.opacity = "1";
+        iframe.style.pointerEvents = "auto";
+      }
+    } finally {
+      if (pdfLoadingIndicator) pdfLoadingIndicator.style.display = "none";
     }
   }
 
+  async function renderAllPages() {
+    if (!currentPdfDoc || !pdfCanvasContainer) return;
+    pdfCanvasContainer.innerHTML = "";
+
+    const containerWidth = pdfViewport ? Math.max(280, pdfViewport.clientWidth - 32) : 600;
+
+    for (let pageNum = 1; pageNum <= currentPdfDoc.numPages; pageNum++) {
+      const page = await currentPdfDoc.getPage(pageNum);
+      const unscaledViewport = page.getViewport({ scale: 1.0, rotation: pdfRotationDeg });
+
+      let baseScale = 1.0;
+      if (pdfZoomLevel === 1.0) {
+        baseScale = Math.min(1.25, Math.max(0.48, containerWidth / unscaledViewport.width));
+      } else {
+        baseScale = pdfZoomLevel;
+      }
+
+      const viewport = page.getViewport({ scale: baseScale, rotation: pdfRotationDeg });
+
+      const pageWrapper = document.createElement("div");
+      pageWrapper.className = "pdf-page-container";
+      pageWrapper.dataset.pageNum = pageNum;
+      pageWrapper.style.width = `${Math.floor(viewport.width)}px`;
+      pageWrapper.style.height = `${Math.floor(viewport.height)}px`;
+
+      const canvas = document.createElement("canvas");
+      canvas.className = "pdf-page-canvas";
+      const ctx = canvas.getContext("2d");
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+      canvas.style.width = `${Math.floor(viewport.width)}px`;
+      canvas.style.height = `${Math.floor(viewport.height)}px`;
+      ctx.scale(dpr, dpr);
+
+      const drawCanvas = document.createElement("canvas");
+      drawCanvas.className = "pdf-draw-canvas";
+      drawCanvas.width = canvas.width;
+      drawCanvas.height = canvas.height;
+      drawCanvas.style.width = canvas.style.width;
+      drawCanvas.style.height = canvas.style.height;
+      if (isDrawMode) {
+        drawCanvas.style.pointerEvents = "auto";
+        drawCanvas.style.cursor = "crosshair";
+      }
+
+      pageWrapper.appendChild(canvas);
+      pageWrapper.appendChild(drawCanvas);
+      pdfCanvasContainer.appendChild(pageWrapper);
+
+      await page.render({
+        canvasContext: ctx,
+        viewport: viewport
+      }).promise;
+
+      setupDrawing(drawCanvas, pageNum, dpr);
+      redrawCanvas(drawCanvas, pageNum, dpr);
+    }
+  }
+
+  function setupDrawing(canvas, pageNum, dpr) {
+    const ctx = canvas.getContext("2d");
+    let drawing = false;
+    let lastX = 0, lastY = 0;
+    let currentStroke = [];
+
+    function start(x, y) {
+      drawing = true;
+      const rect = canvas.getBoundingClientRect();
+      lastX = (x - rect.left) * dpr;
+      lastY = (y - rect.top) * dpr;
+      currentStroke = [{ x: lastX, y: lastY }];
+    }
+
+    function move(x, y) {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const nx = (x - rect.left) * dpr;
+      const ny = (y - rect.top) * dpr;
+      ctx.strokeStyle = "#1d4ed8";
+      ctx.lineWidth = 3 * dpr;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+      lastX = nx;
+      lastY = ny;
+      currentStroke.push({ x: nx, y: ny });
+    }
+
+    function stop() {
+      if (!drawing) return;
+      drawing = false;
+      if (currentStroke.length > 0) {
+        drawStrokes.push({ pageNum, stroke: currentStroke, canvas });
+        redoStrokes = [];
+        updateUndoRedoBtns();
+      }
+    }
+
+    canvas.addEventListener("mousedown", e => { if (isDrawMode) start(e.clientX, e.clientY); });
+    canvas.addEventListener("mousemove", e => { if (isDrawMode) move(e.clientX, e.clientY); });
+    canvas.addEventListener("mouseup", stop);
+    canvas.addEventListener("mouseleave", stop);
+
+    canvas.addEventListener("touchstart", e => {
+      if (isDrawMode && e.touches.length === 1) {
+        e.preventDefault();
+        start(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+    canvas.addEventListener("touchmove", e => {
+      if (isDrawMode && e.touches.length === 1) {
+        e.preventDefault();
+        move(e.touches[0].clientX, e.touches[0].clientY);
+      }
+    }, { passive: false });
+    canvas.addEventListener("touchend", stop);
+  }
+
+  function redrawCanvas(canvas, pageNum, dpr) {
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const pageStrokes = drawStrokes.filter(s => s.pageNum === pageNum);
+    for (const s of pageStrokes) {
+      if (s.stroke.length < 2) continue;
+      ctx.strokeStyle = "#1d4ed8";
+      ctx.lineWidth = 3 * (dpr || 1);
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      ctx.moveTo(s.stroke[0].x, s.stroke[0].y);
+      for (let i = 1; i < s.stroke.length; i++) {
+        ctx.lineTo(s.stroke[i].x, s.stroke[i].y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  function updateUndoRedoBtns() {
+    if (btnPdfUndo) btnPdfUndo.disabled = drawStrokes.length === 0;
+    if (btnPdfRedo) btnPdfRedo.disabled = redoStrokes.length === 0;
+  }
+
+  function scrollToPage(pageNum) {
+    if (!currentPdfDoc || !pdfCanvasContainer) return;
+    pageNum = Math.max(1, Math.min(currentPdfDoc.numPages, parseInt(pageNum, 10) || 1));
+    const target = pdfCanvasContainer.querySelector(`.pdf-page-container[data-page-num="${pageNum}"]`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (pdfPageInput) pdfPageInput.value = pageNum;
+      const ind = document.getElementById("pdfPageIndicator");
+      if (ind) ind.textContent = `${pageNum} / ${currentPdfDoc.numPages}`;
+    }
+  }
+
+  if (pdfViewport) {
+    pdfViewport.addEventListener("scroll", () => {
+      if (!currentPdfDoc || !pdfCanvasContainer) return;
+      const pages = pdfCanvasContainer.querySelectorAll(".pdf-page-container");
+      const viewportTop = pdfViewport.scrollTop;
+      const viewportHeight = pdfViewport.clientHeight;
+      for (const page of pages) {
+        const top = page.offsetTop - pdfViewport.offsetTop;
+        const height = page.offsetHeight;
+        if (top + height / 2 >= viewportTop && top < viewportTop + viewportHeight) {
+          const pNum = page.dataset.pageNum;
+          if (pdfPageInput) pdfPageInput.value = pNum;
+          const ind = document.getElementById("pdfPageIndicator");
+          if (ind) ind.textContent = `${pNum} / ${currentPdfDoc.numPages}`;
+          break;
+        }
+      }
+    });
+  }
+
+  if (pdfPageInput) {
+    pdfPageInput.addEventListener("change", (e) => scrollToPage(e.target.value));
+  }
+  if (btnPdfPrevPage) {
+    btnPdfPrevPage.addEventListener("click", () => {
+      const cur = parseInt(pdfPageInput?.value || 1, 10);
+      scrollToPage(cur - 1);
+    });
+  }
+  if (btnPdfNextPage) {
+    btnPdfNextPage.addEventListener("click", () => {
+      const cur = parseInt(pdfPageInput?.value || 1, 10);
+      scrollToPage(cur + 1);
+    });
+  }
   if (btnPdfZoomIn) {
-    btnPdfZoomIn.addEventListener("click", () => {
-      pdfZoomLevel = Math.min(2.0, pdfZoomLevel + 0.15);
-      updatePdfTransform();
+    btnPdfZoomIn.addEventListener("click", async () => {
+      pdfZoomLevel = Math.min(2.5, +(pdfZoomLevel + 0.2).toFixed(2));
+      await renderAllPages();
     });
   }
   if (btnPdfZoomOut) {
-    btnPdfZoomOut.addEventListener("click", () => {
-      pdfZoomLevel = Math.max(0.6, pdfZoomLevel - 0.15);
-      updatePdfTransform();
+    btnPdfZoomOut.addEventListener("click", async () => {
+      pdfZoomLevel = Math.max(0.5, +(pdfZoomLevel - 0.2).toFixed(2));
+      await renderAllPages();
     });
   }
   if (btnPdfFit) {
-    btnPdfFit.addEventListener("click", () => {
+    btnPdfFit.addEventListener("click", async () => {
       pdfZoomLevel = 1.0;
       pdfRotationDeg = 0;
-      updatePdfTransform();
+      await renderAllPages();
     });
   }
   if (btnPdfRotate) {
-    btnPdfRotate.addEventListener("click", () => {
+    btnPdfRotate.addEventListener("click", async () => {
       pdfRotationDeg = (pdfRotationDeg + 90) % 360;
-      updatePdfTransform();
+      await renderAllPages();
+    });
+  }
+  if (btnPdfDraw) {
+    btnPdfDraw.addEventListener("click", () => {
+      isDrawMode = !isDrawMode;
+      btnPdfDraw.classList.toggle("active", isDrawMode);
+      const drawCanvases = pdfCanvasContainer ? pdfCanvasContainer.querySelectorAll(".pdf-draw-canvas") : [];
+      drawCanvases.forEach(c => {
+        c.style.pointerEvents = isDrawMode ? "auto" : "none";
+        c.style.cursor = isDrawMode ? "crosshair" : "default";
+      });
+    });
+  }
+  if (btnPdfUndo) {
+    btnPdfUndo.addEventListener("click", () => {
+      if (drawStrokes.length === 0) return;
+      const last = drawStrokes.pop();
+      redoStrokes.push(last);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      redrawCanvas(last.canvas, last.pageNum, dpr);
+      updateUndoRedoBtns();
+    });
+  }
+  if (btnPdfRedo) {
+    btnPdfRedo.addEventListener("click", () => {
+      if (redoStrokes.length === 0) return;
+      const next = redoStrokes.pop();
+      drawStrokes.push(next);
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      redrawCanvas(next.canvas, next.pageNum, dpr);
+      updateUndoRedoBtns();
+    });
+  }
+  if (btnPdfText) {
+    btnPdfText.addEventListener("click", () => {
+      const text = prompt("Enter annotation note to stamp on document:");
+      if (!text) return;
+      const firstCanvas = pdfCanvasContainer ? pdfCanvasContainer.querySelector(".pdf-draw-canvas") : null;
+      if (firstCanvas) {
+        const ctx = firstCanvas.getContext("2d");
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        ctx.font = `bold ${16 * dpr}px Arial, sans-serif`;
+        ctx.fillStyle = "#dc2626";
+        ctx.fillText(text, 30 * dpr, 50 * dpr);
+      }
     });
   }
   if (btnPdfPrint) {
     btnPdfPrint.addEventListener("click", () => {
-      const iframe = document.getElementById("pdfIframe");
-      if (iframe && iframe.contentWindow) {
-        try {
-          iframe.contentWindow.print();
+      if (currentPdfUrl) {
+        const pWin = window.open(currentPdfUrl, '_blank');
+        if (pWin) {
+          pWin.focus();
+          setTimeout(() => { try { pWin.print(); } catch(e) {} }, 1000);
           return;
-        } catch {}
+        }
       }
       window.print();
     });
@@ -860,6 +1183,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 6. INITIALIZE & CHECK QR QUERY PARAMETERS
   // =========================================================================
   await loadPublishedConfig();
+
+  // Pre-load default PDF into viewer
+  try {
+    const initPdf = (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultPdfUrl) || '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+    loadAndRenderPdf(initPdf);
+  } catch(e) {}
 
   // Close mobile menu when nav link clicked
   if (navListEl && mobileMenuBtn && mainNavbar) {

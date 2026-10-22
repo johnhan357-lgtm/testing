@@ -1073,6 +1073,11 @@ async function requestHandler(req, res) {
       if (fs.existsSync(fallbackSig) && fs.statSync(fallbackSig).isFile()) {
         targetFile = fallbackSig;
       }
+    } else if (cleanPath.startsWith('/uploads/doc_')) {
+      const fallbackDoc = path.join(ROOT_DIR, 'uploads', 'wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf');
+      if (fs.existsSync(fallbackDoc) && fs.statSync(fallbackDoc).isFile()) {
+        targetFile = fallbackDoc;
+      }
     }
   }
 
