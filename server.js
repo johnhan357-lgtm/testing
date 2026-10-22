@@ -10,14 +10,18 @@ const crypto = require('crypto');
 const { URL } = require('url');
 
 const PORT = process.env.PORT || 3000;
-const ROOT_DIR = process.cwd();
+const ROOT_DIR = __dirname;
 const DATA_DIR = path.join(ROOT_DIR, 'data');
 const UPLOADS_DIR = path.join(ROOT_DIR, 'uploads');
 const HISTORY_DIR = path.join(DATA_DIR, 'config.history');
 
-// Ensure required directories exist
+// Ensure required directories exist (with serverless read-only guard)
 [DATA_DIR, UPLOADS_DIR, HISTORY_DIR].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  } catch (err) {
+    // Read-only filesystem in serverless environments (e.g. Vercel)
+  }
 });
 
 // Paths to persistent data files
@@ -53,15 +57,22 @@ function initAdminNav() {
 // In-memory active session tokens: token -> { username, expiresAt }
 const activeSessions = new Map();
 const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+const SERVER_SECRET = process.env.SESSION_SECRET || 'mofa-apostille-portal-secret-key-2026';
 
 // =========================================================================
-// ATOMIC FILE STORAGE HELPERS
+// ATOMIC FILE STORAGE HELPERS (Safe against serverless EROFS)
 // =========================================================================
 function atomicWriteJson(filePath, data) {
-  const tempPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).substring(2, 7)}`;
-  const content = JSON.stringify(data, null, 2);
-  fs.writeFileSync(tempPath, content, 'utf8');
-  fs.renameSync(tempPath, filePath);
+  try {
+    const tempPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).substring(2, 7)}`;
+    const content = JSON.stringify(data, null, 2);
+    fs.writeFileSync(tempPath, content, 'utf8');
+    fs.renameSync(tempPath, filePath);
+    return true;
+  } catch (err) {
+    console.warn(`[Storage Warning] Cannot write to ${filePath} (${err.code || err.message}). Operating in read-only / ephemeral mode.`);
+    return false;
+  }
 }
 
 function readJsonSafe(filePath, fallback = {}) {
@@ -97,9 +108,64 @@ function persistSessions() {
   atomicWriteJson(SESSIONS_FILE, obj);
 }
 
+// Stateless HMAC Session Token Generation & Verification (Vercel Multi-Lambda Safe)
+function generateSessionToken(username) {
+  const expiresAt = Date.now() + SESSION_DURATION_MS;
+  const signature = crypto.createHmac('sha256', SERVER_SECRET).update(`${username}.${expiresAt}`).digest('hex');
+  const token = `${username}.${expiresAt}.${signature}`;
+  activeSessions.set(token, { username, expiresAt });
+  persistSessions();
+  return { token, username, expiresAt };
+}
+
+function verifyToken(token) {
+  if (!token || typeof token !== 'string') return null;
+
+  // 1. Check in-memory session (for local persistence / fast cache)
+  const memSession = activeSessions.get(token);
+  if (memSession && memSession.expiresAt > Date.now()) {
+    return memSession;
+  }
+
+  // 2. Stateless HMAC verification (works seamlessly across all Vercel lambda instances)
+  const parts = token.split('.');
+  if (parts.length === 3) {
+    const [username, expiresAtStr, signature] = parts;
+    const expiresAt = parseInt(expiresAtStr, 10);
+    if (!expiresAt || Date.now() > expiresAt) {
+      return null;
+    }
+    const expectedSig = crypto.createHmac('sha256', SERVER_SECRET).update(`${username}.${expiresAtStr}`).digest('hex');
+    const sigBuffer = Buffer.from(signature, 'hex');
+    const expectedBuffer = Buffer.from(expectedSig, 'hex');
+    if (sigBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
+      const session = { username, expiresAt };
+      activeSessions.set(token, session);
+      return session;
+    }
+  }
+
+  return null;
+}
+
 // =========================================================================
 // PASSWORD HASHING (Zero external dependencies using crypto.scrypt)
 // =========================================================================
+const DEFAULT_AUTH = {
+  username: "admin",
+  salt: "d4789e62f271536bce09638e26171ad4",
+  hash: "3ae0c95d5584cf9e6b1749b9630d7531b128956275bff9ecc50b0bc07ab0c5620af5153ee853099e28ff9a552b06eb8b3f33018a046426983a26d5edbe6c52f7",
+  createdAt: "2026-10-18T13:12:55.579Z"
+};
+
+function getAuthData() {
+  const fileData = readJsonSafe(AUTH_FILE, null);
+  if (fileData && fileData.username && fileData.salt && fileData.hash) {
+    return fileData;
+  }
+  return DEFAULT_AUTH;
+}
+
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
   return { hash, salt };
@@ -113,13 +179,7 @@ function verifyPassword(password, salt, storedHash) {
 // Initialize Auth Store (Default credentials: admin / admin123)
 function initAuth() {
   if (!fs.existsSync(AUTH_FILE)) {
-    const { hash, salt } = hashPassword('admin123');
-    atomicWriteJson(AUTH_FILE, {
-      username: 'admin',
-      salt,
-      hash,
-      createdAt: new Date().toISOString()
-    });
+    atomicWriteJson(AUTH_FILE, DEFAULT_AUTH);
     console.log('[Auth] Initialized default admin credentials (User: admin / Pass: admin123). Please change in Admin Panel.');
   }
 }
@@ -289,7 +349,36 @@ initAdminNav();
 loadSessions();
 
 function parseBody(req) {
+  // 1. If Vercel or any serverless runtime pre-parsed the body
+  if (req.body !== undefined && req.body !== null) {
+    if (typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+      return Promise.resolve(req.body);
+    }
+    if (Buffer.isBuffer(req.body)) {
+      const str = req.body.toString('utf8');
+      if (!str.trim()) return Promise.resolve({});
+      try {
+        return Promise.resolve(JSON.parse(str));
+      } catch (e) {
+        return Promise.resolve(str);
+      }
+    }
+    if (typeof req.body === 'string') {
+      if (!req.body.trim()) return Promise.resolve({});
+      try {
+        return Promise.resolve(JSON.parse(req.body));
+      } catch (err) {
+        return Promise.resolve(req.body);
+      }
+    }
+  }
+
+  // 2. Fallback to stream reading for standard Node.js server
   return new Promise((resolve, reject) => {
+    if (req.complete) {
+      return resolve({});
+    }
+
     let body = '';
     req.on('data', chunk => {
       body += chunk;
@@ -328,22 +417,16 @@ function authenticateAdmin(req) {
     token = authHeader.substring(7);
   } else if (req.headers.cookie) {
     const cookies = Object.fromEntries(
-      req.headers.cookie.split(';').map(c => c.trim().split('=').map(decodeURIComponent))
+      req.headers.cookie.split(';').map(c => {
+        const parts = c.trim().split('=');
+        return [parts[0], decodeURIComponent(parts.slice(1).join('='))];
+      })
     );
     token = cookies['admin_session'];
   }
 
   if (!token) return null;
-  const session = activeSessions.get(token);
-  if (!session) return null;
-
-  if (Date.now() > session.expiresAt) {
-    activeSessions.delete(token);
-    persistSessions();
-    return null;
-  }
-
-  return session;
+  return verifyToken(token);
 }
 
 // MIME types for static files
@@ -362,7 +445,29 @@ const MIME_TYPES = {
 };
 
 async function requestHandler(req, res) {
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  // Resolve effective request path (handles local, Vercel rewrites, and catch-all routes)
+  let effectiveUrl = req.headers['x-matched-path'] || req.headers['x-vercel-matched-path'] || req.url;
+  const tempUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  if (tempUrl.searchParams.has('__route')) {
+    effectiveUrl = tempUrl.searchParams.get('__route');
+    tempUrl.searchParams.delete('__route');
+    const remaining = tempUrl.searchParams.toString();
+    if (remaining) {
+      effectiveUrl += (effectiveUrl.includes('?') ? '&' : '?') + remaining;
+    }
+  }
+
+  const parsedUrl = new URL(effectiveUrl, `http://${req.headers.host || 'localhost'}`);
+  // Also preserve query parameters from req.url
+  if (req.url && req.url.includes('?')) {
+    const origQuery = new URL(req.url, `http://${req.headers.host || 'localhost'}`).searchParams;
+    for (const [k, v] of origQuery.entries()) {
+      if (k !== '__route' && !parsedUrl.searchParams.has(k)) {
+        parsedUrl.searchParams.set(k, v);
+      }
+    }
+  }
+
   const pathname = parsedUrl.pathname;
   const method = req.method;
 
@@ -472,18 +577,13 @@ async function requestHandler(req, res) {
   if (pathname === '/api/admin/login' && method === 'POST') {
     try {
       const { username, password } = await parseBody(req);
-      const auth = readJsonSafe(AUTH_FILE);
+      const auth = getAuthData();
 
       if (!auth || auth.username !== username || !verifyPassword(password, auth.salt, auth.hash)) {
         return sendJson(res, 401, { success: false, message: "Invalid administrator username or password." });
       }
 
-      const token = crypto.randomBytes(32).toString('hex');
-      activeSessions.set(token, {
-        username,
-        expiresAt: Date.now() + SESSION_DURATION_MS
-      });
-      persistSessions();
+      const { token } = generateSessionToken(username);
 
       res.writeHead(200, {
         'Content-Type': 'application/json',
@@ -491,6 +591,7 @@ async function requestHandler(req, res) {
       });
       return res.end(JSON.stringify({ success: true, token, username }));
     } catch (err) {
+      console.error('[Login Error]:', err);
       return sendJson(res, 500, { success: false, message: "Login processing failed." });
     }
   }
@@ -519,7 +620,7 @@ async function requestHandler(req, res) {
     if (!session) return sendJson(res, 401, { message: "Unauthorized." });
 
     const { currentPassword, newPassword } = await parseBody(req);
-    const auth = readJsonSafe(AUTH_FILE);
+    const auth = getAuthData();
 
     if (!verifyPassword(currentPassword, auth.salt, auth.hash)) {
       return sendJson(res, 400, { success: false, message: "Current password is incorrect." });
