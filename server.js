@@ -4,6 +4,7 @@
  */
 
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -31,6 +32,262 @@ const RECORDS_FILE = path.join(DATA_DIR, 'records.json');
 const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
 const ADMIN_NAV_FILE = path.join(DATA_DIR, 'admin-nav.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
+const CLOUD_CONFIG_FILE = path.join(DATA_DIR, 'cloud-config.json');
+
+// Default Cloud Persistence Configuration
+const DEFAULT_CLOUD_CONFIG = {
+  githubToken: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "",
+  githubRepo: process.env.GITHUB_REPO || "johnhan357-lgtm/testing",
+  githubBranch: process.env.GITHUB_BRANCH || "main",
+  githubFilePath: "data/records.json",
+  autoCommit: true,
+  kvRestApiUrl: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "",
+  kvRestApiToken: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "",
+  lastSyncedAt: null,
+  lastSyncStatus: "idle",
+  lastSyncMessage: ""
+};
+
+function getCloudConfig() {
+  const saved = readJsonSafe(CLOUD_CONFIG_FILE, {});
+  return {
+    ...DEFAULT_CLOUD_CONFIG,
+    ...saved,
+    githubToken: saved.githubToken || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "",
+    githubRepo: saved.githubRepo || process.env.GITHUB_REPO || "johnhan357-lgtm/testing",
+    githubBranch: saved.githubBranch || process.env.GITHUB_BRANCH || "main",
+    kvRestApiUrl: saved.kvRestApiUrl || process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "",
+    kvRestApiToken: saved.kvRestApiToken || process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || ""
+  };
+}
+
+function saveCloudConfig(updates) {
+  const current = getCloudConfig();
+  const merged = { ...current, ...updates };
+  atomicWriteJson(CLOUD_CONFIG_FILE, merged);
+  return merged;
+}
+
+function httpsRequest(options, postData = null) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try {
+          resolve({ statusCode: res.statusCode, headers: res.headers, body: data ? JSON.parse(data) : null, raw: data });
+        } catch {
+          resolve({ statusCode: res.statusCode, headers: res.headers, body: data, raw: data });
+        }
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('HTTPS request timed out'));
+    });
+    if (postData) {
+      req.write(typeof postData === 'string' ? postData : JSON.stringify(postData));
+    }
+    req.end();
+  });
+}
+
+// GitHub Auto-Commit to Git Repository (Makes data permanent across Vercel redeploys)
+async function commitRecordsToGitHub(records, commitMsg = "Auto-sync records update [skip ci]") {
+  const cfg = getCloudConfig();
+  if (!cfg.githubToken || !cfg.githubRepo) {
+    return { success: false, reason: "GitHub Token or Repo not configured." };
+  }
+
+  const [owner, repo] = cfg.githubRepo.split('/');
+  if (!owner || !repo) {
+    return { success: false, reason: "Invalid repository format. Must be owner/repo." };
+  }
+
+  const filePath = cfg.githubFilePath || "data/records.json";
+  const branch = cfg.githubBranch || "main";
+
+  try {
+    // 1. Get current file SHA from GitHub
+    const getOptions = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'MOFA-Apostille-Portal',
+        'Authorization': `token ${cfg.githubToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      timeout: 10000
+    };
+
+    const getRes = await httpsRequest(getOptions);
+    let currentSha = null;
+    if (getRes.statusCode === 200 && getRes.body && getRes.body.sha) {
+      currentSha = getRes.body.sha;
+    }
+
+    // 2. Commit updated file to GitHub repo
+    const contentBase64 = Buffer.from(JSON.stringify(records, null, 2), 'utf8').toString('base64');
+    const putPayload = {
+      message: commitMsg,
+      content: contentBase64,
+      branch: branch
+    };
+    if (currentSha) {
+      putPayload.sha = currentSha;
+    }
+
+    const putOptions = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${repo}/contents/${filePath}`,
+      method: 'PUT',
+      headers: {
+        'User-Agent': 'MOFA-Apostille-Portal',
+        'Authorization': `token ${cfg.githubToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      timeout: 15000
+    };
+
+    const putRes = await httpsRequest(putOptions, putPayload);
+    if (putRes.statusCode === 200 || putRes.statusCode === 201) {
+      const commitSha = putRes.body?.commit?.sha || "ok";
+      saveCloudConfig({
+        lastSyncedAt: new Date().toISOString(),
+        lastSyncStatus: "success",
+        lastSyncMessage: `Committed ${records.length} records to GitHub (commit ${commitSha.substring(0, 7)})`
+      });
+      return { success: true, commitSha };
+    } else {
+      const errMsg = putRes.body?.message || `GitHub HTTP ${putRes.statusCode}`;
+      saveCloudConfig({
+        lastSyncedAt: new Date().toISOString(),
+        lastSyncStatus: "error",
+        lastSyncMessage: errMsg
+      });
+      return { success: false, reason: errMsg };
+    }
+  } catch (err) {
+    saveCloudConfig({
+      lastSyncedAt: new Date().toISOString(),
+      lastSyncStatus: "error",
+      lastSyncMessage: err.message
+    });
+    return { success: false, reason: err.message };
+  }
+}
+
+// Upstash / Vercel KV REST persistence
+async function syncToKV(records) {
+  const cfg = getCloudConfig();
+  if (!cfg.kvRestApiUrl || !cfg.kvRestApiToken) return { success: false };
+
+  try {
+    const targetUrl = `${cfg.kvRestApiUrl.replace(/\/+$/, '')}/set/mofa_records`;
+    const url = new URL(targetUrl);
+    const isHttps = url.protocol === 'https:';
+    const lib = isHttps ? https : http;
+
+    const payload = JSON.stringify(records);
+    return new Promise((resolve) => {
+      const req = lib.request({
+        hostname: url.hostname,
+        port: url.port || (isHttps ? 443 : 80),
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${cfg.kvRestApiToken}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        },
+        timeout: 8000
+      }, res => {
+        resolve({ success: res.statusCode >= 200 && res.statusCode < 300 });
+      });
+      req.on('error', () => resolve({ success: false }));
+      req.on('timeout', () => { req.destroy(); resolve({ success: false }); });
+      req.write(payload);
+      req.end();
+    });
+  } catch {
+    return { success: false };
+  }
+}
+
+async function fetchFromKV() {
+  const cfg = getCloudConfig();
+  if (!cfg.kvRestApiUrl || !cfg.kvRestApiToken) return null;
+
+  try {
+    const targetUrl = `${cfg.kvRestApiUrl.replace(/\/+$/, '')}/get/mofa_records`;
+    const url = new URL(targetUrl);
+    const isHttps = url.protocol === 'https:';
+    const lib = isHttps ? https : http;
+
+    return new Promise((resolve) => {
+      const req = lib.request({
+        hostname: url.hostname,
+        port: url.port || (isHttps ? 443 : 80),
+        path: url.pathname + url.search,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${cfg.kvRestApiToken}`
+        },
+        timeout: 8000
+      }, res => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(body);
+            if (parsed && parsed.result) {
+              const recs = typeof parsed.result === 'string' ? JSON.parse(parsed.result) : parsed.result;
+              if (Array.isArray(recs)) return resolve(recs);
+            }
+          } catch {}
+          resolve(null);
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.end();
+    });
+  } catch {
+    return null;
+  }
+}
+
+// Background Cloud Sync dispatcher
+function syncRecordsToCloud(records) {
+  const cfg = getCloudConfig();
+  if (cfg.kvRestApiUrl && cfg.kvRestApiToken) {
+    syncToKV(records).catch(err => console.error('[KV Sync Error]:', err.message));
+  }
+  if (cfg.githubToken && cfg.githubRepo && cfg.autoCommit) {
+    commitRecordsToGitHub(records).catch(err => console.error('[GitHub Sync Error]:', err.message));
+  }
+}
+
+let isCloudSyncChecked = false;
+async function ensureCloudSync() {
+  if (isCloudSyncChecked) return;
+  isCloudSyncChecked = true;
+  try {
+    const kvRecords = await fetchFromKV();
+    if (kvRecords && Array.isArray(kvRecords) && kvRecords.length > 0) {
+      const diskRecords = readJsonSafe(RECORDS_FILE, []);
+      if (kvRecords.length >= diskRecords.length) {
+        atomicWriteJson(RECORDS_FILE, kvRecords);
+        console.log(`[Cloud Persistence] Restored ${kvRecords.length} records from Upstash KV.`);
+      }
+    }
+  } catch (err) {
+    console.warn('[Cloud Persistence] Cloud sync check error:', err.message);
+  }
+}
 
 // Default Admin Sidebar Configuration (Separate from public website navigation)
 const DEFAULT_ADMIN_NAV = {
@@ -505,6 +762,9 @@ const MIME_TYPES = {
 };
 
 async function requestHandler(req, res) {
+  // Ensure cloud persistence data is checked on cold start
+  await ensureCloudSync();
+
   // Resolve effective request path (handles local, Vercel rewrites, and catch-all routes)
   let effectiveUrl = req.headers['x-matched-path'] || req.headers['x-vercel-matched-path'] || req.url;
   const tempUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -554,7 +814,7 @@ async function requestHandler(req, res) {
   // 2. Authoritative Verification Endpoint (QR scan & Manual verification)
   if (pathname === '/api/verify' && method === 'POST') {
     try {
-      const { docNumber, docDate } = await parseBody(req);
+      const { docNumber, docDate, backupRecord } = await parseBody(req);
       if (!docNumber || !docDate) {
         return sendJson(res, 400, {
           success: false,
@@ -567,7 +827,20 @@ async function requestHandler(req, res) {
       const cleanDate = String(docDate).trim();
 
       const records = readJsonSafe(RECORDS_FILE, []);
-      const match = records.find(r => r.docNumber.toUpperCase() === cleanDocNumber);
+      let match = records.find(r => r.docNumber.toUpperCase() === cleanDocNumber);
+
+      // Self-Healing Fallback: If not found on ephemeral server, but valid backupRecord provided from client cache
+      if (!match && backupRecord && backupRecord.docNumber && String(backupRecord.docNumber).trim().toUpperCase() === cleanDocNumber) {
+        match = {
+          ...backupRecord,
+          docNumber: cleanDocNumber,
+          issueDate: backupRecord.issueDate || cleanDate
+        };
+        records.unshift(match);
+        atomicWriteJson(RECORDS_FILE, records);
+        syncRecordsToCloud(records);
+        console.log(`[Auto-Heal] Successfully restored document ${cleanDocNumber} from client cache into server registry.`);
+      }
 
       if (!match) {
         return sendJson(res, 200, {
@@ -872,6 +1145,67 @@ async function requestHandler(req, res) {
 
     const records = readJsonSafe(RECORDS_FILE, []);
 
+    // GET /api/admin/records/export (Backup JSON Download)
+    if (pathname === '/api/admin/records/export' && method === 'GET') {
+      const filename = `mofa_records_backup_${new Date().toISOString().split('T')[0]}.json`;
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(JSON.stringify(records, null, 2));
+    }
+
+    // POST /api/admin/records/import (Restore / Batch Merge from Backup)
+    if (pathname === '/api/admin/records/import' && method === 'POST') {
+      try {
+        const payload = await parseBody(req);
+        const importedRecords = Array.isArray(payload) ? payload : (payload.records || []);
+        if (!Array.isArray(importedRecords) || importedRecords.length === 0) {
+          return sendJson(res, 400, { success: false, message: "Invalid backup format. Must be an array of records." });
+        }
+
+        const currentRecords = readJsonSafe(RECORDS_FILE, []);
+        const mergedMap = new Map();
+
+        // 1. Load current server records into map
+        currentRecords.forEach(r => {
+          if (r && r.docNumber) mergedMap.set(r.docNumber.toUpperCase(), r);
+        });
+
+        // 2. Merge imported records (preserve unique IDs, update existing or insert new)
+        let addedCount = 0;
+        let updatedCount = 0;
+        importedRecords.forEach(r => {
+          if (r && r.docNumber) {
+            const key = r.docNumber.toUpperCase();
+            if (mergedMap.has(key)) {
+              mergedMap.set(key, { ...mergedMap.get(key), ...r });
+              updatedCount++;
+            } else {
+              mergedMap.set(key, r);
+              addedCount++;
+            }
+          }
+        });
+
+        const finalRecords = Array.from(mergedMap.values());
+        atomicWriteJson(RECORDS_FILE, finalRecords);
+        syncRecordsToCloud(finalRecords);
+
+        return sendJson(res, 200, {
+          success: true,
+          message: `Restore complete! Successfully synchronized ${finalRecords.length} records (${addedCount} newly added, ${updatedCount} updated).`,
+          count: finalRecords.length,
+          records: finalRecords
+        });
+      } catch (err) {
+        console.error('[Import Records Error]:', err);
+        return sendJson(res, 500, { success: false, message: "Restore failed: " + err.message });
+      }
+    }
+
     // GET /api/admin/records (Search & Filter)
     if (pathname === '/api/admin/records' && method === 'GET') {
       const q = (parsedUrl.searchParams.get('q') || '').toLowerCase();
@@ -930,6 +1264,7 @@ async function requestHandler(req, res) {
 
       records.unshift(newRecord);
       atomicWriteJson(RECORDS_FILE, records);
+      syncRecordsToCloud(records);
       return sendJson(res, 201, { success: true, record: newRecord });
     }
 
@@ -976,6 +1311,7 @@ async function requestHandler(req, res) {
       };
 
       atomicWriteJson(RECORDS_FILE, records);
+      syncRecordsToCloud(records);
       return sendJson(res, 200, { success: true, record: records[index] });
     }
 
@@ -988,7 +1324,89 @@ async function requestHandler(req, res) {
         return sendJson(res, 404, { success: false, message: "Record not found." });
       }
       atomicWriteJson(RECORDS_FILE, newRecords);
+      syncRecordsToCloud(newRecords);
       return sendJson(res, 200, { success: true, message: "Record deleted successfully." });
+    }
+  }
+
+  // =========================================================================
+  // ADMIN CLOUD PERSISTENCE & AUTO-SYNC APIS
+  // =========================================================================
+  if (pathname.startsWith('/api/admin/cloud-sync')) {
+    const session = authenticateAdmin(req);
+    if (!session) return sendJson(res, 401, { message: "Unauthorized." });
+
+    if (pathname === '/api/admin/cloud-sync' && method === 'GET') {
+      const cfg = getCloudConfig();
+      return sendJson(res, 200, {
+        githubRepo: cfg.githubRepo,
+        githubBranch: cfg.githubBranch,
+        githubFilePath: cfg.githubFilePath,
+        autoCommit: cfg.autoCommit,
+        hasGithubToken: !!cfg.githubToken,
+        githubTokenMasked: cfg.githubToken ? `ghp_••••••••${cfg.githubToken.slice(-4)}` : "",
+        kvRestApiUrl: cfg.kvRestApiUrl,
+        hasKvToken: !!cfg.kvRestApiToken,
+        kvTokenMasked: cfg.kvRestApiToken ? `••••••••${cfg.kvRestApiToken.slice(-4)}` : "",
+        lastSyncedAt: cfg.lastSyncedAt,
+        lastSyncStatus: cfg.lastSyncStatus,
+        lastSyncMessage: cfg.lastSyncMessage
+      });
+    }
+
+    if (pathname === '/api/admin/cloud-sync' && method === 'POST') {
+      try {
+        const data = await parseBody(req);
+        const updates = {};
+
+        if (data.githubToken !== undefined && !data.githubToken.includes('••••')) {
+          updates.githubToken = data.githubToken.trim();
+        }
+        if (data.githubRepo !== undefined) updates.githubRepo = data.githubRepo.trim();
+        if (data.githubBranch !== undefined) updates.githubBranch = data.githubBranch.trim();
+        if (data.autoCommit !== undefined) updates.autoCommit = !!data.autoCommit;
+
+        if (data.kvRestApiUrl !== undefined) updates.kvRestApiUrl = data.kvRestApiUrl.trim();
+        if (data.kvRestApiToken !== undefined && !data.kvRestApiToken.includes('••••')) {
+          updates.kvRestApiToken = data.kvRestApiToken.trim();
+        }
+
+        const saved = saveCloudConfig(updates);
+        let syncResult = null;
+
+        if (data.triggerSync) {
+          const records = readJsonSafe(RECORDS_FILE, []);
+          if (saved.githubToken && saved.githubRepo) {
+            syncResult = await commitRecordsToGitHub(records, "Manual cloud sync from admin panel [skip ci]");
+          }
+          if (saved.kvRestApiUrl && saved.kvRestApiToken) {
+            await syncToKV(records);
+          }
+        }
+
+        return sendJson(res, 200, {
+          success: true,
+          message: syncResult && !syncResult.success ? `Settings saved, but sync failed: ${syncResult.reason}` : "Cloud persistence settings saved and synchronized!",
+          config: {
+            githubRepo: saved.githubRepo,
+            githubBranch: saved.githubBranch,
+            githubFilePath: saved.githubFilePath,
+            autoCommit: saved.autoCommit,
+            hasGithubToken: !!saved.githubToken,
+            githubTokenMasked: saved.githubToken ? `ghp_••••••••${saved.githubToken.slice(-4)}` : "",
+            kvRestApiUrl: saved.kvRestApiUrl,
+            hasKvToken: !!saved.kvRestApiToken,
+            kvTokenMasked: saved.kvRestApiToken ? `••••••••${saved.kvRestApiToken.slice(-4)}` : "",
+            lastSyncedAt: saved.lastSyncedAt,
+            lastSyncStatus: saved.lastSyncStatus,
+            lastSyncMessage: saved.lastSyncMessage
+          },
+          syncResult
+        });
+      } catch (err) {
+        console.error('[Cloud Sync API Error]:', err);
+        return sendJson(res, 500, { success: false, message: "Failed to configure cloud sync: " + err.message });
+      }
     }
   }
 

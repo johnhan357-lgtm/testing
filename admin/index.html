@@ -450,6 +450,29 @@
              TAB 5: DOCUMENT REGISTRY (CRUD)
              =================================================================== -->
         <section class="tab-pane" id="tab-records">
+          <!-- Serverless Auto-Heal & Persistence Alert Banner -->
+          <div id="persistenceAlertBox" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-left: 5px solid #d97706; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 1.6rem;">⚠️</span>
+                <div>
+                  <h4 style="margin: 0 0 2px 0; color: #92400e; font-size: 0.95rem; font-weight: 700;">Server Container Reset Detected (Vercel Serverless Cold Start)</h4>
+                  <p style="margin: 0; font-size: 0.85rem; color: #b45309;" id="persistenceAlertMsg">
+                    Your browser has <strong id="persistenceMissingCount">0</strong> added document(s) that are missing from the server.
+                  </p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn-primary" id="btnAutoHealServer" style="background: #d97706; padding: 7px 16px; font-size: 0.88rem; font-weight: 600;">
+                  ⚡ 1-Click Restore All to Server
+                </button>
+                <button type="button" class="btn-secondary" id="btnDismissHealAlert" style="padding: 7px 12px; font-size: 0.85rem;">
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Instant Result & Share Link Box (Hidden by default, shown upon creation or share click) -->
           <div class="card" id="certGeneratedResultBox" style="display: none; border-left: 5px solid #059669; background: #f0fdf4; margin-bottom: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
@@ -625,9 +648,18 @@
                 <h2 class="card-title">Authoritative Document Registry</h2>
                 <p class="card-desc" style="margin-bottom: 0;">Add and manage registered certificates, degrees, and attestations verified via QR or web.</p>
               </div>
-              <button class="btn-primary" id="btnAddNewRecord">
-                + Register New Document
-              </button>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-secondary" id="btnExportRecords" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 0.85rem;" title="Download all documents as JSON backup">
+                  <span>📥</span> Export Backup
+                </button>
+                <label class="btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; margin: 0;" title="Restore documents from JSON backup">
+                  <span>📤</span> Restore Backup
+                  <input type="file" id="importRecordsInput" accept=".json" style="display: none;">
+                </label>
+                <button class="btn-primary" id="btnAddNewRecord">
+                  + Register New Document
+                </button>
+              </div>
             </div>
 
             <!-- Search and Filter Bar -->
@@ -981,6 +1013,107 @@
               </div>
 
               <button type="submit" class="btn-primary" id="btnUpdatePassword">Update Password</button>
+            </form>
+          </div>
+
+          <!-- Cloud Persistence & Serverless Auto-Sync Card -->
+          <div class="card" style="margin-top: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom: 4px;">☁️ Cloud Persistence &amp; Serverless Auto-Sync</h2>
+                <p class="card-desc" style="margin-bottom: 0;">
+                  Keep all added documents and visual settings permanent across Vercel serverless container restarts.
+                </p>
+              </div>
+              <div id="cloudSyncStatusBadge" style="display: inline-flex; align-items: center; gap: 6px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 12px; border-radius: 9999px; font-size: 0.82rem; font-weight: 700;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                <span id="cloudSyncStatusText">Checking Sync...</span>
+              </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; font-size: 0.86rem; color: #475569; line-height: 1.5;">
+              <strong style="color: #1e293b;">💡 Why data resets on Vercel:</strong> Vercel runs on ephemeral serverless containers that reboot after ~10–15 minutes of inactivity. When a fresh container starts, it reads only the initial files from Git.
+              <br>With <strong>GitHub Auto-Commit</strong> or <strong>Browser Auto-Heal</strong>, your documents are permanently preserved so nothing is ever lost!
+            </div>
+
+            <form id="cloudSyncForm">
+              <!-- Tier 1: GitHub Auto-Commit (Git-as-Database) -->
+              <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #ffffff;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <h3 style="margin: 0; font-size: 1rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <span>🐙</span> GitHub Repository Auto-Commit (Recommended)
+                  </h3>
+                  <label style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: #059669;">
+                    <input type="checkbox" id="cfgAutoCommit" checked style="width: 16px; height: 16px;">
+                    Auto-commit on every change
+                  </label>
+                </div>
+                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 14px;">
+                  Whenever you add, edit, or delete documents, the server automatically commits the updated database to your GitHub repository, triggering Vercel to rebuild with your latest documents baked in.
+                </p>
+
+                <div class="grid-2">
+                  <div class="form-field">
+                    <label class="form-label" for="cfgGithubRepo">GitHub Repository (owner/repo)</label>
+                    <input type="text" id="cfgGithubRepo" class="form-input" placeholder="e.g. johnhan357-lgtm/testing" value="johnhan357-lgtm/testing">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label" for="cfgGithubBranch">Branch Name</label>
+                    <input type="text" id="cfgGithubBranch" class="form-input" placeholder="e.g. main" value="main">
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label" for="cfgGithubToken">
+                    GitHub Personal Access Token (PAT)
+                    <span style="font-weight: normal; color: #64748b; font-size: 0.78rem;">(Requires 'repo' or 'contents:write' permission)</span>
+                  </label>
+                  <div style="display: flex; gap: 8px;">
+                    <input type="password" id="cfgGithubToken" class="form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex: 1; font-family: monospace;">
+                    <button type="button" class="btn-secondary" id="btnToggleTokenVisibility" style="padding: 6px 12px; font-size: 0.8rem;">Show</button>
+                  </div>
+                  <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
+                    Can also be provided via <code>GITHUB_TOKEN</code> environment variable in your Vercel Project Settings.
+                  </small>
+                </div>
+              </div>
+
+              <!-- Tier 2: Upstash Redis / Vercel KV REST (Optional) -->
+              <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 18px; background: #ffffff;">
+                <h3 style="margin: 0 0 8px 0; font-size: 1rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                  <span>⚡</span> Upstash Redis / Vercel KV REST API (Optional)
+                </h3>
+                <p style="font-size: 0.82rem; color: #64748b; margin-bottom: 12px;">
+                  Real-time sub-millisecond cloud key-value database.
+                </p>
+
+                <div class="grid-2">
+                  <div class="form-field">
+                    <label class="form-label" for="cfgKvUrl">KV REST API URL</label>
+                    <input type="text" id="cfgKvUrl" class="form-input" placeholder="https://xxxx.upstash.io">
+                  </div>
+                  <div class="form-field">
+                    <label class="form-label" for="cfgKvToken">KV REST API Token</label>
+                    <input type="password" id="cfgKvToken" class="form-input" placeholder="Axxxxxx...">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Last Sync Log & Actions -->
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="font-size: 0.82rem; color: #64748b;">
+                  <span>Last Sync: </span><strong id="cloudSyncLastTime" style="color: #1e293b;">Never</strong>
+                  <div id="cloudSyncLastMsg" style="font-size: 0.78rem; color: #059669; margin-top: 2px;"></div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" class="btn-secondary" id="btnTriggerCloudSyncNow" style="padding: 9px 18px; font-size: 0.88rem; font-weight: 600;">
+                    🔄 Sync to Cloud Now
+                  </button>
+                  <button type="submit" class="btn-primary" id="btnSaveCloudSync" style="padding: 9px 20px; font-size: 0.88rem; font-weight: 600;">
+                    Save Cloud Settings
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
         </section>

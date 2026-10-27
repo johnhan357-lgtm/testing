@@ -1,0 +1,12 @@
+{
+  "githubToken": "",
+  "githubRepo": "johnhan357-lgtm/testing",
+  "githubBranch": "main",
+  "githubFilePath": "data/records.json",
+  "autoCommit": true,
+  "kvRestApiUrl": "",
+  "kvRestApiToken": "",
+  "lastSyncedAt": null,
+  "lastSyncStatus": "idle",
+  "lastSyncMessage": ""
+}

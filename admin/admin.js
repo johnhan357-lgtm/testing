@@ -227,6 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadDraftConfig();
     await checkPublishingStatus();
     await loadRecords();
+    await loadCloudSyncConfig();
   }
 
   // =========================================================================
@@ -1485,6 +1486,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cachedRecords = await res.json();
         renderRecordsTable(cachedRecords);
         updateRecordStats(cachedRecords);
+        checkPersistenceHealth(cachedRecords);
       }
     } catch {
       showToast("Failed to load document records.", "error");
@@ -1603,6 +1605,146 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast("Network error deleting record.", "error");
         }
       });
+    });
+  }
+
+  // Persistence Alert & Backup Controls
+  const persistenceAlertBox = document.getElementById("persistenceAlertBox");
+  const persistenceMissingCount = document.getElementById("persistenceMissingCount");
+  const persistenceAlertMsg = document.getElementById("persistenceAlertMsg");
+  const btnAutoHealServer = document.getElementById("btnAutoHealServer");
+  const btnDismissHealAlert = document.getElementById("btnDismissHealAlert");
+  const btnExportRecords = document.getElementById("btnExportRecords");
+  const importRecordsInput = document.getElementById("importRecordsInput");
+
+  let missingLocalRecords = [];
+
+  function checkPersistenceHealth(serverRecords) {
+    if (!persistenceAlertBox) return;
+    try {
+      const localRaw = localStorage.getItem("mofa_records_backup");
+      if (!localRaw) {
+        localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        return;
+      }
+      const localRecords = JSON.parse(localRaw);
+      if (!Array.isArray(localRecords) || localRecords.length === 0) {
+        localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        return;
+      }
+
+      const serverDocs = new Set(serverRecords.map(r => r.docNumber?.toUpperCase()));
+      missingLocalRecords = localRecords.filter(r => r.docNumber && !serverDocs.has(r.docNumber.toUpperCase()));
+
+      if (missingLocalRecords.length > 0) {
+        if (persistenceMissingCount) persistenceMissingCount.textContent = missingLocalRecords.length;
+        if (persistenceAlertMsg) {
+          persistenceAlertMsg.innerHTML = `Your browser backup has <strong>${missingLocalRecords.length}</strong> document(s) that are missing from the server (due to Vercel serverless container reboot). Click below to restore them immediately!`;
+        }
+        persistenceAlertBox.style.display = "block";
+      } else {
+        persistenceAlertBox.style.display = "none";
+        // Update local backup with latest authoritative records
+        localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+      }
+    } catch (e) {
+      console.warn("Persistence health check error:", e);
+    }
+  }
+
+  async function restoreMissingToServer() {
+    try {
+      const localRaw = localStorage.getItem("mofa_records_backup");
+      if (!localRaw) return;
+      const localRecords = JSON.parse(localRaw);
+      if (!Array.isArray(localRecords) || localRecords.length === 0) return;
+
+      showToast("Restoring records to server...", "info");
+      const res = await apiFetch("/api/admin/records/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(localRecords)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || `Restored ${data.count} records to server!`, "success");
+        if (persistenceAlertBox) persistenceAlertBox.style.display = "none";
+        await loadRecords();
+      } else {
+        showToast(data.message || "Failed to restore records.", "error");
+      }
+    } catch (err) {
+      showToast("Network error restoring records.", "error");
+    }
+  }
+
+  if (btnAutoHealServer) {
+    btnAutoHealServer.addEventListener("click", restoreMissingToServer);
+  }
+  if (btnDismissHealAlert) {
+    btnDismissHealAlert.addEventListener("click", () => {
+      if (persistenceAlertBox) persistenceAlertBox.style.display = "none";
+    });
+  }
+
+  // Export Records Backup (JSON)
+  if (btnExportRecords) {
+    btnExportRecords.addEventListener("click", () => {
+      const recordsToExport = (cachedRecords && cachedRecords.length > 0)
+        ? cachedRecords
+        : JSON.parse(localStorage.getItem("mofa_records_backup") || "[]");
+
+      const blob = new Blob([JSON.stringify(recordsToExport, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mofa_records_backup_${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${recordsToExport.length} records.`, "success");
+    });
+  }
+
+  // Restore Records Backup (JSON)
+  if (importRecordsInput) {
+    importRecordsInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          const recordsArr = Array.isArray(parsed) ? parsed : (parsed.records || []);
+          if (!Array.isArray(recordsArr) || recordsArr.length === 0) {
+            showToast("Invalid backup file. Must be a JSON array of records.", "error");
+            importRecordsInput.value = "";
+            return;
+          }
+
+          showToast(`Importing ${recordsArr.length} records...`, "info");
+          const res = await apiFetch("/api/admin/records/import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(recordsArr)
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            localStorage.setItem("mofa_records_backup", JSON.stringify(data.records || recordsArr));
+            showToast(data.message || "Records imported successfully!", "success");
+            await loadRecords();
+          } else {
+            showToast(data.message || "Failed to import records.", "error");
+          }
+        } catch (err) {
+          showToast("Error parsing backup JSON file.", "error");
+        } finally {
+          importRecordsInput.value = "";
+        }
+      };
+      reader.readAsText(file);
     });
   }
 
@@ -1762,6 +1904,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (res.ok && data.success) {
           recordModal.classList.remove("active");
           showToast(recId ? "Document updated." : "Document registered.", "success");
+
+          // Mirror to client localStorage backup immediately
+          try {
+            const curBackup = JSON.parse(localStorage.getItem('mofa_records_backup') || '[]');
+            const recDoc = payload.docNumber.toUpperCase();
+            const existingIdx = curBackup.findIndex(r => r.docNumber?.toUpperCase() === recDoc);
+            if (existingIdx !== -1) {
+              curBackup[existingIdx] = { ...curBackup[existingIdx], ...payload, id: recId || curBackup[existingIdx].id };
+            } else {
+              curBackup.unshift(data.record || { ...payload, id: `rec-${Date.now()}` });
+            }
+            localStorage.setItem('mofa_records_backup', JSON.stringify(curBackup));
+          } catch (_) {}
+
           await loadRecords();
           if (data.record) {
             displayGeneratedCertificateLink(data.record);
@@ -1974,6 +2130,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
         if (res.ok && data.success) {
           showToast("Certificate generated & link ready!", "success");
+
+          // Mirror to client localStorage backup immediately
+          try {
+            const curBackup = JSON.parse(localStorage.getItem('mofa_records_backup') || '[]');
+            const recDoc = payload.docNumber.toUpperCase();
+            const existingIdx = curBackup.findIndex(r => r.docNumber?.toUpperCase() === recDoc);
+            if (existingIdx !== -1) {
+              curBackup[existingIdx] = { ...curBackup[existingIdx], ...payload, id: data.record?.id || curBackup[existingIdx].id };
+            } else {
+              curBackup.unshift(data.record || { ...payload, id: `rec-${Date.now()}` });
+            }
+            localStorage.setItem('mofa_records_backup', JSON.stringify(curBackup));
+          } catch (_) {}
+
           await loadRecords();
           displayGeneratedCertificateLink(data.record);
         } else {
@@ -2372,6 +2542,126 @@ document.addEventListener("DOMContentLoaded", () => {
         renderAdminNavTable();
         showToast("Admin sidebar updated.");
       }
+    });
+  }
+
+  // =========================================================================
+  // CLOUD PERSISTENCE & AUTO-SYNC HANDLERS
+  // =========================================================================
+  const cloudSyncForm = document.getElementById("cloudSyncForm");
+  const cloudSyncStatusBadge = document.getElementById("cloudSyncStatusBadge");
+  const cloudSyncStatusText = document.getElementById("cloudSyncStatusText");
+  const cfgGithubRepo = document.getElementById("cfgGithubRepo");
+  const cfgGithubBranch = document.getElementById("cfgGithubBranch");
+  const cfgGithubToken = document.getElementById("cfgGithubToken");
+  const cfgAutoCommit = document.getElementById("cfgAutoCommit");
+  const cfgKvUrl = document.getElementById("cfgKvUrl");
+  const cfgKvToken = document.getElementById("cfgKvToken");
+  const cloudSyncLastTime = document.getElementById("cloudSyncLastTime");
+  const cloudSyncLastMsg = document.getElementById("cloudSyncLastMsg");
+  const btnToggleTokenVisibility = document.getElementById("btnToggleTokenVisibility");
+  const btnTriggerCloudSyncNow = document.getElementById("btnTriggerCloudSyncNow");
+
+  if (btnToggleTokenVisibility && cfgGithubToken) {
+    btnToggleTokenVisibility.addEventListener("click", () => {
+      if (cfgGithubToken.type === "password") {
+        cfgGithubToken.type = "text";
+        btnToggleTokenVisibility.textContent = "Hide";
+      } else {
+        cfgGithubToken.type = "password";
+        btnToggleTokenVisibility.textContent = "Show";
+      }
+    });
+  }
+
+  async function loadCloudSyncConfig() {
+    try {
+      const res = await apiFetch('/api/admin/cloud-sync');
+      if (res.ok) {
+        const data = await res.json();
+        if (cfgGithubRepo && data.githubRepo) cfgGithubRepo.value = data.githubRepo;
+        if (cfgGithubBranch && data.githubBranch) cfgGithubBranch.value = data.githubBranch;
+        if (cfgAutoCommit && data.autoCommit !== undefined) cfgAutoCommit.checked = data.autoCommit;
+        if (cfgGithubToken && data.githubTokenMasked) {
+          cfgGithubToken.value = data.githubTokenMasked;
+        }
+        if (cfgKvUrl && data.kvRestApiUrl) cfgKvUrl.value = data.kvRestApiUrl;
+        if (cfgKvToken && data.kvTokenMasked) cfgKvToken.value = data.kvTokenMasked;
+
+        if (cloudSyncLastTime && data.lastSyncedAt) {
+          cloudSyncLastTime.textContent = new Date(data.lastSyncedAt).toLocaleString();
+        }
+        if (cloudSyncLastMsg) {
+          cloudSyncLastMsg.textContent = data.lastSyncMessage || "";
+          cloudSyncLastMsg.style.color = (data.lastSyncStatus === "error") ? "#dc2626" : "#059669";
+        }
+
+        // Update badge
+        if (cloudSyncStatusBadge && cloudSyncStatusText) {
+          if (data.hasGithubToken) {
+            cloudSyncStatusBadge.style.background = "#ecfdf5";
+            cloudSyncStatusBadge.style.color = "#065f46";
+            cloudSyncStatusBadge.style.border = "1px solid #a7f3d0";
+            cloudSyncStatusText.textContent = "🟢 Active: GitHub Auto-Commit";
+          } else if (data.hasKvToken) {
+            cloudSyncStatusBadge.style.background = "#ecfdf5";
+            cloudSyncStatusBadge.style.color = "#065f46";
+            cloudSyncStatusBadge.style.border = "1px solid #a7f3d0";
+            cloudSyncStatusText.textContent = "🟢 Active: Upstash KV Sync";
+          } else {
+            cloudSyncStatusBadge.style.background = "#fffbeb";
+            cloudSyncStatusBadge.style.color = "#92400e";
+            cloudSyncStatusBadge.style.border = "1px solid #fde68a";
+            cloudSyncStatusText.textContent = "🟡 Active: Browser Auto-Heal";
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load cloud sync config:", err);
+    }
+  }
+
+  async function saveCloudSyncSettings(triggerSync = false) {
+    const payload = {
+      githubRepo: cfgGithubRepo ? cfgGithubRepo.value.trim() : "",
+      githubBranch: cfgGithubBranch ? cfgGithubBranch.value.trim() : "main",
+      githubToken: cfgGithubToken ? cfgGithubToken.value.trim() : "",
+      autoCommit: cfgAutoCommit ? cfgAutoCommit.checked : true,
+      kvRestApiUrl: cfgKvUrl ? cfgKvUrl.value.trim() : "",
+      kvRestApiToken: cfgKvToken ? cfgKvToken.value.trim() : "",
+      triggerSync: triggerSync
+    };
+
+    try {
+      showToast(triggerSync ? "Synchronizing to Cloud..." : "Saving Cloud Settings...", "info");
+      const res = await apiFetch('/api/admin/cloud-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        showToast(data.message || "Cloud persistence updated!", "success");
+        await loadCloudSyncConfig();
+      } else {
+        showToast(data.message || "Failed to update cloud sync.", "error");
+      }
+    } catch {
+      showToast("Network error updating cloud persistence.", "error");
+    }
+  }
+
+  if (cloudSyncForm) {
+    cloudSyncForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      saveCloudSyncSettings(false);
+    });
+  }
+
+  if (btnTriggerCloudSyncNow) {
+    btnTriggerCloudSyncNow.addEventListener("click", () => {
+      saveCloudSyncSettings(true);
     });
   }
 

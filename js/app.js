@@ -519,13 +519,55 @@ document.addEventListener("DOMContentLoaded", async () => {
         body: JSON.stringify({ docNumber: docNum, docDate: dateVal })
       });
 
-      const data = await response.json();
+      let data = await response.json();
+
+      // Self-Healing: If record not found on ephemeral server, check local browser backup
+      if (!data.success || data.status === "NOT_FOUND") {
+        try {
+          const localRaw = localStorage.getItem("mofa_records_backup");
+          if (localRaw) {
+            const localRecs = JSON.parse(localRaw);
+            const foundLocal = Array.isArray(localRecs) && localRecs.find(r => r.docNumber && r.docNumber.toUpperCase() === String(docNum).trim().toUpperCase());
+            if (foundLocal) {
+              // Send backup record to heal server
+              const healRes = await fetch('/api/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ docNumber: docNum, docDate: dateVal, backupRecord: foundLocal })
+              });
+              if (healRes.ok) {
+                const healedData = await healRes.json();
+                if (healedData.success) {
+                  data = healedData;
+                }
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
       btnVerify.disabled = false;
       btnVerify.textContent = originalText;
 
       renderVerificationResult(data, docNum, dateVal);
     } catch (err) {
       console.error('[Verification Error]:', err);
+
+      // Offline / Connection error fallback: check local client backup
+      try {
+        const localRaw = localStorage.getItem("mofa_records_backup");
+        if (localRaw) {
+          const localRecs = JSON.parse(localRaw);
+          const foundLocal = Array.isArray(localRecs) && localRecs.find(r => r.docNumber && r.docNumber.toUpperCase() === String(docNum).trim().toUpperCase());
+          if (foundLocal && (!dateVal || foundLocal.issueDate === dateVal)) {
+            btnVerify.disabled = false;
+            btnVerify.textContent = originalText;
+            renderVerificationResult({ success: true, status: foundLocal.status || "VERIFIED", record: foundLocal }, docNum, dateVal);
+            return;
+          }
+        }
+      } catch (_) {}
+
       btnVerify.disabled = false;
       btnVerify.textContent = originalText;
       alert("Network error: Unable to contact the verification service. Please try again.");
