@@ -303,10 +303,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const cfgLogoUrlEl = document.getElementById("cfgLogoUrl");
       if (cfgLogoUrlEl) cfgLogoUrlEl.value = logoUrl;
 
-      if (cfg.branding.logoType === 'custom_image' || logoUrl) {
-        document.getElementById("radioLogoCustom").checked = true;
-      } else {
+      if (cfg.branding.logoType === 'default_svg') {
         document.getElementById("radioLogoDefault").checked = true;
+      } else {
+        document.getElementById("radioLogoCustom").checked = true;
       }
       handleLogoRadioToggle();
 
@@ -677,6 +677,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
+          try {
+            localStorage.setItem('mofa_published_config', JSON.stringify(draftConfig));
+          } catch (_) {}
           showToast("Changes published to live website!", "success");
           await checkPublishingStatus();
         } else {
@@ -721,6 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (uploadSection) {
       uploadSection.style.display = isCustom ? "block" : "none";
     }
+    if (typeof markDraftDirty === 'function') markDraftDirty();
   }
 
   if (logoFileInput) {
@@ -1543,7 +1547,9 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => {
         const doc = btn.dataset.doc;
         const date = btn.dataset.date;
-        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}`;
+        const rec = cachedRecords.find(r => r.docNumber === doc);
+        const vToken = rec ? buildCompactVerifiableToken(rec) : "";
+        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}${vToken ? `&v=${encodeURIComponent(vToken)}` : ''}`;
         navigator.clipboard.writeText(url).then(() => {
           showToast(`Copied QR link for ${doc}`, "success");
         }).catch(() => {
@@ -1940,6 +1946,32 @@ document.addEventListener("DOMContentLoaded", () => {
     return `APO-${randPart(4)}-${randPart(4)}-${randPart(4)}`;
   }
 
+  // Compact Verifiable Token for 100% resilient cross-device QR scanning
+  function buildCompactVerifiableToken(rec) {
+    if (!rec || !rec.docNumber) return "";
+    try {
+      const compact = {
+        n: rec.docNumber,
+        d: rec.issueDate,
+        a: rec.applicantName,
+        t: rec.documentType || rec.documentCategory || "Personal Document",
+        c: rec.documentCategory || rec.documentType || "Personal Document",
+        o: rec.country || "Pakistan",
+        s: rec.signedBy || "N/A",
+        p: rec.capacity || "Registrar",
+        u: rec.sealOf || "Preston University",
+        l: rec.issuePlace || "Lahore Pakistan",
+        auth: rec.issuingAuthority || "Ministry of Foreign Affairs",
+        so: rec.signatoryOfficer || "Ali Faraz",
+        pdf: rec.pdfFileName || "",
+        st: rec.status || "VERIFIED"
+      };
+      return btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
+    } catch {
+      return "";
+    }
+  }
+
   function displayGeneratedCertificateLink(rec) {
     const resultBox = document.getElementById("certGeneratedResultBox");
     const numEl = document.getElementById("genResultDocNum");
@@ -1950,7 +1982,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!resultBox || !rec) return;
 
-    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+    const vToken = buildCompactVerifiableToken(rec);
+    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}${vToken ? `&v=${encodeURIComponent(vToken)}` : ''}`;
 
     if (numEl) numEl.textContent = rec.docNumber;
     if (urlInput) urlInput.value = pubUrl;

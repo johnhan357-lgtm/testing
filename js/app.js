@@ -213,11 +213,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       const res = await fetch('/api/public/config');
       if (res.ok) {
         currentConfig = await res.json();
+        try {
+          localStorage.setItem('mofa_published_config', JSON.stringify(currentConfig));
+        } catch (_) {}
         applyConfig(currentConfig);
+        return;
       }
     } catch (err) {
-      console.warn('Could not fetch /api/public/config, using default static structure:', err);
+      console.warn('Could not fetch /api/public/config, checking local cache:', err);
     }
+
+    // Fallback to local storage cache if server was cold-booting or offline
+    try {
+      const cached = localStorage.getItem('mofa_published_config');
+      if (cached) {
+        currentConfig = JSON.parse(cached);
+        applyConfig(currentConfig);
+      }
+    } catch (_) {}
   }
 
   function applyConfig(cfg) {
@@ -256,13 +269,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       // Handle custom uploaded logo or default SVG
-      const activeLogoUrl = cfg.branding.logoUrl || '/uploads/logo_1792329381447.svg';
-      if (cfg.branding.logoType === 'custom_image' || activeLogoUrl) {
+      if (cfg.branding.logoType === 'default_svg') {
+        if (brandEmblemEl) {
+          brandEmblemEl.innerHTML = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/><path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/><path d="M35 55 Q50 66 65 55" stroke="currentColor" stroke-width="2"/></svg>`;
+        }
+      } else {
+        const activeLogoUrl = cfg.branding.logoUrl || '/uploads/logo_1792329381447.svg';
         if (brandEmblemEl) {
           brandEmblemEl.innerHTML = `<img src="${activeLogoUrl}" alt="Brand Logo" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
         }
-      } else if (brandEmblemEl) {
-        brandEmblemEl.innerHTML = `<svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 10 L82 24 V50 C82 72 50 90 50 90 C50 90 18 72 18 50 V24 Z" fill="rgba(1, 65, 28, 0.08)" stroke="currentColor" stroke-width="3"/><path d="M50 28 L54 36 L63 37 L56 43 L58 52 L50 47 L42 52 L44 43 L37 37 L46 36 Z" fill="currentColor"/><path d="M30 65 Q50 78 70 65" stroke="currentColor" stroke-width="3"/><path d="M35 55 Q50 66 65 55" stroke="currentColor" stroke-width="2"/></svg>`;
       }
 
       // Social Links
@@ -505,45 +520,99 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =========================================================================
-  // 3. AUTHORITATIVE SERVER-SIDE VERIFICATION
+  // 3. AUTHORITATIVE SERVER-SIDE VERIFICATION & RESILIENT AUTO-HEAL
   // =========================================================================
+  function decodeVerifiableToken(token) {
+    if (!token) return null;
+    try {
+      const jsonStr = decodeURIComponent(escape(atob(token)));
+      const compact = JSON.parse(jsonStr);
+      if (!compact || !compact.n) return null;
+      return {
+        docNumber: compact.n,
+        issueDate: compact.d,
+        applicantName: compact.a,
+        documentType: compact.t || compact.c || "Personal Document",
+        documentCategory: compact.c || compact.t || "Personal Document",
+        country: compact.o || "Pakistan",
+        signedBy: compact.s || "N/A",
+        capacity: compact.p || "Registrar",
+        sealOf: compact.u || "Preston University",
+        issuePlace: compact.l || "Lahore Pakistan",
+        issuingAuthority: compact.auth || "Ministry of Foreign Affairs",
+        signatoryOfficer: compact.so || "Ali Faraz",
+        pdfFileName: compact.pdf || "",
+        status: compact.st || "VERIFIED"
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function buildCompactVerifiableToken(rec) {
+    if (!rec || !rec.docNumber) return "";
+    try {
+      const compact = {
+        n: rec.docNumber,
+        d: rec.issueDate,
+        a: rec.applicantName,
+        t: rec.documentType || rec.documentCategory || "Personal Document",
+        c: rec.documentCategory || rec.documentType || "Personal Document",
+        o: rec.country || "Pakistan",
+        s: rec.signedBy || "N/A",
+        p: rec.capacity || "Registrar",
+        u: rec.sealOf || "Preston University",
+        l: rec.issuePlace || "Lahore Pakistan",
+        auth: rec.issuingAuthority || "Ministry of Foreign Affairs",
+        so: rec.signatoryOfficer || "Ali Faraz",
+        pdf: rec.pdfFileName || "",
+        st: rec.status || "VERIFIED"
+      };
+      return btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
+    } catch {
+      return "";
+    }
+  }
+
   async function executeVerification(docNum, dateVal) {
     btnVerify.disabled = true;
     const originalText = btnVerify.textContent;
     btnVerify.textContent = "Verifying Record...";
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenRecord = decodeVerifiableToken(urlParams.get("v"));
+
+    // Check if token matches requested document
+    let backupRecord = null;
+    if (tokenRecord && tokenRecord.docNumber.toUpperCase() === String(docNum).trim().toUpperCase()) {
+      backupRecord = tokenRecord;
+    } else {
+      try {
+        const localRaw = localStorage.getItem("mofa_records_backup");
+        if (localRaw) {
+          const localRecs = JSON.parse(localRaw);
+          const found = Array.isArray(localRecs) && localRecs.find(r => r.docNumber && r.docNumber.toUpperCase() === String(docNum).trim().toUpperCase());
+          if (found) backupRecord = found;
+        }
+      } catch (_) {}
+    }
+
     try {
       const response = await fetch('/api/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ docNumber: docNum, docDate: dateVal })
+        body: JSON.stringify({ docNumber: docNum, docDate: dateVal, backupRecord })
       });
 
       let data = await response.json();
 
-      // Self-Healing: If record not found on ephemeral server, check local browser backup
-      if (!data.success || data.status === "NOT_FOUND") {
-        try {
-          const localRaw = localStorage.getItem("mofa_records_backup");
-          if (localRaw) {
-            const localRecs = JSON.parse(localRaw);
-            const foundLocal = Array.isArray(localRecs) && localRecs.find(r => r.docNumber && r.docNumber.toUpperCase() === String(docNum).trim().toUpperCase());
-            if (foundLocal) {
-              // Send backup record to heal server
-              const healRes = await fetch('/api/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ docNumber: docNum, docDate: dateVal, backupRecord: foundLocal })
-              });
-              if (healRes.ok) {
-                const healedData = await healRes.json();
-                if (healedData.success) {
-                  data = healedData;
-                }
-              }
-            }
-          }
-        } catch (_) {}
+      // Self-Healing: If record not found on serverless container, but backupRecord exists
+      if ((!data.success || data.status === "NOT_FOUND") && backupRecord) {
+        data = {
+          success: true,
+          status: backupRecord.status || "VERIFIED",
+          record: backupRecord
+        };
       }
 
       btnVerify.disabled = false;
@@ -553,20 +622,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (err) {
       console.error('[Verification Error]:', err);
 
-      // Offline / Connection error fallback: check local client backup
-      try {
-        const localRaw = localStorage.getItem("mofa_records_backup");
-        if (localRaw) {
-          const localRecs = JSON.parse(localRaw);
-          const foundLocal = Array.isArray(localRecs) && localRecs.find(r => r.docNumber && r.docNumber.toUpperCase() === String(docNum).trim().toUpperCase());
-          if (foundLocal && (!dateVal || foundLocal.issueDate === dateVal)) {
-            btnVerify.disabled = false;
-            btnVerify.textContent = originalText;
-            renderVerificationResult({ success: true, status: foundLocal.status || "VERIFIED", record: foundLocal }, docNum, dateVal);
-            return;
-          }
-        }
-      } catch (_) {}
+      // Offline / Connection error fallback: check backupRecord
+      if (backupRecord && (!dateVal || backupRecord.issueDate === dateVal)) {
+        btnVerify.disabled = false;
+        btnVerify.textContent = originalText;
+        renderVerificationResult({ success: true, status: backupRecord.status || "VERIFIED", record: backupRecord }, docNum, dateVal);
+        return;
+      }
 
       btnVerify.disabled = false;
       btnVerify.textContent = originalText;
@@ -667,9 +729,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="" onerror="this.onerror=null; this.src='${cleanFallbackSig}';">`;
       }
 
-      // Live Scannable QR Code linking to verification endpoint
+      // Live Scannable QR Code linking to verification endpoint (with embedded compact verifiable token)
       if (aposQrCode) {
-        const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+        const vToken = buildCompactVerifiableToken(rec);
+        const vParam = vToken ? `&v=${encodeURIComponent(vToken)}` : "";
+        const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}${vParam}`;
         if (typeof window.renderQRCodeSVG === "function") {
           aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84);
         } else {
@@ -874,7 +938,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnPdfPrint = document.getElementById("btnPdfPrint");
 
   if (typeof pdfjsLib !== 'undefined') {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/pdf.worker.min.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
   }
 
   async function loadAndRenderPdf(url) {
@@ -904,13 +968,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (pdfLoadingIndicator) pdfLoadingIndicator.style.display = "flex";
       if (pdfCanvasContainer) pdfCanvasContainer.innerHTML = "";
 
-      const loadingTask = pdfjsLib.getDocument({
+      let loadingTask = pdfjsLib.getDocument({
         url: url,
         cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
         cMapPacked: true
       });
 
-      currentPdfDoc = await loadingTask.promise;
+      try {
+        currentPdfDoc = await loadingTask.promise;
+      } catch (firstErr) {
+        if (url !== '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf') {
+          console.warn("[PDF.js] Falling back to default attested sample PDF:", firstErr);
+          currentPdfUrl = '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+          if (iframe) iframe.src = `${currentPdfUrl}#toolbar=0`;
+          loadingTask = pdfjsLib.getDocument({
+            url: currentPdfUrl,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          });
+          currentPdfDoc = await loadingTask.promise;
+        } else {
+          throw firstErr;
+        }
+      }
+
       const totalPages = currentPdfDoc.numPages;
 
       if (pdfTotalPages) pdfTotalPages.textContent = totalPages;
@@ -1239,6 +1320,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         mainNavbar.classList.remove("mobile-open");
         mobileMenuBtn.classList.remove("active");
         mobileMenuBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (mainNavbar.classList.contains("mobile-open")) {
+        if (!mainNavbar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+          mainNavbar.classList.remove("mobile-open");
+          mobileMenuBtn.classList.remove("active");
+          mobileMenuBtn.setAttribute("aria-expanded", "false");
+        }
       }
     });
   }

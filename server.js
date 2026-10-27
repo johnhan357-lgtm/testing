@@ -271,6 +271,167 @@ function syncRecordsToCloud(records) {
   }
 }
 
+// GitHub Auto-Commit for CMS published config
+async function commitConfigFileToGitHub(config, commitMsg = "Auto-sync published config [skip ci]") {
+  const cfg = getCloudConfig();
+  if (!cfg.githubToken || !cfg.githubRepo) return { success: false };
+
+  const [owner, repo] = cfg.githubRepo.split('/');
+  if (!owner || !repo) return { success: false };
+
+  const filePath = "data/config.published.json";
+  const branch = cfg.githubBranch || "main";
+
+  try {
+    const getOptions = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`,
+      method: 'GET',
+      headers: {
+        'User-Agent': 'MOFA-Apostille-Portal',
+        'Authorization': `token ${cfg.githubToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      timeout: 10000
+    };
+    const getRes = await httpsRequest(getOptions);
+    let currentSha = null;
+    if (getRes.statusCode === 200 && getRes.body && getRes.body.sha) {
+      currentSha = getRes.body.sha;
+    }
+
+    const contentBase64 = Buffer.from(JSON.stringify(config, null, 2), 'utf8').toString('base64');
+    const putPayload = { message: commitMsg, content: contentBase64, branch: branch };
+    if (currentSha) putPayload.sha = currentSha;
+
+    const putOptions = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${repo}/contents/${filePath}`,
+      method: 'PUT',
+      headers: {
+        'User-Agent': 'MOFA-Apostille-Portal',
+        'Authorization': `token ${cfg.githubToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      timeout: 15000
+    };
+    const putRes = await httpsRequest(putOptions, putPayload);
+    return { success: putRes.statusCode === 200 || putRes.statusCode === 201 };
+  } catch (err) {
+    return { success: false, reason: err.message };
+  }
+}
+
+async function syncConfigToKV(config) {
+  const cfg = getCloudConfig();
+  if (!cfg.kvRestApiUrl || !cfg.kvRestApiToken) return { success: false };
+
+  try {
+    const targetUrl = `${cfg.kvRestApiUrl.replace(/\/+$/, '')}/set/mofa_config`;
+    const url = new URL(targetUrl);
+    const isHttps = url.protocol === 'https:';
+    const lib = isHttps ? https : http;
+
+    const payload = JSON.stringify(config);
+    return new Promise((resolve) => {
+      const req = lib.request({
+        hostname: url.hostname,
+        port: url.port || (isHttps ? 443 : 80),
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${cfg.kvRestApiToken}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        },
+        timeout: 8000
+      }, res => resolve({ success: res.statusCode >= 200 && res.statusCode < 300 }));
+      req.on('error', () => resolve({ success: false }));
+      req.on('timeout', () => { req.destroy(); resolve({ success: false }); });
+      req.write(payload);
+      req.end();
+    });
+  } catch {
+    return { success: false };
+  }
+}
+
+async function fetchConfigFromKV() {
+  const cfg = getCloudConfig();
+  if (!cfg.kvRestApiUrl || !cfg.kvRestApiToken) return null;
+
+  try {
+    const targetUrl = `${cfg.kvRestApiUrl.replace(/\/+$/, '')}/get/mofa_config`;
+    const url = new URL(targetUrl);
+    const isHttps = url.protocol === 'https:';
+    const lib = isHttps ? https : http;
+
+    return new Promise((resolve) => {
+      const req = lib.request({
+        hostname: url.hostname,
+        port: url.port || (isHttps ? 443 : 80),
+        path: url.pathname + url.search,
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${cfg.kvRestApiToken}`
+        },
+        timeout: 8000
+      }, res => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(body);
+            if (parsed && parsed.result) {
+              const c = typeof parsed.result === 'string' ? JSON.parse(parsed.result) : parsed.result;
+              if (c && typeof c === 'object') return resolve(c);
+            }
+          } catch {}
+          resolve(null);
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.end();
+    });
+  } catch {
+    return null;
+  }
+}
+
+function syncConfigToCloud(config) {
+  const cfg = getCloudConfig();
+  if (cfg.kvRestApiUrl && cfg.kvRestApiToken) {
+    syncConfigToKV(config).catch(err => console.error('[KV Config Sync Error]:', err.message));
+  }
+  if (cfg.githubToken && cfg.githubRepo && cfg.autoCommit) {
+    commitConfigFileToGitHub(config).catch(err => console.error('[GitHub Config Sync Error]:', err.message));
+  }
+}
+
+function normalizeDate(str) {
+  if (!str) return "";
+  const clean = String(str).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+  const parts = clean.split(/[-/]/);
+  if (parts.length === 3) {
+    if (parts[0].length === 4) {
+      const y = parts[0];
+      const m = String(parts[1]).padStart(2, '0');
+      const d = String(parts[2]).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+  }
+  try {
+    const d = new Date(clean);
+    if (!isNaN(d.getTime())) {
+      return d.toISOString().split('T')[0];
+    }
+  } catch {}
+  return clean;
+}
+
 let isCloudSyncChecked = false;
 async function ensureCloudSync() {
   if (isCloudSyncChecked) return;
@@ -283,6 +444,12 @@ async function ensureCloudSync() {
         atomicWriteJson(RECORDS_FILE, kvRecords);
         console.log(`[Cloud Persistence] Restored ${kvRecords.length} records from Upstash KV.`);
       }
+    }
+    const kvConfig = await fetchConfigFromKV();
+    if (kvConfig && kvConfig.branding) {
+      atomicWriteJson(PUBLISHED_CONFIG_FILE, kvConfig);
+      atomicWriteJson(DRAFT_CONFIG_FILE, kvConfig);
+      console.log('[Cloud Persistence] Restored published config from Upstash KV.');
     }
   } catch (err) {
     console.warn('[Cloud Persistence] Cloud sync check error:', err.message);
@@ -851,8 +1018,8 @@ async function requestHandler(req, res) {
         });
       }
 
-      // Check date match if date is supplied
-      if (cleanDate && match.issueDate !== cleanDate) {
+      // Check date match if date is supplied (using normalized date comparison)
+      if (cleanDate && normalizeDate(match.issueDate) !== normalizeDate(cleanDate)) {
         return sendJson(res, 200, {
           success: false,
           status: "DATE_MISMATCH",
@@ -1077,6 +1244,7 @@ async function requestHandler(req, res) {
         atomicWriteJson(PUBLISHED_CONFIG_FILE, publishedData);
         // Also sync draft metadata
         atomicWriteJson(DRAFT_CONFIG_FILE, publishedData);
+        syncConfigToCloud(publishedData);
 
         return sendJson(res, 200, {
           success: true,
@@ -1459,7 +1627,10 @@ async function requestHandler(req, res) {
         } catch (pubErr) {}
       } catch (fsErr) {
         // Safe fallback for serverless read-only filesystems (e.g. Vercel)
-        console.warn('[Upload] Read-only disk detected. Returning Data URI for serverless compatibility.');
+        console.warn('[Upload] Read-only disk detected. Writing to /tmp for serverless runtime.');
+        try {
+          fs.writeFileSync(path.join('/tmp', safeName), buffer);
+        } catch (_) {}
         fileUrl = data.fileData.startsWith('data:') ? data.fileData : `data:${mimeType};base64,${data.fileData}`;
       }
 
@@ -1486,6 +1657,8 @@ async function requestHandler(req, res) {
     const pubFile = path.join(ROOT_DIR, 'public', cleanPath);
     if (fs.existsSync(pubFile) && fs.statSync(pubFile).isFile()) {
       targetFile = pubFile;
+    } else if (IS_SERVERLESS && fs.existsSync(path.join('/tmp', path.basename(cleanPath))) && fs.statSync(path.join('/tmp', path.basename(cleanPath))).isFile()) {
+      targetFile = path.join('/tmp', path.basename(cleanPath));
     } else if (cleanPath.startsWith('/uploads/sig_')) {
       const fallbackSig = path.join(ROOT_DIR, 'uploads', 'signature_ali_faraz_clean.png');
       if (fs.existsSync(fallbackSig) && fs.statSync(fallbackSig).isFile()) {
@@ -1499,8 +1672,9 @@ async function requestHandler(req, res) {
     }
   }
 
-  // Security check: ensure path is within ROOT_DIR
-  if (!targetFile.startsWith(ROOT_DIR)) {
+  // Security check: ensure path is within ROOT_DIR or safe serverless /tmp
+  const isAllowedPath = targetFile.startsWith(ROOT_DIR) || (IS_SERVERLESS && targetFile.startsWith('/tmp'));
+  if (!isAllowedPath) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     return res.end('Access Denied');
   }
