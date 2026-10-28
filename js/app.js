@@ -541,6 +541,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         issuePlace: compact.l || "Lahore Pakistan",
         issuingAuthority: compact.auth || "Ministry of Foreign Affairs",
         signatoryOfficer: compact.so || "Ali Faraz",
+        signatureUrl: compact.sig || "/uploads/signature_ali_faraz_clean.png",
+        signatureWidth: compact.sw || 88,
+        signatureHeight: compact.sh || 34,
+        signatureOffsetY: compact.sy !== undefined ? compact.sy : 0,
+        signatureFilter: compact.sf || "none",
         pdfFileName: compact.pdf || "",
         status: compact.st || "VERIFIED"
       };
@@ -565,6 +570,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         l: rec.issuePlace || "Lahore Pakistan",
         auth: rec.issuingAuthority || "Ministry of Foreign Affairs",
         so: rec.signatoryOfficer || "Ali Faraz",
+        sig: rec.signatureUrl || "",
+        sw: rec.signatureWidth || 88,
+        sh: rec.signatureHeight || 34,
+        sy: rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : 0,
+        sf: rec.signatureFilter || "none",
         pdf: rec.pdfFileName || "",
         st: rec.status || "VERIFIED"
       };
@@ -719,6 +729,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!sigSrc || sigSrc === 'undefined' || sigSrc === 'null' || sigSrc.includes('sig_1792344974867')) {
         sigSrc = cleanFallbackSig;
       }
+
+      const sigWidth = rec.signatureWidth || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultSignatureWidth) || 88;
+      const sigHeight = rec.signatureHeight || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultSignatureHeight) || 34;
+      const sigOffsetY = rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : ((currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultSignatureOffsetY) || 0);
+      const sigFilter = rec.signatureFilter || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultSignatureFilter) || 'none';
+
+      if (aposSigGraphic) {
+        aposSigGraphic.style.width = `${sigWidth}px`;
+        aposSigGraphic.style.height = `${sigHeight}px`;
+        aposSigGraphic.style.transform = `translateY(${sigOffsetY}px)`;
+        if (sigFilter === 'darken') {
+          aposSigGraphic.style.filter = 'contrast(140%) brightness(90%)';
+          aposSigGraphic.style.mixBlendMode = 'normal';
+        } else if (sigFilter === 'multiply') {
+          aposSigGraphic.style.filter = 'contrast(125%)';
+          aposSigGraphic.style.mixBlendMode = 'multiply';
+        } else {
+          aposSigGraphic.style.filter = 'none';
+          aposSigGraphic.style.mixBlendMode = 'normal';
+        }
+      }
+
       if (aposSigImg) {
         aposSigImg.onerror = function() {
           this.onerror = null;

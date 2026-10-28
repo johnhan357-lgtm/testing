@@ -1313,10 +1313,12 @@ body {
 .apos-sig-graphic {
   width: 82px;
   height: 32px;
+  max-width: 100%;
   margin: 0 auto 2px auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.15s ease;
 }
 .apos-sig-graphic .sig-img,
 .apos-sig-graphic img {

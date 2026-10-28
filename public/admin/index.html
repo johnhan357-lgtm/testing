@@ -409,20 +409,85 @@
               </div>
             </div>
 
-            <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px;">
-              <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Default Signatory Signature Graphic (PNG, JPG, SVG, WEBP)</label>
-              <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                <div id="cfgCertSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
-                  <img id="cfgCertSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" onerror="this.onerror=null; this.src='/uploads/signature_ali_faraz_clean.png';" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                </div>
+            <!-- Default Signatory Signature Graphic & Global Size Staging (CMS Defaults) -->
+            <div class="sig-staging-card" style="margin-bottom: 15px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label class="form-label" style="font-weight: 700; margin: 0; color: #0f172a;">
+                  ✍️ Default Signatory Signature Graphic &amp; Size Control
+                </label>
+                <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Global Default Staging</span>
+              </div>
+
+              <!-- File Upload Row -->
+              <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
                 <input type="text" id="cfgCertSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
-                <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
-                  Upload Signature
+                <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap; font-weight: 600;">
+                  📁 Upload Default Signature
                   <input type="file" id="cfgCertSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
                 </label>
               </div>
-              <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
-                Default signature image used on generated certificates when none is specifically uploaded. Supports transparent PNG, JPG, SVG, and WEBP.
+
+              <!-- Live Certificate Stage + Sliders Grid -->
+              <div class="sig-preview-stage-container">
+                <!-- Exact Apostille Box 10 Preview -->
+                <div class="sig-stage-preview-box" id="cfgCertSigStageBox">
+                  <div class="sig-stage-box-label">10. Signature / DASTKHAT</div>
+                  <div class="sig-stage-img-wrap" id="cfgCertSigStageWrap">
+                    <img id="cfgCertSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature Preview" onerror="this.onerror=null; this.src='/uploads/signature_ali_faraz_clean.png';">
+                  </div>
+                  <div class="sig-stage-officer-name" id="cfgCertSigStageOfficerName">Ali Faraz</div>
+                </div>
+
+                <!-- Controls Panel -->
+                <div class="sig-controls-panel">
+                  <!-- Width / Size Slider -->
+                  <div class="sig-slider-group">
+                    <div class="sig-slider-header">
+                      <span>Default Signature Width:</span>
+                      <span class="sig-slider-badge" id="cfgCertSigWidthBadge">88px</span>
+                    </div>
+                    <input type="range" id="cfgCertSigWidth" class="sig-range-slider" min="50" max="160" value="88" step="2">
+                    <div class="sig-preset-btn-group">
+                      <button type="button" class="sig-preset-btn" data-target="cfgCertSig" data-w="70" data-h="28">Compact (70px)</button>
+                      <button type="button" class="sig-preset-btn" data-target="cfgCertSig" data-w="88" data-h="34">Normal (88px)</button>
+                      <button type="button" class="sig-preset-btn" data-target="cfgCertSig" data-w="110" data-h="40">Large (110px)</button>
+                      <button type="button" class="sig-preset-btn" data-target="cfgCertSig" data-w="135" data-h="48">Wide (135px)</button>
+                    </div>
+                  </div>
+
+                  <!-- Max Height Slider -->
+                  <div class="sig-slider-group">
+                    <div class="sig-slider-header">
+                      <span>Default Max Height:</span>
+                      <span class="sig-slider-badge" id="cfgCertSigHeightBadge">34px</span>
+                    </div>
+                    <input type="range" id="cfgCertSigHeight" class="sig-range-slider" min="20" max="60" value="34" step="2">
+                  </div>
+
+                  <!-- Vertical Offset Slider -->
+                  <div class="sig-slider-group">
+                    <div class="sig-slider-header">
+                      <span>Default Vertical Position (Nudge):</span>
+                      <span class="sig-slider-badge" id="cfgCertSigOffsetYBadge">0px</span>
+                    </div>
+                    <input type="range" id="cfgCertSigOffsetY" class="sig-range-slider" min="-15" max="15" value="0" step="1">
+                  </div>
+
+                  <!-- Ink Style Filter -->
+                  <div class="sig-slider-group">
+                    <div class="sig-slider-header">
+                      <span>Default Ink Appearance Filter:</span>
+                    </div>
+                    <select id="cfgCertSigFilter" class="form-input" style="font-size: 0.82rem; padding: 4px 8px;">
+                      <option value="none">Standard Ink (Original)</option>
+                      <option value="darken">Crisp Dark Ink (Pen Boost)</option>
+                      <option value="multiply">Transparent Paper Background (Blend)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 8px;">
+                Default signature image &amp; sizing used on certificates when no specific dimensions are set.
               </small>
             </div>
 
@@ -616,21 +681,85 @@
                 </div>
               </div>
 
-              <!-- Officer Signature Graphic for Quick Generator -->
-              <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-bottom: 15px;">
-                <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Officer Signature Graphic (PNG, JPG, SVG, WEBP)</label>
-                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                  <div id="qgSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
-                    <img id="qgSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" onerror="this.onerror=null; this.src='/uploads/signature_ali_faraz_clean.png';" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-                  </div>
+              <!-- Officer Signature Graphic & Advanced Staging Controls (Quick Generator) -->
+              <div class="sig-staging-card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <label class="form-label" style="font-weight: 700; margin: 0; color: #0f172a;">
+                    ✍️ Officer Signature &amp; Stamp Control
+                  </label>
+                  <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Certificate Live Staging</span>
+                </div>
+
+                <!-- File Upload Row -->
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
                   <input type="text" id="qgSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
-                  <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
-                    Upload Signature
+                  <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap; font-weight: 600;">
+                    📁 Upload New Signature
                     <input type="file" id="qgSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
                   </label>
                 </div>
-                <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
-                  Upload any signature format (PNG, JPG, SVG, WEBP) to attach directly to this certificate.
+
+                <!-- Live Certificate Stage + Sliders Grid -->
+                <div class="sig-preview-stage-container">
+                  <!-- Exact Apostille Box 10 Preview -->
+                  <div class="sig-stage-preview-box" id="qgSigStageBox">
+                    <div class="sig-stage-box-label">10. Signature / DASTKHAT</div>
+                    <div class="sig-stage-img-wrap" id="qgSigStageWrap">
+                      <img id="qgSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature Preview" onerror="this.onerror=null; this.src='/uploads/signature_ali_faraz_clean.png';">
+                    </div>
+                    <div class="sig-stage-officer-name" id="qgSigStageOfficerName">Ali Faraz</div>
+                  </div>
+
+                  <!-- Controls Panel -->
+                  <div class="sig-controls-panel">
+                    <!-- Width / Size Slider -->
+                    <div class="sig-slider-group">
+                      <div class="sig-slider-header">
+                        <span>Signature Width (Size):</span>
+                        <span class="sig-slider-badge" id="qgSigWidthBadge">88px</span>
+                      </div>
+                      <input type="range" id="qgSigWidth" class="sig-range-slider" min="50" max="160" value="88" step="2">
+                      <div class="sig-preset-btn-group">
+                        <button type="button" class="sig-preset-btn" data-target="qgSig" data-w="70" data-h="28">Compact (70px)</button>
+                        <button type="button" class="sig-preset-btn" data-target="qgSig" data-w="88" data-h="34">Normal (88px)</button>
+                        <button type="button" class="sig-preset-btn" data-target="qgSig" data-w="110" data-h="40">Large (110px)</button>
+                        <button type="button" class="sig-preset-btn" data-target="qgSig" data-w="135" data-h="48">Wide (135px)</button>
+                      </div>
+                    </div>
+
+                    <!-- Max Height Slider -->
+                    <div class="sig-slider-group">
+                      <div class="sig-slider-header">
+                        <span>Max Height:</span>
+                        <span class="sig-slider-badge" id="qgSigHeightBadge">34px</span>
+                      </div>
+                      <input type="range" id="qgSigHeight" class="sig-range-slider" min="20" max="60" value="34" step="2">
+                    </div>
+
+                    <!-- Vertical Offset Slider -->
+                    <div class="sig-slider-group">
+                      <div class="sig-slider-header">
+                        <span>Vertical Position (Nudge):</span>
+                        <span class="sig-slider-badge" id="qgSigOffsetYBadge">0px</span>
+                      </div>
+                      <input type="range" id="qgSigOffsetY" class="sig-range-slider" min="-15" max="15" value="0" step="1">
+                    </div>
+
+                    <!-- Ink Style Filter -->
+                    <div class="sig-slider-group">
+                      <div class="sig-slider-header">
+                        <span>Ink Appearance Filter:</span>
+                      </div>
+                      <select id="qgSigFilter" class="form-input" style="font-size: 0.82rem; padding: 4px 8px;">
+                        <option value="none">Standard Ink (Original)</option>
+                        <option value="darken">Crisp Dark Ink (Pen Boost)</option>
+                        <option value="multiply">Transparent Paper Background (Blend)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 8px;">
+                  Supports PNG (transparent), JPG, SVG, and WEBP. Fine-tune size and position before generating certificate.
                 </small>
               </div>
 
@@ -1364,21 +1493,85 @@
           </small>
         </div>
 
-        <!-- Officer Signature Graphic -->
-        <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px; margin-top: 10px;">
-          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Officer Signature Graphic (PNG, JPG, SVG, WEBP)</label>
-          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-            <div id="recSigPreviewBox" style="width: 84px; height: 38px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; border-radius: 4px; overflow: hidden;">
-              <img id="recSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" onerror="this.onerror=null; this.src='/uploads/signature_ali_faraz_clean.png';" style="max-width: 100%; max-height: 100%; object-fit: contain;">
-            </div>
+        <!-- Officer Signature Graphic & Advanced Staging Controls -->
+        <div class="sig-staging-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label" style="font-weight: 700; margin: 0; color: #0f172a;">
+              ✍️ Officer Signature &amp; Stamp Control
+            </label>
+            <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Certificate Live Staging</span>
+          </div>
+
+          <!-- File Upload Row -->
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
             <input type="text" id="recSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
-            <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
-              Upload Signature
+            <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap; font-weight: 600;">
+              📁 Upload New Signature
               <input type="file" id="recSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
             </label>
           </div>
-          <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
-            Upload any custom official signature (PNG with transparent background, JPG, SVG, or WEBP).
+
+          <!-- Live Certificate Stage + Sliders Grid -->
+          <div class="sig-preview-stage-container">
+            <!-- Exact Apostille Box 10 Preview -->
+            <div class="sig-stage-preview-box" id="recSigStageBox">
+              <div class="sig-stage-box-label">10. Signature / DASTKHAT</div>
+              <div class="sig-stage-img-wrap" id="recSigStageWrap">
+                <img id="recSigPreview" src="/uploads/signature_ali_faraz_clean.png" alt="Signature Preview" onerror="this.onerror=null; this.src='/uploads/signature_ali_faraz_clean.png';">
+              </div>
+              <div class="sig-stage-officer-name" id="recSigStageOfficerName">Ali Faraz</div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="sig-controls-panel">
+              <!-- Width / Size Slider -->
+              <div class="sig-slider-group">
+                <div class="sig-slider-header">
+                  <span>Signature Width (Size):</span>
+                  <span class="sig-slider-badge" id="recSigWidthBadge">88px</span>
+                </div>
+                <input type="range" id="recSigWidth" class="sig-range-slider" min="50" max="160" value="88" step="2">
+                <div class="sig-preset-btn-group">
+                  <button type="button" class="sig-preset-btn" data-target="recSig" data-w="70" data-h="28">Compact (70px)</button>
+                  <button type="button" class="sig-preset-btn" data-target="recSig" data-w="88" data-h="34">Normal (88px)</button>
+                  <button type="button" class="sig-preset-btn" data-target="recSig" data-w="110" data-h="40">Large (110px)</button>
+                  <button type="button" class="sig-preset-btn" data-target="recSig" data-w="135" data-h="48">Wide (135px)</button>
+                </div>
+              </div>
+
+              <!-- Max Height Slider -->
+              <div class="sig-slider-group">
+                <div class="sig-slider-header">
+                  <span>Max Height:</span>
+                  <span class="sig-slider-badge" id="recSigHeightBadge">34px</span>
+                </div>
+                <input type="range" id="recSigHeight" class="sig-range-slider" min="20" max="60" value="34" step="2">
+              </div>
+
+              <!-- Vertical Offset Slider -->
+              <div class="sig-slider-group">
+                <div class="sig-slider-header">
+                  <span>Vertical Position (Nudge):</span>
+                  <span class="sig-slider-badge" id="recSigOffsetYBadge">0px</span>
+                </div>
+                <input type="range" id="recSigOffsetY" class="sig-range-slider" min="-15" max="15" value="0" step="1">
+              </div>
+
+              <!-- Ink Style Filter -->
+              <div class="sig-slider-group">
+                <div class="sig-slider-header">
+                  <span>Ink Appearance Filter:</span>
+                </div>
+                <select id="recSigFilter" class="form-input" style="font-size: 0.82rem; padding: 4px 8px;">
+                  <option value="none">Standard Ink (Original)</option>
+                  <option value="darken">Crisp Dark Ink (Pen Boost)</option>
+                  <option value="multiply">Transparent Paper Background (Blend)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 8px;">
+            Supports PNG (transparent), JPG, SVG, and WEBP. Use sliders above to size and position the signature exactly as desired on the official certificate.
           </small>
         </div>
 

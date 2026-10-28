@@ -623,3 +623,132 @@ body {
   outline: none;
   padding: 1px 2px;
 }
+
+/* ==========================================================================
+   OFFICER SIGNATURE STAGING & VISUAL CONTROLS
+   ========================================================================== */
+.sig-staging-card {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 10px;
+}
+.sig-preview-stage-container {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.sig-stage-preview-box {
+  width: 175px;
+  min-height: 110px;
+  background: #ffffff;
+  border: 1.5px solid #000000;
+  padding: 8px;
+  text-align: center;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.sig-stage-box-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #334155;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  width: 100%;
+  text-align: left;
+  border-bottom: 1px dashed #cbd5e1;
+  padding-bottom: 2px;
+}
+.sig-stage-img-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 34px;
+  overflow: visible;
+  transition: all 0.15s ease;
+  margin: 2px auto;
+}
+.sig-stage-img-wrap img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.sig-stage-officer-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #000000;
+  border-top: 1px solid #94a3b8;
+  width: 90%;
+  padding-top: 3px;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sig-controls-panel {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sig-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.sig-slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+}
+.sig-slider-badge {
+  font-family: monospace;
+  font-size: 0.76rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+.sig-range-slider {
+  width: 100%;
+  height: 5px;
+  accent-color: #01411c;
+  cursor: pointer;
+}
+.sig-preset-btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.sig-preset-btn {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sig-preset-btn:hover {
+  background: #01411c;
+  color: #ffffff;
+  border-color: #01411c;
+}

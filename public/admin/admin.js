@@ -467,6 +467,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const sigVal = cv.signatureUrl || "/uploads/signature_ali_faraz_clean.png";
       if (elCertSigUrl) elCertSigUrl.value = sigVal;
       if (elCertSigPrev) elCertSigPrev.src = sigVal;
+      if (document.getElementById("cfgCertSigWidth")) document.getElementById("cfgCertSigWidth").value = cv.defaultSignatureWidth || 88;
+      if (document.getElementById("cfgCertSigHeight")) document.getElementById("cfgCertSigHeight").value = cv.defaultSignatureHeight || 34;
+      if (document.getElementById("cfgCertSigOffsetY")) document.getElementById("cfgCertSigOffsetY").value = cv.defaultSignatureOffsetY !== undefined ? cv.defaultSignatureOffsetY : 0;
+      if (document.getElementById("cfgCertSigFilter")) document.getElementById("cfgCertSigFilter").value = cv.defaultSignatureFilter || "none";
+      if (typeof cfgCertSigStage !== 'undefined' && cfgCertSigStage.updateStage) cfgCertSigStage.updateStage();
       if (elDisclaimer) elDisclaimer.value = cv.disclaimerText || "";
       if (elVerifyUrl) elVerifyUrl.value = cv.verificationUrlText || "";
       if (elEnablePdf) elEnablePdf.checked = cv.enablePdfViewer !== false;
@@ -558,6 +563,10 @@ document.addEventListener("DOMContentLoaded", () => {
         signatoryOfficer: (document.getElementById("cfgCertSignatory")?.value || "").trim() || "Ali Faraz",
         defaultSignatory: (document.getElementById("cfgCertSignatory")?.value || "").trim() || "Ali Faraz",
         signatureUrl: (document.getElementById("cfgCertSignatureUrl")?.value || "").trim() || "/uploads/signature_ali_faraz_clean.png",
+        defaultSignatureWidth: parseInt(document.getElementById("cfgCertSigWidth")?.value, 10) || 88,
+        defaultSignatureHeight: parseInt(document.getElementById("cfgCertSigHeight")?.value, 10) || 34,
+        defaultSignatureOffsetY: parseInt(document.getElementById("cfgCertSigOffsetY")?.value, 10) || 0,
+        defaultSignatureFilter: document.getElementById("cfgCertSigFilter")?.value || "none",
         disclaimerText: (document.getElementById("cfgCertDisclaimer")?.value || "").trim(),
         verificationUrlText: (document.getElementById("cfgCertVerifyUrl")?.value || "").trim(),
         enablePdfViewer: document.getElementById("cfgCertEnablePdf") ? document.getElementById("cfgCertEnablePdf").checked : true,
@@ -915,51 +924,129 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Certificate Settings Default Signature Upload
-  const cfgCertSigFileInput = document.getElementById("cfgCertSigFileInput");
-  if (cfgCertSigFileInput) {
-    cfgCertSigFileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          showToast("Uploading default signature...", "info");
-          const res = await apiFetch('/api/admin/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fileName: file.name,
-              fileData: reader.result,
-              fileType: 'signature'
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
-            document.getElementById("cfgCertSignatureUrl").value = sigUrl;
-            const prev = document.getElementById("cfgCertSigPreview");
-            if (prev) prev.src = sigUrl;
-            showToast("Default signature uploaded. Click 'Save Draft' or 'Publish' to persist.", "success");
-            await checkPublishingStatus();
-          } else {
-            showToast(data.message || "Failed to upload signature.", "error");
-          }
-        } catch {
-          showToast("Network error uploading signature.", "error");
-        }
-      };
-      reader.readAsDataURL(file);
+  // =========================================================================
+  // SIGNATURE ADVANCED VISUAL STAGING ENGINE
+  // =========================================================================
+  function setupSignatureStaging(prefix, officerNameInputId) {
+    const urlInput = document.getElementById(`${prefix}SignatureUrl`);
+    const fileInput = document.getElementById(`${prefix}SigFileInput`);
+    const imgEl = document.getElementById(`${prefix}SigPreview`);
+    const wrapEl = document.getElementById(`${prefix}SigStageWrap`);
+    const widthSlider = document.getElementById(`${prefix}SigWidth`);
+    const widthBadge = document.getElementById(`${prefix}SigWidthBadge`);
+    const heightSlider = document.getElementById(`${prefix}SigHeight`);
+    const heightBadge = document.getElementById(`${prefix}SigHeightBadge`);
+    const offsetSlider = document.getElementById(`${prefix}SigOffsetY`);
+    const offsetBadge = document.getElementById(`${prefix}SigOffsetYBadge`);
+    const filterSelect = document.getElementById(`${prefix}SigFilter`);
+    const officerNameDisplay = document.getElementById(`${prefix}SigStageOfficerName`);
+    const officerInput = officerNameInputId ? document.getElementById(officerNameInputId) : null;
+
+    function updateStage() {
+      if (!imgEl || !wrapEl) return;
+      const w = widthSlider ? widthSlider.value : 88;
+      const h = heightSlider ? heightSlider.value : 34;
+      const offY = offsetSlider ? offsetSlider.value : 0;
+      const filter = filterSelect ? filterSelect.value : 'none';
+
+      if (widthBadge) widthBadge.textContent = `${w}px`;
+      if (heightBadge) heightBadge.textContent = `${h}px`;
+      if (offsetBadge) offsetBadge.textContent = `${Number(offY) >= 0 ? '+' : ''}${offY}px`;
+
+      wrapEl.style.width = `${w}px`;
+      wrapEl.style.height = `${h}px`;
+      wrapEl.style.transform = `translateY(${offY}px)`;
+
+      if (filter === 'darken') {
+        imgEl.style.filter = 'contrast(140%) brightness(90%)';
+        imgEl.style.mixBlendMode = 'normal';
+      } else if (filter === 'multiply') {
+        imgEl.style.filter = 'contrast(125%)';
+        imgEl.style.mixBlendMode = 'multiply';
+      } else {
+        imgEl.style.filter = 'none';
+        imgEl.style.mixBlendMode = 'normal';
+      }
+
+      if (officerInput && officerNameDisplay) {
+        officerNameDisplay.textContent = officerInput.value.trim() || "Ali Faraz";
+      }
+    }
+
+    if (widthSlider) widthSlider.addEventListener("input", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
+    if (heightSlider) heightSlider.addEventListener("input", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
+    if (offsetSlider) offsetSlider.addEventListener("input", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
+    if (filterSelect) filterSelect.addEventListener("change", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
+    if (officerInput) officerInput.addEventListener("input", updateStage);
+
+    if (urlInput) {
+      urlInput.addEventListener("input", () => {
+        const val = urlInput.value.trim() || "/uploads/signature_ali_faraz_clean.png";
+        if (imgEl) imgEl.src = val;
+        updateStage();
+      });
+    }
+
+    // Handle Preset Buttons
+    document.querySelectorAll(`.sig-preset-btn[data-target="${prefix}Sig"]`).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const w = btn.dataset.w;
+        const h = btn.dataset.h;
+        if (widthSlider && w) widthSlider.value = w;
+        if (heightSlider && h) heightSlider.value = h;
+        updateStage();
+        if (typeof markDraftDirty === 'function') markDraftDirty();
+      });
     });
+
+    // Handle File Upload with instant local preview
+    if (fileInput) {
+      fileInput.addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          try {
+            if (imgEl) imgEl.src = reader.result;
+            updateStage();
+            showToast("Uploading signature...", "info");
+
+            const res = await apiFetch('/api/admin/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fileName: file.name,
+                fileData: reader.result,
+                fileType: 'signature'
+              })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
+              if (urlInput) urlInput.value = sigUrl;
+              if (imgEl) imgEl.src = sigUrl;
+              updateStage();
+              showToast("Signature uploaded & staged successfully.", "success");
+              if (typeof markDraftDirty === 'function') markDraftDirty();
+              if (typeof checkPublishingStatus === 'function') await checkPublishingStatus();
+            } else {
+              showToast(data.message || "Failed to upload signature.", "error");
+            }
+          } catch {
+            showToast("Network error uploading signature.", "error");
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    updateStage();
+    return { updateStage };
   }
 
-  const cfgCertSigUrlInput = document.getElementById("cfgCertSignatureUrl");
-  if (cfgCertSigUrlInput) {
-    cfgCertSigUrlInput.addEventListener("input", (e) => {
-      const prev = document.getElementById("cfgCertSigPreview");
-      if (prev && e.target.value.trim()) prev.src = e.target.value.trim();
-    });
-  }
+  const cfgCertSigStage = setupSignatureStaging("cfgCert", "cfgCertSignatory");
+  const recSigStage = setupSignatureStaging("rec", "recSignatoryOfficer");
+  const qgSigStage = setupSignatureStaging("qg", "qgSignatoryOfficer");
 
   // =========================================================================
   // NOTICE MODAL LOGO, PREVIEW & TEST POPUP HANDLERS
@@ -1587,6 +1674,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("recSignatureUrl").value = recSig;
         const recSigPrev = document.getElementById("recSigPreview");
         if (recSigPrev) recSigPrev.src = recSig;
+        if (document.getElementById("recSigWidth")) document.getElementById("recSigWidth").value = rec.signatureWidth || 88;
+        if (document.getElementById("recSigHeight")) document.getElementById("recSigHeight").value = rec.signatureHeight || 34;
+        if (document.getElementById("recSigOffsetY")) document.getElementById("recSigOffsetY").value = rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : 0;
+        if (document.getElementById("recSigFilter")) document.getElementById("recSigFilter").value = rec.signatureFilter || "none";
+        if (typeof recSigStage !== 'undefined' && recSigStage.updateStage) recSigStage.updateStage();
         document.getElementById("recNotes").value = rec.notes || "";
         recordModal.classList.add("active");
         setupFieldFontSelectors();
@@ -1777,6 +1869,11 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("recSignatureUrl").value = "/uploads/signature_ali_faraz_clean.png";
       const recSigPrev = document.getElementById("recSigPreview");
       if (recSigPrev) recSigPrev.src = "/uploads/signature_ali_faraz_clean.png";
+      if (document.getElementById("recSigWidth")) document.getElementById("recSigWidth").value = 88;
+      if (document.getElementById("recSigHeight")) document.getElementById("recSigHeight").value = 34;
+      if (document.getElementById("recSigOffsetY")) document.getElementById("recSigOffsetY").value = 0;
+      if (document.getElementById("recSigFilter")) document.getElementById("recSigFilter").value = "none";
+      if (typeof recSigStage !== 'undefined' && recSigStage.updateStage) recSigStage.updateStage();
       recordModal.classList.add("active");
       setupFieldFontSelectors();
     });
@@ -1820,51 +1917,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Signature Upload in Record Modal
-  const recSigFileInput = document.getElementById("recSigFileInput");
-  if (recSigFileInput) {
-    recSigFileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          showToast("Uploading signature...", "info");
-          const res = await apiFetch('/api/admin/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fileName: file.name,
-              fileData: reader.result,
-              fileType: 'signature'
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
-            document.getElementById("recSignatureUrl").value = sigUrl;
-            const prev = document.getElementById("recSigPreview");
-            if (prev) prev.src = sigUrl;
-            showToast("Signature uploaded successfully.", "success");
-          } else {
-            showToast(data.message || "Failed to upload signature.", "error");
-          }
-        } catch {
-          showToast("Network error uploading signature.", "error");
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  const recSigUrlInput = document.getElementById("recSignatureUrl");
-  if (recSigUrlInput) {
-    recSigUrlInput.addEventListener("input", (e) => {
-      const prev = document.getElementById("recSigPreview");
-      if (prev && e.target.value.trim()) prev.src = e.target.value.trim();
-    });
-  }
-
   if (recordForm) {
     recordForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -1883,6 +1935,10 @@ document.addEventListener("DOMContentLoaded", () => {
         issuingAuthority: document.getElementById("recAuthority").value.trim(),
         signatoryOfficer: document.getElementById("recSignatoryOfficer").value.trim(),
         signatureUrl: (document.getElementById("recSignatureUrl")?.value || "").trim() || "/uploads/signature_ali_faraz_clean.png",
+        signatureWidth: parseInt(document.getElementById("recSigWidth")?.value, 10) || 88,
+        signatureHeight: parseInt(document.getElementById("recSigHeight")?.value, 10) || 34,
+        signatureOffsetY: parseInt(document.getElementById("recSigOffsetY")?.value, 10) || 0,
+        signatureFilter: document.getElementById("recSigFilter")?.value || "none",
         documentType: document.getElementById("recDocType").value.trim(),
         status: document.getElementById("recStatus").value,
         pdfFileName: document.getElementById("recPdfFileName").value.trim(),
@@ -1963,6 +2019,11 @@ document.addEventListener("DOMContentLoaded", () => {
         l: rec.issuePlace || "Lahore Pakistan",
         auth: rec.issuingAuthority || "Ministry of Foreign Affairs",
         so: rec.signatoryOfficer || "Ali Faraz",
+        sig: rec.signatureUrl || "",
+        sw: rec.signatureWidth || 88,
+        sh: rec.signatureHeight || 34,
+        sy: rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : 0,
+        sf: rec.signatureFilter || "none",
         pdf: rec.pdfFileName || "",
         st: rec.status || "VERIFIED"
       };
@@ -2077,51 +2138,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Quick Generator Signature Upload
-  const qgSigFileInput = document.getElementById("qgSigFileInput");
-  if (qgSigFileInput) {
-    qgSigFileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          showToast("Uploading signature...", "info");
-          const res = await apiFetch('/api/admin/upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              fileName: file.name,
-              fileData: reader.result,
-              fileType: 'signature'
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
-            document.getElementById("qgSignatureUrl").value = sigUrl;
-            const prev = document.getElementById("qgSigPreview");
-            if (prev) prev.src = sigUrl;
-            showToast("Signature uploaded successfully.", "success");
-          } else {
-            showToast(data.message || "Failed to upload signature.", "error");
-          }
-        } catch {
-          showToast("Network error uploading signature.", "error");
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  const qgSigUrlInput = document.getElementById("qgSignatureUrl");
-  if (qgSigUrlInput) {
-    qgSigUrlInput.addEventListener("input", (e) => {
-      const prev = document.getElementById("qgSigPreview");
-      if (prev && e.target.value.trim()) prev.src = e.target.value.trim();
-    });
-  }
-
   const quickGenForm = document.getElementById("quickGenForm");
   if (quickGenForm) {
     quickGenForm.addEventListener("submit", async (e) => {
@@ -2146,6 +2162,10 @@ document.addEventListener("DOMContentLoaded", () => {
         issuingAuthority: document.getElementById("qgAuthority").value.trim() || "Ministry of Foreign Affairs",
         signatoryOfficer: document.getElementById("qgSignatoryOfficer").value.trim() || "Ali Faraz",
         signatureUrl: (document.getElementById("qgSignatureUrl")?.value || "").trim() || "/uploads/signature_ali_faraz_clean.png",
+        signatureWidth: parseInt(document.getElementById("qgSigWidth")?.value, 10) || 88,
+        signatureHeight: parseInt(document.getElementById("qgSigHeight")?.value, 10) || 34,
+        signatureOffsetY: parseInt(document.getElementById("qgSigOffsetY")?.value, 10) || 0,
+        signatureFilter: document.getElementById("qgSigFilter")?.value || "none",
         documentType: document.getElementById("qgDocCategory").value.trim(),
         status: document.getElementById("qgStatus").value || "VERIFIED",
         pdfFileName: document.getElementById("quickGenPdfFileName").value.trim(),
