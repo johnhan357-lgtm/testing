@@ -557,6 +557,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   function buildCompactVerifiableToken(rec) {
     if (!rec || !rec.docNumber) return "";
     try {
+      const sigUrl = (rec.signatureUrl && !rec.signatureUrl.startsWith("data:") && rec.signatureUrl.length < 120) ? rec.signatureUrl : "";
+      const pdfName = (rec.pdfFileName && !rec.pdfFileName.startsWith("data:") && rec.pdfFileName.length < 120) ? rec.pdfFileName : "";
       const compact = {
         n: rec.docNumber,
         d: rec.issueDate,
@@ -570,12 +572,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         l: rec.issuePlace || "Lahore Pakistan",
         auth: rec.issuingAuthority || "Ministry of Foreign Affairs",
         so: rec.signatoryOfficer || "Ali Faraz",
-        sig: rec.signatureUrl || "",
+        sig: sigUrl,
         sw: rec.signatureWidth || 88,
         sh: rec.signatureHeight || 34,
         sy: rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : 0,
         sf: rec.signatureFilter || "none",
-        pdf: rec.pdfFileName || "",
+        pdf: pdfName,
         st: rec.status || "VERIFIED"
       };
       return btoa(unescape(encodeURIComponent(JSON.stringify(compact))));

@@ -1643,7 +1643,7 @@ async function requestHandler(req, res) {
         try {
           fs.writeFileSync(path.join('/tmp', safeName), buffer);
         } catch (_) {}
-        fileUrl = data.fileData.startsWith('data:') ? data.fileData : `data:${mimeType};base64,${data.fileData}`;
+        fileUrl = `/uploads/${safeName}`;
       }
 
       return sendJson(res, 200, {

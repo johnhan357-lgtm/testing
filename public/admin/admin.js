@@ -1022,9 +1022,9 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-              const sigUrl = (reader.result && reader.result.startsWith('data:')) ? reader.result : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
+              const sigUrl = (data.fileUrl && !data.fileUrl.startsWith('data:')) ? data.fileUrl : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
               if (urlInput) urlInput.value = sigUrl;
-              if (imgEl) imgEl.src = sigUrl;
+              if (imgEl) imgEl.src = (reader.result && reader.result.startsWith('data:')) ? reader.result : sigUrl;
               updateStage();
               showToast("Signature uploaded & staged successfully.", "success");
               if (typeof markDraftDirty === 'function') markDraftDirty();
@@ -2006,6 +2006,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function buildCompactVerifiableToken(rec) {
     if (!rec || !rec.docNumber) return "";
     try {
+      const sigUrl = (rec.signatureUrl && !rec.signatureUrl.startsWith("data:") && rec.signatureUrl.length < 120) ? rec.signatureUrl : "";
+      const pdfName = (rec.pdfFileName && !rec.pdfFileName.startsWith("data:") && rec.pdfFileName.length < 120) ? rec.pdfFileName : "";
       const compact = {
         n: rec.docNumber,
         d: rec.issueDate,
@@ -2019,12 +2021,12 @@ document.addEventListener("DOMContentLoaded", () => {
         l: rec.issuePlace || "Lahore Pakistan",
         auth: rec.issuingAuthority || "Ministry of Foreign Affairs",
         so: rec.signatoryOfficer || "Ali Faraz",
-        sig: rec.signatureUrl || "",
+        sig: sigUrl,
         sw: rec.signatureWidth || 88,
         sh: rec.signatureHeight || 34,
         sy: rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : 0,
         sf: rec.signatureFilter || "none",
-        pdf: rec.pdfFileName || "",
+        pdf: pdfName,
         st: rec.status || "VERIFIED"
       };
       return btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
