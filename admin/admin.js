@@ -1634,9 +1634,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => {
         const doc = btn.dataset.doc;
         const date = btn.dataset.date;
-        const rec = cachedRecords.find(r => r.docNumber === doc);
-        const vToken = rec ? buildCompactVerifiableToken(rec) : "";
-        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}${vToken ? `&v=${encodeURIComponent(vToken)}` : ''}`;
+        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}`;
         navigator.clipboard.writeText(url).then(() => {
           showToast(`Copied QR link for ${doc}`, "success");
         }).catch(() => {
@@ -2045,8 +2043,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!resultBox || !rec) return;
 
-    const vToken = buildCompactVerifiableToken(rec);
-    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}${vToken ? `&v=${encodeURIComponent(vToken)}` : ''}`;
+    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
 
     if (numEl) numEl.textContent = rec.docNumber;
     if (urlInput) urlInput.value = pubUrl;
@@ -2064,14 +2061,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (qrContainer) {
       qrContainer.innerHTML = "";
-      if (typeof renderQRCodeSVG === 'function') {
-        qrContainer.innerHTML = renderQRCodeSVG(pubUrl, 110, 110);
-      } else {
-        const qrImg = document.createElement("img");
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(pubUrl)}`;
-        qrImg.style.width = "100%";
-        qrImg.style.height = "100%";
-        qrContainer.appendChild(qrImg);
+      try {
+        if (typeof renderQRCodeSVG === 'function') {
+          qrContainer.innerHTML = renderQRCodeSVG(pubUrl, 110, 2);
+        } else {
+          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(pubUrl)}" alt="QR Code" width="110" height="110" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
+        }
+      } catch (e) {
+        qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(pubUrl)}" alt="QR Code" width="110" height="110" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
       }
     }
 

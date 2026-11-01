@@ -763,15 +763,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="" onerror="this.onerror=null; this.src='${cleanFallbackSig}';">`;
       }
 
-      // Live Scannable QR Code linking to verification endpoint (with embedded compact verifiable token)
+      // Live Scannable High-Definition QR Code linking to official verification endpoint
       if (aposQrCode) {
-        const vToken = buildCompactVerifiableToken(rec);
-        const vParam = vToken ? `&v=${encodeURIComponent(vToken)}` : "";
-        const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}${vParam}`;
-        if (typeof window.renderQRCodeSVG === "function") {
-          aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84);
-        } else {
-          aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84">`;
+        const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+        try {
+          if (typeof window.renderQRCodeSVG === "function") {
+            aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84, 2);
+          } else {
+            aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=84x84&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
+          }
+        } catch (qrErr) {
+          console.warn('[QR Render Fallback]:', qrErr);
+          aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=84x84&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
         }
       }
 
