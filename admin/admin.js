@@ -941,6 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterSelect = document.getElementById(`${prefix}SigFilter`);
     const officerNameDisplay = document.getElementById(`${prefix}SigStageOfficerName`);
     const officerInput = officerNameInputId ? document.getElementById(officerNameInputId) : null;
+    let stagedData = "";
 
     function updateStage() {
       if (!imgEl || !wrapEl) return;
@@ -973,6 +974,40 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    async function processSignatureDataUrl(dataUrl, fileName = 'signature.png') {
+      if (!dataUrl) return;
+      stagedData = dataUrl;
+      if (imgEl) imgEl.src = dataUrl;
+      updateStage();
+      showToast("Processing signature image...", "info");
+
+      try {
+        const res = await apiFetch('/api/admin/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: fileName,
+            fileData: dataUrl,
+            fileType: 'signature'
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          const sigUrl = (data.fileUrl && !data.fileUrl.startsWith('data:')) ? data.fileUrl : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
+          if (urlInput) urlInput.value = sigUrl;
+          if (data.fileData) stagedData = data.fileData;
+          updateStage();
+          showToast("Signature uploaded & staged successfully.", "success");
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+          if (typeof checkPublishingStatus === 'function') await checkPublishingStatus();
+        } else {
+          showToast(data.message || "Staged locally.", "info");
+        }
+      } catch {
+        showToast("Signature staged locally.", "info");
+      }
+    }
+
     if (widthSlider) widthSlider.addEventListener("input", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
     if (heightSlider) heightSlider.addEventListener("input", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
     if (offsetSlider) offsetSlider.addEventListener("input", () => { updateStage(); if (typeof markDraftDirty === 'function') markDraftDirty(); });
@@ -981,9 +1016,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (urlInput) {
       urlInput.addEventListener("input", () => {
-        const val = urlInput.value.trim() || "/uploads/signature_ali_faraz_clean.png";
-        if (imgEl) imgEl.src = val;
-        updateStage();
+        const val = urlInput.value.trim();
+        if (val.startsWith("data:image/")) {
+          processSignatureDataUrl(val, "pasted_signature.png");
+        } else {
+          const src = val || "/uploads/signature_ali_faraz_clean.png";
+          if (imgEl) imgEl.src = src;
+          updateStage();
+        }
+      });
+      urlInput.addEventListener("paste", (e) => {
+        const pasteText = (e.clipboardData || window.clipboardData)?.getData('text');
+        if (pasteText && pasteText.startsWith('data:image/')) {
+          e.preventDefault();
+          processSignatureDataUrl(pasteText, 'pasted_signature.png');
+        }
       });
     }
 
@@ -1006,42 +1053,89 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = async () => {
-          try {
-            if (imgEl) imgEl.src = reader.result;
-            updateStage();
-            showToast("Uploading signature...", "info");
-
-            const res = await apiFetch('/api/admin/upload', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                fileName: file.name,
-                fileData: reader.result,
-                fileType: 'signature'
-              })
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-              const sigUrl = (data.fileUrl && !data.fileUrl.startsWith('data:')) ? data.fileUrl : (data.fileUrl || "/uploads/signature_ali_faraz_clean.png");
-              if (urlInput) urlInput.value = sigUrl;
-              if (imgEl) imgEl.src = (reader.result && reader.result.startsWith('data:')) ? reader.result : sigUrl;
-              updateStage();
-              showToast("Signature uploaded & staged successfully.", "success");
-              if (typeof markDraftDirty === 'function') markDraftDirty();
-              if (typeof checkPublishingStatus === 'function') await checkPublishingStatus();
-            } else {
-              showToast(data.message || "Failed to upload signature.", "error");
-            }
-          } catch {
-            showToast("Network error uploading signature.", "error");
-          }
+          await processSignatureDataUrl(reader.result, file.name);
+          fileInput.value = "";
         };
         reader.readAsDataURL(file);
       });
     }
 
+    // Drag and Drop & Clipboard Paste onto Preview Wrap
+    const previewContainer = wrapEl ? (wrapEl.closest('.sig-stage-preview-box') || wrapEl.parentElement) : null;
+    const dropTargets = [wrapEl, previewContainer, imgEl].filter(Boolean);
+
+    dropTargets.forEach(el => {
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (previewContainer) previewContainer.style.outline = '2px dashed #059669';
+      });
+      el.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (previewContainer) previewContainer.style.outline = 'none';
+      });
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (previewContainer) previewContainer.style.outline = 'none';
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = () => processSignatureDataUrl(reader.result, file.name);
+          reader.readAsDataURL(file);
+        }
+      });
+      el.addEventListener('paste', (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            e.stopPropagation();
+            const blob = items[i].getAsFile();
+            const reader = new FileReader();
+            reader.onload = () => processSignatureDataUrl(reader.result, 'clipboard_signature.png');
+            reader.readAsDataURL(blob);
+            break;
+          }
+        }
+      });
+    });
+
+    // Global Paste Listener for this signature staging when visible
+    document.addEventListener('paste', (e) => {
+      const modal = wrapEl ? wrapEl.closest('.admin-modal, .admin-card') : null;
+      if (modal && (modal.classList.contains('active') || modal.offsetParent !== null)) {
+        const targetTag = e.target.tagName;
+        if (targetTag === 'INPUT' && e.target !== urlInput) return;
+        if (targetTag === 'TEXTAREA') return;
+
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.indexOf('image') !== -1) {
+            e.preventDefault();
+            const blob = items[i].getAsFile();
+            const reader = new FileReader();
+            reader.onload = () => processSignatureDataUrl(reader.result, 'clipboard_signature.png');
+            reader.readAsDataURL(blob);
+            break;
+          }
+        }
+      }
+    });
+
     updateStage();
-    return { updateStage };
+    return {
+      updateStage,
+      getStagedData: () => stagedData,
+      setStagedData: (d) => {
+        stagedData = d || "";
+        if (d && imgEl) imgEl.src = d;
+        updateStage();
+      }
+    };
   }
 
   const cfgCertSigStage = setupSignatureStaging("cfgCert", "cfgCertSignatory");
@@ -1620,7 +1714,10 @@ document.addEventListener("DOMContentLoaded", () => {
         <td>${pdfBadge}</td>
         <td style="text-align: right; white-space: nowrap;">
           <button class="btn-secondary btn-copy-qr" data-doc="${escapeHtml(rec.docNumber)}" data-date="${escapeHtml(rec.issueDate)}" style="padding: 4px 8px;" title="Copy QR Verification Link">
-            🔗 QR Link
+            🔗 Link
+          </button>
+          <button class="btn-secondary btn-qr-download" data-doc="${escapeHtml(rec.docNumber)}" data-date="${escapeHtml(rec.issueDate)}" style="padding: 4px 8px;" title="Download High-Res 1000px QR Code (PNG) for document">
+            📥 QR
           </button>
           <button class="btn-secondary btn-rec-edit" data-id="${rec.id}" style="padding: 4px 8px;">Edit</button>
           <button class="btn-danger btn-rec-del" data-id="${rec.id}" style="padding: 4px 8px;">✕</button>
@@ -1640,6 +1737,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {
           prompt("Copy this QR Verification Link:", url);
         });
+      });
+    });
+
+    // Download High-Resolution (1000px) QR Code PNG
+    recordsTableBody.querySelectorAll(".btn-qr-download").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const doc = btn.dataset.doc;
+        const date = btn.dataset.date;
+        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}`;
+        if (typeof window.renderQRCodeDataURL === 'function') {
+          const dataUrl = window.renderQRCodeDataURL(url, 1000);
+          if (dataUrl) {
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `${doc}_QRCode_HighRes.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast(`Downloaded ultra-crisp QR for ${doc}`, "success");
+            return;
+          }
+        }
+        showToast("QR generation library initializing...", "info");
       });
     });
 
@@ -1668,15 +1788,22 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("recStatus").value = rec.status || "VERIFIED";
         document.getElementById("recPdfFileName").value = rec.pdfFileName || "";
         document.getElementById("recPdfUrl").value = rec.pdfUrl || "";
+        stagedRecordPdfData = rec.pdfData || "";
+
         const recSig = rec.signatureUrl || "/uploads/signature_ali_faraz_clean.png";
         document.getElementById("recSignatureUrl").value = recSig;
         const recSigPrev = document.getElementById("recSigPreview");
-        if (recSigPrev) recSigPrev.src = recSig;
+        if (recSigPrev) {
+          recSigPrev.src = rec.signatureData || recSig;
+        }
         if (document.getElementById("recSigWidth")) document.getElementById("recSigWidth").value = rec.signatureWidth || 88;
         if (document.getElementById("recSigHeight")) document.getElementById("recSigHeight").value = rec.signatureHeight || 34;
         if (document.getElementById("recSigOffsetY")) document.getElementById("recSigOffsetY").value = rec.signatureOffsetY !== undefined ? rec.signatureOffsetY : 0;
         if (document.getElementById("recSigFilter")) document.getElementById("recSigFilter").value = rec.signatureFilter || "none";
-        if (typeof recSigStage !== 'undefined' && recSigStage.updateStage) recSigStage.updateStage();
+        if (typeof recSigStage !== 'undefined') {
+          recSigStage.setStagedData(rec.signatureData || "");
+          recSigStage.updateStage();
+        }
         document.getElementById("recNotes").value = rec.notes || "";
         recordModal.classList.add("active");
         setupFieldFontSelectors();
@@ -1847,6 +1974,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (recordSearchInput) recordSearchInput.addEventListener("input", debounce(loadRecords, 300));
   if (recordStatusFilter) recordStatusFilter.addEventListener("change", loadRecords);
 
+  let stagedRecordPdfData = "";
   if (btnAddNewRecord) {
     btnAddNewRecord.addEventListener("click", () => {
       recordModalTitle.textContent = "Register New Apostille / Document Certificate";
@@ -1862,8 +1990,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("recSignatoryOfficer").value = "Ali Faraz";
       document.getElementById("recDocType").value = "Other Documents";
       document.getElementById("recIssueDate").value = new Date().toISOString().split("T")[0];
-      document.getElementById("recPdfFileName").value = "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf";
-      document.getElementById("recPdfUrl").value = "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf";
+      document.getElementById("recPdfFileName").value = "";
+      document.getElementById("recPdfUrl").value = "";
+      stagedRecordPdfData = "";
       document.getElementById("recSignatureUrl").value = "/uploads/signature_ali_faraz_clean.png";
       const recSigPrev = document.getElementById("recSigPreview");
       if (recSigPrev) recSigPrev.src = "/uploads/signature_ali_faraz_clean.png";
@@ -1871,7 +2000,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (document.getElementById("recSigHeight")) document.getElementById("recSigHeight").value = 34;
       if (document.getElementById("recSigOffsetY")) document.getElementById("recSigOffsetY").value = 0;
       if (document.getElementById("recSigFilter")) document.getElementById("recSigFilter").value = "none";
-      if (typeof recSigStage !== 'undefined' && recSigStage.updateStage) recSigStage.updateStage();
+      if (typeof recSigStage !== 'undefined') {
+        recSigStage.setStagedData("");
+        recSigStage.updateStage();
+      }
       recordModal.classList.add("active");
       setupFieldFontSelectors();
     });
@@ -1889,6 +2021,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const reader = new FileReader();
       reader.onload = async () => {
+        stagedRecordPdfData = reader.result;
         try {
           showToast("Uploading document PDF...", "info");
           const res = await apiFetch('/api/admin/upload', {
@@ -1903,15 +2036,30 @@ document.addEventListener("DOMContentLoaded", () => {
           if (res.ok && data.success) {
             document.getElementById("recPdfFileName").value = file.name;
             document.getElementById("recPdfUrl").value = data.fileUrl;
+            if (data.fileData) stagedRecordPdfData = data.fileData;
             showToast("Document PDF uploaded successfully.", "success");
           } else {
-            showToast(data.message || "Failed to upload PDF.", "error");
+            document.getElementById("recPdfFileName").value = file.name;
+            showToast(data.message || "PDF attached locally.", "info");
           }
         } catch {
-          showToast("Network error uploading PDF.", "error");
+          document.getElementById("recPdfFileName").value = file.name;
+          showToast("PDF attached locally.", "info");
         }
+        recPdfFileInput.value = "";
       };
       reader.readAsDataURL(file);
+    });
+  }
+
+  const btnRecClearPdf = document.getElementById("btnRecClearPdf");
+  if (btnRecClearPdf) {
+    btnRecClearPdf.addEventListener("click", () => {
+      document.getElementById("recPdfFileName").value = "";
+      document.getElementById("recPdfUrl").value = "";
+      stagedRecordPdfData = "";
+      if (recPdfFileInput) recPdfFileInput.value = "";
+      showToast("Document detached from this record.", "info");
     });
   }
 
@@ -1919,6 +2067,12 @@ document.addEventListener("DOMContentLoaded", () => {
     recordForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const recId = document.getElementById("recordId").value;
+      const existingRec = recId ? cachedRecords.find(r => r.id === recId) : null;
+      const signatureDataVal = (typeof recSigStage !== 'undefined' && recSigStage.getStagedData())
+        ? recSigStage.getStagedData()
+        : ((document.getElementById("recSignatureUrl")?.value.startsWith('data:') ? document.getElementById("recSignatureUrl")?.value : "") || (existingRec ? existingRec.signatureData : "") || "");
+      const pdfDataVal = stagedRecordPdfData || (existingRec ? existingRec.pdfData : "") || "";
+
       const payload = {
         docNumber: document.getElementById("recDocNumber").value.trim(),
         applicantName: document.getElementById("recApplicant").value.trim(),
@@ -1937,10 +2091,12 @@ document.addEventListener("DOMContentLoaded", () => {
         signatureHeight: parseInt(document.getElementById("recSigHeight")?.value, 10) || 34,
         signatureOffsetY: parseInt(document.getElementById("recSigOffsetY")?.value, 10) || 0,
         signatureFilter: document.getElementById("recSigFilter")?.value || "none",
+        signatureData: signatureDataVal,
         documentType: document.getElementById("recDocType").value.trim(),
         status: document.getElementById("recStatus").value,
         pdfFileName: document.getElementById("recPdfFileName").value.trim(),
         pdfUrl: document.getElementById("recPdfUrl").value.trim(),
+        pdfData: pdfDataVal,
         notes: document.getElementById("recNotes").value.trim()
       };
 
@@ -1970,10 +2126,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const curBackup = JSON.parse(localStorage.getItem('mofa_records_backup') || '[]');
             const recDoc = payload.docNumber.toUpperCase();
             const existingIdx = curBackup.findIndex(r => r.docNumber?.toUpperCase() === recDoc);
+            const savedItem = data.record || { ...payload, id: recId || `rec-${Date.now()}` };
             if (existingIdx !== -1) {
-              curBackup[existingIdx] = { ...curBackup[existingIdx], ...payload, id: recId || curBackup[existingIdx].id };
+              curBackup[existingIdx] = { ...curBackup[existingIdx], ...savedItem };
             } else {
-              curBackup.unshift(data.record || { ...payload, id: `rec-${Date.now()}` });
+              curBackup.unshift(savedItem);
             }
             localStorage.setItem('mofa_records_backup', JSON.stringify(curBackup));
           } catch (_) {}
@@ -2063,12 +2220,12 @@ document.addEventListener("DOMContentLoaded", () => {
       qrContainer.innerHTML = "";
       try {
         if (typeof renderQRCodeSVG === 'function') {
-          qrContainer.innerHTML = renderQRCodeSVG(pubUrl, 110, 2);
+          qrContainer.innerHTML = renderQRCodeSVG(pubUrl, 120, 4);
         } else {
-          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(pubUrl)}" alt="QR Code" width="110" height="110" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
+          qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=4&color=000000&bgcolor=ffffff&data=${encodeURIComponent(pubUrl)}" alt="QR Code" width="120" height="120" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
         }
       } catch (e) {
-        qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(pubUrl)}" alt="QR Code" width="110" height="110" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
+        qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=4&color=000000&bgcolor=ffffff&data=${encodeURIComponent(pubUrl)}" alt="QR Code" width="120" height="120" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
       }
     }
 
@@ -2087,6 +2244,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  let stagedQgPdfData = "";
   const quickGenFileInput = document.getElementById("quickGenFileInput");
   if (quickGenFileInput) {
     quickGenFileInput.addEventListener("change", async (e) => {
@@ -2107,6 +2265,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const reader = new FileReader();
       reader.onload = async () => {
+        stagedQgPdfData = reader.result;
         try {
           const res = await apiFetch('/api/admin/upload', {
             method: 'POST',
@@ -2120,20 +2279,37 @@ document.addEventListener("DOMContentLoaded", () => {
           if (res.ok && data.success) {
             document.getElementById("quickGenPdfFileName").value = file.name;
             document.getElementById("quickGenPdfUrl").value = data.fileUrl;
+            if (data.fileData) stagedQgPdfData = data.fileData;
             if (statusEl) {
               statusEl.innerHTML = `<span style="color: #059669; font-weight: 700;">✓ Ready:</span> ${file.name}`;
             }
             showToast("Document PDF uploaded.", "success");
           } else {
-            if (statusEl) statusEl.textContent = "Upload failed.";
-            showToast(data.message || "PDF upload failed.", "error");
+            document.getElementById("quickGenPdfFileName").value = file.name;
+            if (statusEl) statusEl.textContent = `Attached: ${file.name}`;
+            showToast(data.message || "Attached locally.", "info");
           }
         } catch {
-          if (statusEl) statusEl.textContent = "Upload network error.";
-          showToast("Network error uploading PDF.", "error");
+          document.getElementById("quickGenPdfFileName").value = file.name;
+          if (statusEl) statusEl.textContent = `Attached: ${file.name}`;
+          showToast("Attached locally.", "info");
         }
+        quickGenFileInput.value = "";
       };
       reader.readAsDataURL(file);
+    });
+  }
+
+  const btnQuickGenClearPdf = document.getElementById("btnQuickGenClearPdf");
+  if (btnQuickGenClearPdf) {
+    btnQuickGenClearPdf.addEventListener("click", () => {
+      document.getElementById("quickGenPdfFileName").value = "";
+      document.getElementById("quickGenPdfUrl").value = "";
+      stagedQgPdfData = "";
+      const statusEl = document.getElementById("quickGenFileStatus");
+      if (statusEl) statusEl.textContent = "No PDF selected (Optional)";
+      if (quickGenFileInput) quickGenFileInput.value = "";
+      showToast("Document cleared from template.", "info");
     });
   }
 
@@ -2146,6 +2322,10 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = true;
         submitBtn.textContent = "Creating Certificate...";
       }
+
+      const qgSigDataVal = (typeof qgSigStage !== 'undefined' && qgSigStage.getStagedData())
+        ? qgSigStage.getStagedData()
+        : ((document.getElementById("qgSignatureUrl")?.value.startsWith('data:') ? document.getElementById("qgSignatureUrl")?.value : "") || "");
 
       const payload = {
         docNumber: document.getElementById("qgDocNumber").value.trim().toUpperCase(),
@@ -2165,10 +2345,12 @@ document.addEventListener("DOMContentLoaded", () => {
         signatureHeight: parseInt(document.getElementById("qgSigHeight")?.value, 10) || 34,
         signatureOffsetY: parseInt(document.getElementById("qgSigOffsetY")?.value, 10) || 0,
         signatureFilter: document.getElementById("qgSigFilter")?.value || "none",
+        signatureData: qgSigDataVal,
         documentType: document.getElementById("qgDocCategory").value.trim(),
         status: document.getElementById("qgStatus").value || "VERIFIED",
         pdfFileName: document.getElementById("quickGenPdfFileName").value.trim(),
         pdfUrl: document.getElementById("quickGenPdfUrl").value.trim(),
+        pdfData: stagedQgPdfData || "",
         notes: "Generated via Admin Certificate Template"
       };
 

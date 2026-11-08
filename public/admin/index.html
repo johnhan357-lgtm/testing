@@ -597,10 +597,11 @@
                     Choose PDF Document
                     <input type="file" id="quickGenFileInput" accept=".pdf" style="display: none;">
                   </label>
-                  <span id="quickGenFileStatus" style="font-size: 0.85rem; font-family: monospace; color: #475569;">Sample: wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf</span>
+                  <button type="button" id="btnQuickGenClearPdf" class="btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; margin: 0; color: #ef4444; border-color: #fca5a5;">Clear</button>
+                  <span id="quickGenFileStatus" style="font-size: 0.85rem; font-family: monospace; color: #475569;">No PDF selected (Optional)</span>
                 </div>
-                <input type="hidden" id="quickGenPdfFileName" value="wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf">
-                <input type="hidden" id="quickGenPdfUrl" value="/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf">
+                <input type="hidden" id="quickGenPdfFileName" value="">
+                <input type="hidden" id="quickGenPdfUrl" value="">
               </div>
 
               <!-- Certificate Fields Template -->
@@ -1476,17 +1477,20 @@
 
         <!-- Attached Document PDF -->
         <div class="form-field" style="background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px 14px; border-radius: 6px;">
-          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Attached Document PDF (Desktop Embed & Mobile Box)</label>
+          <label class="form-label" style="font-weight: 600; margin-bottom: 6px;">Attached Document PDF (Desktop Embed &amp; Mobile Box)</label>
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <input type="text" id="recPdfFileName" class="form-input" placeholder="e.g. wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
+            <input type="text" id="recPdfFileName" class="form-input" placeholder="No PDF attached (Optional - attach or replace anytime)" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
             <input type="hidden" id="recPdfUrl">
             <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap;">
-              Upload PDF
+              📁 Upload PDF
               <input type="file" id="recPdfFileInput" accept=".pdf" style="display: none;">
             </label>
+            <button type="button" id="btnRecClearPdf" class="btn-secondary" style="margin: 0; color: #ef4444; border-color: #fca5a5; white-space: nowrap;" title="Detach / Clear document">
+              ✕ Clear PDF
+            </button>
           </div>
           <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 4px;">
-            Select a PDF from your computer or keep the sample Preston University document.
+            Select a PDF from your computer or drag &amp; drop it here. You can attach, replace, or leave blank without any unwanted defaults.
           </small>
         </div>
 
@@ -1500,13 +1504,16 @@
           </div>
 
           <!-- File Upload Row -->
-          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 6px;">
             <input type="text" id="recSignatureUrl" class="form-input" placeholder="/uploads/signature_ali_faraz_clean.png" value="/uploads/signature_ali_faraz_clean.png" style="flex: 1; font-family: monospace; font-size: 0.85rem;">
             <label class="btn-secondary" style="margin: 0; cursor: pointer; white-space: nowrap; font-weight: 600;">
-              📁 Upload New Signature
+              📁 Upload Signature Image
               <input type="file" id="recSigFileInput" accept=".png,.jpg,.jpeg,.svg,.webp" style="display: none;">
             </label>
           </div>
+          <small style="color: #64748b; font-size: 0.78rem; display: block; margin-bottom: 12px;">
+            💡 <strong>Pro-Tip:</strong> You can copy any signature image and press <strong>Ctrl+V</strong> or drag &amp; drop it directly into the preview box below!
+          </small>
 
           <!-- Live Certificate Stage + Sliders Grid -->
           <div class="sig-preview-stage-container">

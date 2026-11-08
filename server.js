@@ -33,6 +33,33 @@ const AUTH_FILE = path.join(DATA_DIR, 'auth.json');
 const ADMIN_NAV_FILE = path.join(DATA_DIR, 'admin-nav.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const CLOUD_CONFIG_FILE = path.join(DATA_DIR, 'cloud-config.json');
+const UPLOADS_STORE_FILE = path.join(DATA_DIR, 'uploads_store.json');
+
+function getUploadsStore() {
+  try {
+    if (fs.existsSync(UPLOADS_STORE_FILE)) {
+      return JSON.parse(fs.readFileSync(UPLOADS_STORE_FILE, 'utf8'));
+    }
+  } catch (_) {}
+  return {};
+}
+
+function saveUploadToStore(safeName, mimeType, fileData) {
+  if (!safeName || !fileData) return;
+  try {
+    const store = getUploadsStore();
+    const cleanB64 = fileData.includes(',') ? fileData.split(',')[1] : fileData;
+    store[safeName] = {
+      mimeType: mimeType || 'application/octet-stream',
+      data: cleanB64,
+      size: Buffer.from(cleanB64, 'base64').length,
+      updatedAt: new Date().toISOString()
+    };
+    atomicWriteJson(UPLOADS_STORE_FILE, store);
+  } catch (err) {
+    console.warn('[Upload Store Error]:', err.message);
+  }
+}
 
 // Default Cloud Persistence Configuration
 const DEFAULT_CLOUD_CONFIG = {
@@ -1006,7 +1033,13 @@ async function requestHandler(req, res) {
         records.unshift(match);
         atomicWriteJson(RECORDS_FILE, records);
         syncRecordsToCloud(records);
-        console.log(`[Auto-Heal] Successfully restored document ${cleanDocNumber} from client cache into server registry.`);
+        if (backupRecord.signatureData && backupRecord.signatureUrl) {
+          saveUploadToStore(path.basename(backupRecord.signatureUrl), 'image/png', backupRecord.signatureData);
+        }
+        if (backupRecord.pdfData && backupRecord.pdfUrl) {
+          saveUploadToStore(path.basename(backupRecord.pdfUrl), 'application/pdf', backupRecord.pdfData);
+        }
+        console.log(`[Auto-Heal] Successfully restored document ${cleanDocNumber} and attachments from client cache into server registry.`);
       }
 
       if (!match) {
@@ -1065,8 +1098,10 @@ async function requestHandler(req, res) {
           signatureHeight: match.signatureHeight || 34,
           signatureOffsetY: match.signatureOffsetY !== undefined ? match.signatureOffsetY : 0,
           signatureFilter: match.signatureFilter || "none",
+          signatureData: match.signatureData || "",
           pdfFileName: match.pdfFileName || "",
-          pdfUrl: match.pdfUrl || ""
+          pdfUrl: match.pdfUrl || "",
+          pdfData: match.pdfData || ""
         }
       });
     } catch (err) {
@@ -1430,13 +1465,22 @@ async function requestHandler(req, res) {
         signatureHeight: data.signatureHeight !== undefined ? Number(data.signatureHeight) : 34,
         signatureOffsetY: data.signatureOffsetY !== undefined ? Number(data.signatureOffsetY) : 0,
         signatureFilter: data.signatureFilter ? data.signatureFilter.trim() : "none",
+        signatureData: data.signatureData ? data.signatureData.trim() : "",
         pdfFileName: data.pdfFileName ? data.pdfFileName.trim() : "",
         pdfUrl: data.pdfUrl ? data.pdfUrl.trim() : "",
+        pdfData: data.pdfData ? data.pdfData.trim() : "",
         status: data.status || "VERIFIED",
         securityHash: crypto.randomBytes(15).toString('hex'),
         notes: data.notes ? data.notes.trim() : "",
         createdAt: new Date().toISOString()
       };
+
+      if (newRecord.signatureData && newRecord.signatureUrl) {
+        saveUploadToStore(path.basename(newRecord.signatureUrl), 'image/png', newRecord.signatureData);
+      }
+      if (newRecord.pdfData && newRecord.pdfUrl) {
+        saveUploadToStore(path.basename(newRecord.pdfUrl), 'application/pdf', newRecord.pdfData);
+      }
 
       records.unshift(newRecord);
       atomicWriteJson(RECORDS_FILE, records);
@@ -1483,12 +1527,21 @@ async function requestHandler(req, res) {
         signatureHeight: data.signatureHeight !== undefined ? Number(data.signatureHeight) : (existing.signatureHeight !== undefined ? existing.signatureHeight : 34),
         signatureOffsetY: data.signatureOffsetY !== undefined ? Number(data.signatureOffsetY) : (existing.signatureOffsetY !== undefined ? existing.signatureOffsetY : 0),
         signatureFilter: data.signatureFilter !== undefined ? data.signatureFilter.trim() : (existing.signatureFilter || "none"),
+        signatureData: data.signatureData !== undefined ? data.signatureData.trim() : (existing.signatureData || ""),
         pdfFileName: data.pdfFileName !== undefined ? data.pdfFileName.trim() : (existing.pdfFileName || ""),
         pdfUrl: data.pdfUrl !== undefined ? data.pdfUrl.trim() : (existing.pdfUrl || ""),
+        pdfData: data.pdfData !== undefined ? data.pdfData.trim() : (existing.pdfData || ""),
         status: data.status || existing.status,
         notes: data.notes !== undefined ? data.notes.trim() : existing.notes,
         updatedAt: new Date().toISOString()
       };
+
+      if (records[index].signatureData && records[index].signatureUrl) {
+        saveUploadToStore(path.basename(records[index].signatureUrl), 'image/png', records[index].signatureData);
+      }
+      if (records[index].pdfData && records[index].pdfUrl) {
+        saveUploadToStore(path.basename(records[index].pdfUrl), 'application/pdf', records[index].pdfData);
+      }
 
       atomicWriteJson(RECORDS_FILE, records);
       syncRecordsToCloud(records);
@@ -1646,10 +1699,13 @@ async function requestHandler(req, res) {
         fileUrl = `/uploads/${safeName}`;
       }
 
+      saveUploadToStore(safeName, mimeType, data.fileData);
+
       return sendJson(res, 200, {
         success: true,
         fileUrl: fileUrl,
-        fileName: safeName
+        fileName: safeName,
+        fileData: data.fileData
       });
     } catch (err) {
       console.error('[Upload Error]:', err);
@@ -1664,6 +1720,82 @@ async function requestHandler(req, res) {
   if (cleanPath === '' || cleanPath === '/') cleanPath = '/index.html';
   if (cleanPath === '/admin' || cleanPath === '/admin/') cleanPath = '/admin/index.html';
 
+  // Handle uploaded dynamic media / attachments
+  if (cleanPath.startsWith('/uploads/')) {
+    const baseName = path.basename(cleanPath);
+
+    // 1. Check local file on disk
+    let localUploadPath = path.join(ROOT_DIR, cleanPath);
+    if (fs.existsSync(localUploadPath) && fs.statSync(localUploadPath).isFile()) {
+      const ext = path.extname(baseName).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      const headers = { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000' };
+      if (ext === '.pdf') headers['Content-Disposition'] = 'inline';
+      res.writeHead(200, headers);
+      return fs.createReadStream(localUploadPath).pipe(res);
+    }
+
+    // 2. Check public/uploads
+    let pubUploadPath = path.join(ROOT_DIR, 'public', cleanPath);
+    if (fs.existsSync(pubUploadPath) && fs.statSync(pubUploadPath).isFile()) {
+      const ext = path.extname(baseName).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      const headers = { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000' };
+      if (ext === '.pdf') headers['Content-Disposition'] = 'inline';
+      res.writeHead(200, headers);
+      return fs.createReadStream(pubUploadPath).pipe(res);
+    }
+
+    // 3. Check serverless /tmp
+    let tmpUploadPath = path.join('/tmp', baseName);
+    if (IS_SERVERLESS && fs.existsSync(tmpUploadPath) && fs.statSync(tmpUploadPath).isFile()) {
+      const ext = path.extname(baseName).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      const headers = { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000' };
+      if (ext === '.pdf') headers['Content-Disposition'] = 'inline';
+      res.writeHead(200, headers);
+      return fs.createReadStream(tmpUploadPath).pipe(res);
+    }
+
+    // 4. Check persistent Uploads Store (data/uploads_store.json)
+    const store = getUploadsStore();
+    if (store[baseName] && store[baseName].data) {
+      const buf = Buffer.from(store[baseName].data, 'base64');
+      const ext = path.extname(baseName).toLowerCase();
+      const contentType = store[baseName].mimeType || MIME_TYPES[ext] || 'application/octet-stream';
+      try { if (IS_SERVERLESS) fs.writeFileSync(tmpUploadPath, buf); } catch (_) {}
+      const headers = { 'Content-Type': contentType, 'Cache-Control': 'public, max-age=31536000' };
+      if (ext === '.pdf') headers['Content-Disposition'] = 'inline';
+      res.writeHead(200, headers);
+      return res.end(buf);
+    }
+
+    // 5. Check records registry for matching pdfUrl / signatureUrl with embedded base64 data
+    const records = readJsonSafe(RECORDS_FILE, []);
+    for (const r of records) {
+      if (r.pdfUrl && path.basename(r.pdfUrl) === baseName && r.pdfData) {
+        saveUploadToStore(baseName, 'application/pdf', r.pdfData);
+        const cleanB64 = r.pdfData.includes(',') ? r.pdfData.split(',')[1] : r.pdfData;
+        const buf = Buffer.from(cleanB64, 'base64');
+        try { if (IS_SERVERLESS) fs.writeFileSync(tmpUploadPath, buf); } catch (_) {}
+        res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': 'inline' });
+        return res.end(buf);
+      }
+      if (r.signatureUrl && path.basename(r.signatureUrl) === baseName && r.signatureData) {
+        saveUploadToStore(baseName, 'image/png', r.signatureData);
+        const cleanB64 = r.signatureData.includes(',') ? r.signatureData.split(',')[1] : r.signatureData;
+        const buf = Buffer.from(cleanB64, 'base64');
+        try { if (IS_SERVERLESS) fs.writeFileSync(tmpUploadPath, buf); } catch (_) {}
+        res.writeHead(200, { 'Content-Type': 'image/png' });
+        return res.end(buf);
+      }
+    }
+
+    // If genuinely not found, 404 cleanly (Never fall back to sample files)
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    return res.end('404 Not Found');
+  }
+
   let targetFile = path.join(ROOT_DIR, cleanPath);
   if (!fs.existsSync(targetFile) || !fs.statSync(targetFile).isFile()) {
     const pubFile = path.join(ROOT_DIR, 'public', cleanPath);
@@ -1671,16 +1803,6 @@ async function requestHandler(req, res) {
       targetFile = pubFile;
     } else if (IS_SERVERLESS && fs.existsSync(path.join('/tmp', path.basename(cleanPath))) && fs.statSync(path.join('/tmp', path.basename(cleanPath))).isFile()) {
       targetFile = path.join('/tmp', path.basename(cleanPath));
-    } else if (cleanPath.startsWith('/uploads/sig_')) {
-      const fallbackSig = path.join(ROOT_DIR, 'uploads', 'signature_ali_faraz_clean.png');
-      if (fs.existsSync(fallbackSig) && fs.statSync(fallbackSig).isFile()) {
-        targetFile = fallbackSig;
-      }
-    } else if (cleanPath.startsWith('/uploads/doc_')) {
-      const fallbackDoc = path.join(ROOT_DIR, 'uploads', 'wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf');
-      if (fs.existsSync(fallbackDoc) && fs.statSync(fallbackDoc).isFile()) {
-        targetFile = fallbackDoc;
-      }
     }
   }
 

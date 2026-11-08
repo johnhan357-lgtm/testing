@@ -727,9 +727,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const aposSigImg = document.getElementById("aposSigImg");
       const aposSigGraphic = document.getElementById("aposSigGraphic");
       const cleanFallbackSig = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEMAAAAoCAYAAACl+UfqAAAIt0lEQVR4nO1Ze2xT1xn/HT+TOAkhUCC88iC02E1YDX9sbKMb29qtQUABsYlYybQxxIY2VWoMmjQ6CmNlCtCKbZqmAq0WlqxTVChkSatNEytdpakaDY9AQgh2HBJCQhJiG78fZ/qOc53r2CExhNCs/KRP9/re79z7fb/vcc49ZpxzfB7QYvPxv/zdjjPnXLDd8iNNq4DxqRRsXDUNG1dlMtJhnwcy3nxvgO97+7Y4L5irwaxsFVRKhsZWD1yeMNY9m4nfVeQwFf7PUdUwKIhIS1HAF+Cw3PQLUSoAfV4KsjKVOHXWgdw5aj7lMqOt04/C+Zpx6TpcYSz7fhsPBjky05X4yYZszHtCjWnpCti6A3j/P058fMEtMsXtDQNExlSRI+8N8AVrW/jmVzr4ePRPnXUIfZIL1zwJx7z0xk2ev/6q0FFgCsHuColjvz1yHAs9A8HoeXamUjTJkdj8XBaCoUh1TKmeUVE6kxnytdz4ZGpCx0Zi7sxh95rbfXz+LHXcuM4evzh+oTAFUyozCC+syGBzZowvhs9/MZ3NzlaBMeBXb/XG3f+w0cUrq/vEeXlJ1qObWjtuBfCHd/v5nq2zmVYzrkAnjZt9Qfz5g0H++9p+8TsvR4MXVqQjEOS42ObFJ1c84vrhl3Ow/muZ7JGQ0W8PYY3ZxvsGg/i0qpClpz54gvbZQ7jQ6uHnr3lx6boX51u9GHCM3lt0KQqsXZmBH63LxuIFkWhMes/w+jnK9nTyrtsBvPWLebgfIu44Q2i86uXkNC2cmq770HtnuFlKyNQpUFSQguLCFDxdoMU3lusYBUKpZFg4Wx2nPylkcM7hcrkQDIbx09cHOBm/05SJry6Nb2gEn88nRForXLIE+LVOoMniF+lN6T8SM7NUKF6khT5XhScXKKDPVbPFuRkIBAJCBEIuzEiPnDockRJRKBTQ6XRgjD18MkKhENxutyDklaOD/OwFH773zTSUf0fHJIe1Wq04Ol0hfNJk5xeve3HZGsBlSwBdfaGEs8SSXBU5jKJFWizXZ7I5M9TiHfQueic5qVQqh4kYAzT2oZLBOYfX6xXHN0/f5ac+8mDlMzq8tj2H9d9x4bLFz6+0u9HSERYRt92KNZxmgbwctYg2OW/IU2O5YRqbmaWBx+MRjlJE09IipRYOh4UQiAi6l5qaKkROVGRMmtCREAwGHy4Z4SHjTv/bw39b6wRNc1k6BZ77WQe3dvsh7930rbB4vjrqtHFJBpYuThPNlQwlRwhqdSRT1Gq1IENaSUoOSed0PxnQsyaMjAFHCB09AW7r9uNGTwDt3QF09vrRbw/iakcguiKs+9gpzsnhp3LVMJAsysCrR3vx0qYMfN2oYfI6JtCRRD7zUVRJj8gWjqhUMVkhj/pYoOfS2KTIsN0KkKO8vdsv1gnid28A1i4/XPShkwDkj0IBlKzQYaUxA0sWqrAoJxRtnOSQRpsKj4/zXx69g/oDT4gPqbFA5JDD5ASlviQEIkYiMhnEkHHXHaaND05OkkQc9lPEcfN2MLqGH4msDCWMC1OQP1eDvLka5OeokalT4uXD3Rh0hvDHHdl41pjOqHYTzRhqFcPuLbOwdX8X3virk+/+YRYjJ6XoyktBDqlUSNfv94ujmBVUySU8jaGgqGhJ+npNH6zdAWH4aEhNUYiIfbk4DYvmacRqLm+umghg0zNiU5JIXbPDxmlO//W26VhRpGVUzxQ5cpAcG9nlv/2ldPaVpam89owbm7+l44YCvyCPdCXSJAJGKxUC/SZJFvRc1blmDxpbveJCioahcIFWLEjI4dwcNWZPV+HEhw6c/JcDwSDDvh/PjnNeDsqeH+zr5Nc7/di+MRubn5/OpKmV1hr3wv7tc9iq7Va+68gg3tmjiiNMGCyLurxUJNxviYgsJCP/2+zmt/qHO7Mkpz9ycGN5m/jWf3Gnjbd2+MbcR9he2SX0t/2mi4fDkWtkrNPphN1ujxH5bCDJ3mM9YvyRk91critN0SOFniHpOByO6IwyUsiGu3fv3lMv4cCbfQGYdt8QRtFO0btn7OPaTNn/p94ocT5/+L42cJzuEJ4pu8af3tzKaSaazM2juAvH37/Dl3y3leeua+GvHu3htCocz4N6BwIgIlZus/BB54M5UfvPQUFqxeFu/sjI6LcHQVtgG35u41dt3qQNeftvA/xGj39CDFtrbheENLYm3q6blMxo76YpavKiMZpcbPPwvBdb+Dv/GJw0Mj7Tu+Pd/UHkjHNXayLwmSZjsjHl9kAfJh6TIcNjMmR4TEbSZLQdgoExmOog67ZWHCoeulZnAis+xK2Q3wesBwzRvQi5xD5nipHRsNcMY1kpamobEiusqQa/VMHygfgvpKKD3EIrBdl8Xr0mgd7UIKMB1cdLYaoyofS4mR1qSxDVUTLj3ohkVjRjpPEiCw0wiHsmNAA8NsMMEDYMZWtM1iVtQ7Jk1FWjpszES1CCfZXAsZNWTAQaygtgNtYPZUw9SpvMbFeddLcZxtfoVjVK6kysYKcRQpNz1Jc1w7y3ASiswBVZttWXAfryDUiYnRNFRkNtDUo3lYjz/PVbgKoTSIr9JjMrYAIieoYDVjG2pIqDV5UMGa7HsiL5ID2W6WUlSKQMOakv1sfbWM6wGvX8yo78Byo/xdglAtSsHXJmsRnNTcfYibYk3jCiZ0QNjknzApib5IOM0BcmLqeCnc0xj6cSWt14kFuqIgF7aGRYD5hRM8IZSyUiafpAsOLQejNQKZ4Mzi04WDSaDathxrANlkpZZtSZUFC1hVsuVTxQeYyDDCtOVDXH1WH+EiNwvJpRY8NEoW7XiMwYDQ3YJWUGNe21QP0EEXFvMtpO4FiTHlvW58deX2NCKWpgPnBj3C+hiNKWG223RWQGtu7ahOadopuA1Zo4NcDGlkhz5gjDPaQ7Y9tebIr2nWqYTpcCn17CB+fPAajBalk/otnnlM/HpffQ1h798zb83nghu6SP1f8BExCVSnqRAQcAAAAASUVORK5CYII=";
-      let sigSrc = rec.signatureUrl;
+      let sigSrc = (rec.signatureData && rec.signatureData.startsWith('data:image/'))
+        ? rec.signatureData
+        : (rec.signatureUrl || cleanFallbackSig);
       if (!sigSrc || sigSrc === 'undefined' || sigSrc === 'null' || sigSrc.includes('sig_1792344974867')) {
-        sigSrc = cleanFallbackSig;
+        sigSrc = (rec.signatureData && rec.signatureData.startsWith('data:image/')) ? rec.signatureData : cleanFallbackSig;
       }
 
       const sigWidth = rec.signatureWidth || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultSignatureWidth) || 88;
@@ -756,11 +758,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (aposSigImg) {
         aposSigImg.onerror = function() {
           this.onerror = null;
-          this.src = cleanFallbackSig;
+          this.src = (rec.signatureData && rec.signatureData.startsWith('data:image/')) ? rec.signatureData : cleanFallbackSig;
         };
         aposSigImg.src = sigSrc;
       } else if (aposSigGraphic) {
-        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="" onerror="this.onerror=null; this.src='${cleanFallbackSig}';">`;
+        aposSigGraphic.innerHTML = `<img id="aposSigImg" class="sig-img" src="${sigSrc}" alt="" onerror="this.onerror=null; this.src='${(rec.signatureData && rec.signatureData.startsWith('data:image/')) ? rec.signatureData : cleanFallbackSig}';">`;
       }
 
       // Live Scannable High-Definition QR Code linking to official verification endpoint
@@ -768,31 +770,49 @@ document.addEventListener("DOMContentLoaded", async () => {
         const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
         try {
           if (typeof window.renderQRCodeSVG === "function") {
-            aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84, 2);
+            aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84, 4);
           } else {
-            aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=84x84&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
+            aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=84x84&margin=4&color=000000&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
           }
         } catch (qrErr) {
           console.warn('[QR Render Fallback]:', qrErr);
-          aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=84x84&margin=2&color=000000&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
+          aposQrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=84x84&margin=4&color=000000&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}" alt="QR Code" width="84" height="84" style="display:block;margin:0 auto;image-rendering:pixelated;">`;
         }
       }
 
       // Attested PDF Attachment (Desktop embed & Mobile container)
-      const pdfUrl = rec.pdfUrl || (rec.pdfFileName ? `/uploads/${rec.pdfFileName}` : '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf');
-      const pdfName = rec.pdfFileName || 'wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+      const pdfUrl = (rec.pdfData && rec.pdfData.startsWith('data:application/pdf'))
+        ? rec.pdfData
+        : (rec.pdfUrl || (rec.pdfFileName ? `/uploads/${rec.pdfFileName}` : ''));
+      const pdfName = rec.pdfFileName || (rec.docNumber ? `${rec.docNumber}.pdf` : 'document.pdf');
 
-      if (pdfIframe) pdfIframe.src = `${pdfUrl}#toolbar=0`;
-      if (mobilePdfFilename) mobilePdfFilename.textContent = pdfName;
-      if (btnMobilePdfOpen) btnMobilePdfOpen.href = pdfUrl;
-      if (btnPdfDownload) {
-        btnPdfDownload.href = pdfUrl;
-        btnPdfDownload.setAttribute("download", pdfName);
+      if (pdfUrl) {
+        if (pdfIframe) pdfIframe.src = `${pdfUrl}#toolbar=0`;
+        if (mobilePdfFilename) mobilePdfFilename.textContent = pdfName;
+        if (btnMobilePdfOpen) btnMobilePdfOpen.href = pdfUrl;
+        if (btnPdfDownload) {
+          btnPdfDownload.href = pdfUrl;
+          btnPdfDownload.setAttribute("download", pdfName);
+        }
+
+        // Render interactive PDF via PDF.js with full working toolbar
+        if (typeof loadAndRenderPdf === "function") {
+          loadAndRenderPdf(pdfUrl);
+        }
+      } else {
+        if (pdfIframe) pdfIframe.src = "about:blank";
+        if (mobilePdfFilename) mobilePdfFilename.textContent = "No document attached";
+        if (btnMobilePdfOpen) btnMobilePdfOpen.href = "#";
+        const container = document.getElementById("pdfCanvasContainer");
+        if (container) {
+          container.innerHTML = `<div style="text-align: center; padding: 60px 20px; color: #64748b; font-family: inherit;">
+            <div style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.6;">📄</div>
+            <h4 style="margin: 0 0 6px 0; color: #334155; font-size: 1.05rem;">No Document File Attached</h4>
+            <p style="margin: 0; font-size: 0.85rem; max-width: 400px; margin: 0 auto;">This certificate record was registered without an attached document file.</p>
+          </div>`;
+        }
+        if (pdfLoadingIndicator) pdfLoadingIndicator.style.display = "none";
       }
-
-      // Render interactive PDF via PDF.js with full working toolbar
-      if (typeof loadAndRenderPdf === "function") {
-        loadAndRenderPdf(pdfUrl);
       }
 
       // Legacy fallback values for tests and backward compatibility
@@ -1014,19 +1034,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         currentPdfDoc = await loadingTask.promise;
       } catch (firstErr) {
-        if (url !== '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf') {
-          console.warn("[PDF.js] Falling back to default attested sample PDF:", firstErr);
-          currentPdfUrl = '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
-          if (iframe) iframe.src = `${currentPdfUrl}#toolbar=0`;
-          loadingTask = pdfjsLib.getDocument({
-            url: currentPdfUrl,
-            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-            cMapPacked: true
-          });
-          currentPdfDoc = await loadingTask.promise;
-        } else {
-          throw firstErr;
-        }
+        console.warn("[PDF.js] Failed to load PDF file:", firstErr);
+        throw firstErr;
       }
 
       const totalPages = currentPdfDoc.numPages;
@@ -1344,10 +1353,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =========================================================================
   await loadPublishedConfig();
 
-  // Pre-load default PDF into viewer
+  // Pre-load default PDF into viewer only if no specific doc is being verified
   try {
-    const initPdf = (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultPdfUrl) || '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
-    loadAndRenderPdf(initPdf);
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.get("doc")) {
+      const initPdf = (currentConfig && currentConfig.certificateView && currentConfig.certificateView.defaultPdfUrl) || '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+      loadAndRenderPdf(initPdf);
+    }
   } catch(e) {}
 
   // Close mobile menu when nav link clicked
