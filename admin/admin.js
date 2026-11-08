@@ -268,8 +268,30 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadDraftConfig() {
     try {
       const res = await apiFetch('/api/admin/config/draft');
+      let serverDraft = null;
       if (res.ok) {
-        draftConfig = await res.json();
+        serverDraft = await res.json();
+      }
+
+      // Check browser backup
+      let localConfig = null;
+      try {
+        const localPub = localStorage.getItem('mofa_published_config');
+        if (localPub) localConfig = JSON.parse(localPub);
+      } catch (_) {}
+
+      if (localConfig && localConfig.branding && (!serverDraft || (localConfig.metadata?.version || 0) >= (serverDraft.metadata?.version || 0))) {
+        draftConfig = { ...(serverDraft || {}), ...localConfig };
+        apiFetch('/api/admin/config/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(draftConfig)
+        }).catch(() => {});
+      } else {
+        draftConfig = serverDraft || localConfig;
+      }
+
+      if (draftConfig) {
         populateFormFromConfig(draftConfig);
       }
     } catch (err) {
@@ -1667,13 +1689,106 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res = await apiFetch(`/api/admin/records?q=${encodeURIComponent(q)}&status=${status}`);
+      let serverRecords = [];
       if (res.ok) {
-        cachedRecords = await res.json();
-        renderRecordsTable(cachedRecords);
-        updateRecordStats(cachedRecords);
+        serverRecords = await res.json();
+      }
+
+      // Check browser backup (localStorage)
+      let localRecords = [];
+      try {
+        const localRaw = localStorage.getItem("mofa_records_backup");
+        if (localRaw) {
+          const parsed = JSON.parse(localRaw);
+          if (Array.isArray(parsed)) localRecords = parsed;
+        }
+      } catch (_) {}
+
+      // Build unified merged map (server + local browser backup)
+      const mergedMap = new Map();
+      const serverDocs = new Set();
+      if (Array.isArray(serverRecords)) {
+        serverRecords.forEach(r => {
+          if (r && r.docNumber) {
+            const key = r.docNumber.toUpperCase();
+            mergedMap.set(key, r);
+            serverDocs.add(key);
+          }
+        });
+      }
+
+      const missingOnServer = [];
+      localRecords.forEach(r => {
+        if (!r || !r.docNumber) return;
+        const key = r.docNumber.toUpperCase();
+        if (!mergedMap.has(key)) {
+          mergedMap.set(key, r);
+          missingOnServer.push(r);
+        } else {
+          // Merge local data into server data to preserve custom signature or PDF data if local is richer
+          const existing = mergedMap.get(key);
+          const merged = { ...existing, ...r };
+          if (!merged.pdfData && existing.pdfData) merged.pdfData = existing.pdfData;
+          if (!merged.signatureData && existing.signatureData) merged.signatureData = existing.signatureData;
+          mergedMap.set(key, merged);
+        }
+      });
+
+      cachedRecords = Array.from(mergedMap.values());
+
+      // Filter for active search / status
+      let displayRecords = cachedRecords;
+      if (q) {
+        const qLower = q.toLowerCase();
+        displayRecords = displayRecords.filter(r =>
+          (r.docNumber && r.docNumber.toLowerCase().includes(qLower)) ||
+          (r.applicantName && r.applicantName.toLowerCase().includes(qLower)) ||
+          (r.sealOf && r.sealOf.toLowerCase().includes(qLower)) ||
+          (r.documentCategory && r.documentCategory.toLowerCase().includes(qLower)) ||
+          (r.documentType && r.documentType.toLowerCase().includes(qLower))
+        );
+      }
+      if (status && status !== 'ALL') {
+        displayRecords = displayRecords.filter(r => r.status === status);
+      }
+
+      renderRecordsTable(displayRecords);
+      updateRecordStats(cachedRecords);
+
+      // Keep local backup completely up to date with merged authoritative set
+      try {
+        localStorage.setItem("mofa_records_backup", JSON.stringify(cachedRecords));
+      } catch (_) {}
+
+      // Auto-heal server in background if any local records are missing on server
+      if (missingOnServer.length > 0) {
+        if (persistenceAlertBox) persistenceAlertBox.style.display = "none";
+        apiFetch("/api/admin/records/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cachedRecords)
+        }).then(async healRes => {
+          if (healRes.ok) {
+            showToast(`✨ Auto-restored ${missingOnServer.length} document record(s) from your browser backup!`, "success");
+          }
+        }).catch(() => {});
+      } else {
         checkPersistenceHealth(cachedRecords);
       }
     } catch {
+      // If network fails, still render immediately from local browser backup!
+      try {
+        const localRaw = localStorage.getItem("mofa_records_backup");
+        if (localRaw) {
+          cachedRecords = JSON.parse(localRaw);
+          if (Array.isArray(cachedRecords) && cachedRecords.length > 0) {
+            renderRecordsTable(cachedRecords);
+            updateRecordStats(cachedRecords);
+            showToast("Loaded documents from browser offline backup.", "info");
+            return;
+          }
+        }
+      } catch (_) {}
       showToast("Failed to load document records.", "error");
     }
   }
@@ -1814,11 +1929,19 @@ document.addEventListener("DOMContentLoaded", () => {
     recordsTableBody.querySelectorAll(".btn-rec-del").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
-        if (!confirm("Are you sure you want to permanently delete this document record?")) return;
+        const targetRec = cachedRecords.find(r => r.id === id);
+        if (!confirm(`Are you sure you want to permanently delete document ${targetRec?.docNumber || id}?`)) return;
 
         try {
           const res = await apiFetch(`/api/admin/records/${id}`, { method: 'DELETE' });
           if (res.ok) {
+            // Also remove from client backup so it doesn't auto-restore
+            try {
+              const curBackup = JSON.parse(localStorage.getItem('mofa_records_backup') || '[]');
+              const filtered = curBackup.filter(r => r.id !== id && (!targetRec || r.docNumber?.toUpperCase() !== targetRec.docNumber?.toUpperCase()));
+              localStorage.setItem('mofa_records_backup', JSON.stringify(filtered));
+            } catch (_) {}
+
             showToast("Document deleted successfully.", "success");
             await loadRecords();
           } else {
@@ -1847,12 +1970,16 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const localRaw = localStorage.getItem("mofa_records_backup");
       if (!localRaw) {
-        localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        if (serverRecords && serverRecords.length > 0) {
+          localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        }
         return;
       }
       const localRecords = JSON.parse(localRaw);
       if (!Array.isArray(localRecords) || localRecords.length === 0) {
-        localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        if (serverRecords && serverRecords.length > 0) {
+          localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        }
         return;
       }
 
@@ -1862,13 +1989,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (missingLocalRecords.length > 0) {
         if (persistenceMissingCount) persistenceMissingCount.textContent = missingLocalRecords.length;
         if (persistenceAlertMsg) {
-          persistenceAlertMsg.innerHTML = `Your browser backup has <strong>${missingLocalRecords.length}</strong> document(s) that are missing from the server (due to Vercel serverless container reboot). Click below to restore them immediately!`;
+          persistenceAlertMsg.innerHTML = `Your browser backup has <strong>${missingLocalRecords.length}</strong> document(s) syncing to the server. Click below if you want to force instant sync.`;
         }
         persistenceAlertBox.style.display = "block";
       } else {
         persistenceAlertBox.style.display = "none";
-        // Update local backup with latest authoritative records
-        localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        // Only update local backup if serverRecords has at least as many records as local
+        if (serverRecords.length >= localRecords.length) {
+          localStorage.setItem("mofa_records_backup", JSON.stringify(serverRecords));
+        }
       }
     } catch (e) {
       console.warn("Persistence health check error:", e);
