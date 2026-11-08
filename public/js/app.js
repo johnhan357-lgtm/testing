@@ -209,28 +209,57 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 1. FETCH & HYDRATE PUBLISHED CONFIGURATION
   // =========================================================================
   async function loadPublishedConfig() {
-    try {
-      const res = await fetch('/api/public/config');
-      if (res.ok) {
-        currentConfig = await res.json();
-        try {
-          localStorage.setItem('mofa_published_config', JSON.stringify(currentConfig));
-        } catch (_) {}
-        applyConfig(currentConfig);
-        return;
-      }
-    } catch (err) {
-      console.warn('Could not fetch /api/public/config, checking local cache:', err);
-    }
-
-    // Fallback to local storage cache if server was cold-booting or offline
+    // 1. Immediately hydrate from local storage so there is ZERO delay / flicker
+    let localConfig = null;
     try {
       const cached = localStorage.getItem('mofa_published_config');
-      if (cached) {
-        currentConfig = JSON.parse(cached);
-        applyConfig(currentConfig);
-      }
+      if (cached) localConfig = JSON.parse(cached);
     } catch (_) {}
+
+    if (localConfig && localConfig.branding) {
+      currentConfig = localConfig;
+      applyConfig(localConfig);
+    }
+
+    // 2. Fetch from server with cache-busting timestamp
+    let serverConfig = null;
+    try {
+      const res = await fetch('/api/public/config?_t=' + Date.now());
+      if (res.ok) {
+        serverConfig = await res.json();
+      }
+    } catch (err) {
+      console.warn('Could not fetch /api/public/config, using local cache:', err);
+    }
+
+    // 3. Smart resolution:
+    // If localConfig has newer timestamp or version than serverConfig, KEEP localConfig!
+    // NEVER allow a stale server container to overwrite a newer local publication!
+    let activeConfig = serverConfig;
+    if (localConfig && localConfig.branding) {
+      const localTime = new Date(localConfig.metadata?.lastPublishedAt || localConfig.metadata?.lastSavedAt || 0).getTime();
+      const serverTime = new Date(serverConfig?.metadata?.lastPublishedAt || serverConfig?.metadata?.lastSavedAt || 0).getTime();
+      const localVer = localConfig.metadata?.version || 0;
+      const serverVer = serverConfig?.metadata?.version || 0;
+
+      if (!serverConfig || localVer >= serverVer || localTime >= serverTime) {
+        activeConfig = { ...(serverConfig || {}), ...localConfig };
+      } else {
+        activeConfig = serverConfig;
+        try {
+          localStorage.setItem('mofa_published_config', JSON.stringify(serverConfig));
+        } catch (_) {}
+      }
+    } else if (serverConfig) {
+      try {
+        localStorage.setItem('mofa_published_config', JSON.stringify(serverConfig));
+      } catch (_) {}
+    }
+
+    if (activeConfig) {
+      currentConfig = activeConfig;
+      applyConfig(currentConfig);
+    }
   }
 
   function applyConfig(cfg) {

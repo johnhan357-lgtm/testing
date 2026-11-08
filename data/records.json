@@ -1,13 +1,5 @@
 [
   {
-    "docNumber": "HEAL-DOC-1793544015786",
-    "applicantName": "Healed Candidate",
-    "documentType": "Special Diplomatic Clearance",
-    "documentCategory": "Official Document",
-    "issueDate": "2026-10-27",
-    "status": "VERIFIED"
-  },
-  {
     "id": "rec-user-1793543814821",
     "docNumber": "APO-EYKO-UISR-KFKY",
     "applicantName": "Attestation Candidate",
@@ -124,29 +116,6 @@
     "pdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
     "notes": "Verified against national attestation register.",
     "createdAt": "2026-10-18T10:00:00Z",
-    "signatureUrl": "/uploads/signature_ali_faraz_clean.png"
-  },
-  {
-    "id": "rec-2",
-    "docNumber": "EXP-2024-TEST-9981",
-    "applicantName": "Sara Khan",
-    "documentType": "Temporary Police Character Clearance",
-    "documentCategory": "Personal Document",
-    "country": "Pakistan",
-    "signedBy": "N/A",
-    "capacity": "Superintendent of Police",
-    "sealOf": "Regional Security Verification Bureau",
-    "issuePlace": "Karachi Pakistan",
-    "issueDate": "2024-01-15",
-    "expiryDate": "2024-07-15",
-    "issuingAuthority": "Regional Security Verification Bureau",
-    "signatoryOfficer": "Muhammad Aslam",
-    "status": "EXPIRED",
-    "securityHash": "1e55ab76304d9892cfa72911b3ef20",
-    "pdfFileName": "",
-    "pdfUrl": "",
-    "notes": "Certificate has passed valid duration.",
-    "createdAt": "2024-01-15T10:00:00Z",
     "signatureUrl": "/uploads/signature_ali_faraz_clean.png"
   },
   {

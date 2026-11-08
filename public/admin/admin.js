@@ -4,7 +4,7 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  let authToken = sessionStorage.getItem("admin_token") || null;
+  let authToken = sessionStorage.getItem("admin_token") || localStorage.getItem("admin_token") || null;
   let draftConfig = null;
   let cachedRecords = [];
 
@@ -153,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (res.ok && data.success) {
           authToken = data.token;
           sessionStorage.setItem("admin_token", authToken);
+          try { localStorage.setItem("admin_token", authToken); } catch (_) {}
           onLoginSuccess(data.username);
           showToast("Welcome to Portal Admin CMS", "success");
         } else {
@@ -172,6 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await apiFetch('/api/admin/logout', { method: 'POST' });
       } catch {}
       sessionStorage.removeItem("admin_token");
+      try { localStorage.removeItem("admin_token"); } catch (_) {}
       authToken = null;
       window.location.reload();
     });
@@ -280,7 +282,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (localPub) localConfig = JSON.parse(localPub);
       } catch (_) {}
 
-      if (localConfig && localConfig.branding && (!serverDraft || (localConfig.metadata?.version || 0) >= (serverDraft.metadata?.version || 0))) {
+      // Smart resolution:
+      // If local has custom published configuration and server has older or base config, prefer local
+      const localTime = new Date(localConfig?.metadata?.lastPublishedAt || localConfig?.metadata?.lastSavedAt || 0).getTime();
+      const serverTime = new Date(serverDraft?.metadata?.lastPublishedAt || serverDraft?.metadata?.lastSavedAt || 0).getTime();
+      const localVer = localConfig?.metadata?.version || 0;
+      const serverVer = serverDraft?.metadata?.version || 0;
+
+      if (localConfig && localConfig.branding && (!serverDraft || localVer >= serverVer || localTime >= serverTime)) {
         draftConfig = { ...(serverDraft || {}), ...localConfig };
         apiFetch('/api/admin/config/draft', {
           method: 'POST',
@@ -295,6 +304,15 @@ document.addEventListener("DOMContentLoaded", () => {
         populateFormFromConfig(draftConfig);
       }
     } catch (err) {
+      // In offline or network error, fallback to local backup
+      try {
+        const localPub = localStorage.getItem('mofa_published_config');
+        if (localPub) {
+          draftConfig = JSON.parse(localPub);
+          populateFormFromConfig(draftConfig);
+          return;
+        }
+      } catch (_) {}
       showToast("Failed to load draft configuration", "error");
     }
   }
@@ -530,40 +548,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Branding
     updated.branding = updated.branding || {};
-    updated.branding.authorityName = document.getElementById("cfgAuthorityName").value.trim();
-    updated.branding.authoritySubtitle = document.getElementById("cfgAuthoritySubtitle").value.trim();
+    updated.branding.authorityName = (document.getElementById("cfgAuthorityName")?.value || "").trim();
+    updated.branding.authoritySubtitle = (document.getElementById("cfgAuthoritySubtitle")?.value || "").trim();
     updated.branding.logoType = document.querySelector('input[name="logoTypeRadio"]:checked')?.value || "default_svg";
     updated.branding.logoUrl = (document.getElementById("cfgLogoUrl")?.value || "").trim() || updated.branding.logoUrl || "/uploads/logo_1792329381447.svg";
     updated.branding.logoLinkUrl = (document.getElementById("cfgLogoLinkUrl")?.value || "").trim() || "https://apostille.mofa.gov.pk/";
     updated.branding.logoLinkTarget = document.getElementById("cfgLogoLinkTarget")?.value || "_self";
     updated.branding.socialLinks = {
-      facebook: document.getElementById("cfgSocialFb").value.trim(),
-      instagram: document.getElementById("cfgSocialIg").value.trim(),
-      twitter: document.getElementById("cfgSocialTw").value.trim(),
-      linkedin: document.getElementById("cfgSocialLi").value.trim()
+      facebook: (document.getElementById("cfgSocialFb")?.value || "").trim(),
+      instagram: (document.getElementById("cfgSocialIg")?.value || "").trim(),
+      twitter: (document.getElementById("cfgSocialTw")?.value || "").trim(),
+      linkedin: (document.getElementById("cfgSocialLi")?.value || "").trim()
     };
 
     // Hero
     updated.hero = {
-      title: document.getElementById("cfgHeroTitle").value.trim(),
-      subtitle: document.getElementById("cfgHeroSubtitle").value.trim()
+      title: (document.getElementById("cfgHeroTitle")?.value || "").trim(),
+      subtitle: (document.getElementById("cfgHeroSubtitle")?.value || "").trim()
     };
 
     // Verification Card
     const cfgHelpInput = document.getElementById("cfgHelpText");
-    const supportEmailVal = document.getElementById("cfgSupportEmail").value.trim();
+    const supportEmailVal = (document.getElementById("cfgSupportEmail")?.value || "").trim();
     let customHelpVal = cfgHelpInput ? cfgHelpInput.value.trim() : "";
     if (!customHelpVal && supportEmailVal) {
       customHelpVal = `If you need further help email ${supportEmailVal} with the certificate number and date`;
     }
 
     updated.verificationCard = {
-      heading: document.getElementById("cfgCardHeading").value.trim(),
-      docNumberLabel: document.getElementById("cfgDocLabel").value.trim(),
-      docNumberPlaceholder: document.getElementById("cfgDocPlaceholder").value.trim(),
-      docDateLabel: document.getElementById("cfgDateLabel").value.trim(),
-      verifyButtonText: document.getElementById("cfgVerifyBtnText").value.trim(),
-      clearButtonText: document.getElementById("cfgClearBtnText").value.trim(),
+      heading: (document.getElementById("cfgCardHeading")?.value || "").trim(),
+      docNumberLabel: (document.getElementById("cfgDocLabel")?.value || "").trim(),
+      docNumberPlaceholder: (document.getElementById("cfgDocPlaceholder")?.value || "").trim(),
+      docDateLabel: (document.getElementById("cfgDateLabel")?.value || "").trim(),
+      verifyButtonText: (document.getElementById("cfgVerifyBtnText")?.value || "").trim(),
+      clearButtonText: (document.getElementById("cfgClearBtnText")?.value || "").trim(),
       supportEmail: supportEmailVal,
       helpText: customHelpVal
     };
@@ -610,25 +628,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     updated.noticeModal = {
-      enabled: document.getElementById("cfgNoticeEnabled").checked,
+      enabled: document.getElementById("cfgNoticeEnabled") ? document.getElementById("cfgNoticeEnabled").checked : true,
       alwaysShowOnRefresh: document.getElementById("cfgNoticeAlwaysShow") ? document.getElementById("cfgNoticeAlwaysShow").checked : true,
       showOnDirectVerify: document.getElementById("cfgNoticeShowOnDirectVerify") ? document.getElementById("cfgNoticeShowOnDirectVerify").checked : false,
       portalTitle: (document.getElementById("cfgNoticePortalTitle")?.value || "").trim() || "Ministry of Foreign Affairs",
       portalSub: (document.getElementById("cfgNoticePortalSub")?.value || "").trim() || "Government of Pakistan",
       logoType: noticeLogoType,
       logoUrl: noticeLogoUrl,
-      title: document.getElementById("cfgNoticeTitle").value.trim() || "IMPORTANT NOTICE",
-      bodyEnglish: document.getElementById("cfgNoticeBodyEn").value.trim(),
-      bodyRegional: document.getElementById("cfgNoticeBodyReg").value.trim(),
-      confirmButtonText: document.getElementById("cfgNoticeBtnText").value.trim() || "Acknowledge & Proceed"
+      title: (document.getElementById("cfgNoticeTitle")?.value || "").trim() || "IMPORTANT NOTICE",
+      bodyEnglish: (document.getElementById("cfgNoticeBodyEn")?.value || "").trim(),
+      bodyRegional: (document.getElementById("cfgNoticeBodyReg")?.value || "").trim(),
+      confirmButtonText: (document.getElementById("cfgNoticeBtnText")?.value || "").trim() || "Acknowledge & Proceed"
     };
 
     // Floating Action & Footer
     updated.floatingFeedback = {
-      enabled: document.getElementById("cfgFeedbackEnabled").checked,
-      label: document.getElementById("cfgFeedbackLabel").value.trim(),
-      actionType: document.getElementById("cfgFeedbackAction").value,
-      customUrl: document.getElementById("cfgFeedbackUrl").value.trim()
+      enabled: document.getElementById("cfgFeedbackEnabled") ? document.getElementById("cfgFeedbackEnabled").checked : true,
+      label: (document.getElementById("cfgFeedbackLabel")?.value || "").trim(),
+      actionType: document.getElementById("cfgFeedbackAction")?.value || "dialog",
+      customUrl: (document.getElementById("cfgFeedbackUrl")?.value || "").trim()
     };
 
     updated.footer = updated.footer || {};
@@ -638,17 +656,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("cfgFooterAuthoritySubtitle")) {
       updated.footer.authoritySubtitle = document.getElementById("cfgFooterAuthoritySubtitle").value.trim();
     }
-    updated.footer.copyrightText = document.getElementById("cfgFooterCopyright").value.trim();
+    updated.footer.copyrightText = (document.getElementById("cfgFooterCopyright")?.value || "").trim();
     updated.footer.logoType = document.querySelector('input[name="footerLogoTypeRadio"]:checked')?.value || "default_svg";
     updated.footer.logoUrl = (document.getElementById("cfgFooterLogoUrl")?.value || "").trim();
 
     // Theme
+    const primaryColorVal = (document.getElementById("cfgColorPrimary")?.value || "#01411c").trim();
     updated.theme = {
-      primaryGreen: document.getElementById("cfgColorPrimary").value.trim(),
-      primaryGreenDark: document.getElementById("cfgColorDark").value.trim(),
-      primaryGreenLight: adjustColorBrightness(document.getElementById("cfgColorPrimary").value.trim(), 20),
-      footerDark: document.getElementById("cfgColorFooter").value.trim(),
-      bgLight: document.getElementById("cfgColorBg").value.trim(),
+      primaryGreen: primaryColorVal,
+      primaryGreenDark: (document.getElementById("cfgColorDark")?.value || "#003316").trim(),
+      primaryGreenLight: adjustColorBrightness(primaryColorVal, 20),
+      footerDark: (document.getElementById("cfgColorFooter")?.value || "#1e2225").trim(),
+      bgLight: (document.getElementById("cfgColorBg")?.value || "#f8f9fb").trim(),
       globalFont: document.getElementById("cfgGlobalFont") ? document.getElementById("cfgGlobalFont").value : ""
     };
 
@@ -662,27 +681,40 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // Metadata
+    updated.metadata = {
+      ...updated.metadata,
+      lastSavedAt: new Date().toISOString(),
+      lastPublishedAt: new Date().toISOString(),
+      version: Math.max(updated.metadata?.version || 0, 1000) + 1
+    };
+
     return updated;
   }
 
   // Save Draft Action (Rule 4: Does NOT alter live site)
   if (btnSaveDraft) {
     btnSaveDraft.addEventListener("click", async () => {
-      draftConfig = gatherConfigFromForm();
       try {
+        draftConfig = gatherConfigFromForm();
         const res = await apiFetch('/api/admin/config/draft', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(draftConfig)
         });
-        if (res.ok) {
-          showToast("Draft saved successfully. Live public website remains unchanged.", "success");
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (data.config) draftConfig = data.config;
+          try {
+            localStorage.setItem('mofa_published_config', JSON.stringify(draftConfig));
+          } catch (_) {}
+          showToast("Draft saved successfully. Click 'Publish to Live Site' when ready.", "success");
           await checkPublishingStatus();
         } else {
-          showToast("Failed to save draft.", "error");
+          showToast(data.message || "Failed to save draft.", "error");
         }
       } catch (err) {
-        showToast("Error saving draft.", "error");
+        showToast("Error saving draft: " + (err.message || "connection error"), "error");
       }
     });
   }
@@ -690,16 +722,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // Publish to Live Site Action (Rule 4: Validates, creates snapshot, updates public site)
   if (btnPublishLive) {
     btnPublishLive.addEventListener("click", async () => {
-      draftConfig = gatherConfigFromForm();
       try {
-        // Save draft first
+        draftConfig = gatherConfigFromForm();
+
+        // 1. Save draft first
         await apiFetch('/api/admin/config/draft', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(draftConfig)
-        });
+        }).catch(() => {});
 
-        // Trigger publish (passing draftConfig directly so serverless receives it without depending on disk)
+        // 2. Trigger publish
         const res = await apiFetch('/api/admin/config/publish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -708,19 +741,32 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
+          draftConfig = data.config || draftConfig;
           try {
             localStorage.setItem('mofa_published_config', JSON.stringify(draftConfig));
           } catch (_) {}
-          showToast("Changes published to live website!", "success");
+          showToast("✨ Changes published successfully to live public website!", "success");
           await checkPublishingStatus();
         } else {
           showToast(data.message || "Publishing failed. Live site was preserved.", "error");
         }
       } catch (err) {
-        showToast("Publishing connection error.", "error");
+        showToast("Publishing connection error: " + (err.message || ""), "error");
       }
     });
   }
+
+  // Wire all per-tab Save & Publish buttons
+  document.querySelectorAll(".btn-save-draft-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btnSaveDraft) btnSaveDraft.click();
+    });
+  });
+  document.querySelectorAll(".btn-publish-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btnPublishLive) btnPublishLive.click();
+    });
+  });
 
   // Discard Draft Action
   if (btnDiscardDraft) {

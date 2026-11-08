@@ -515,7 +515,16 @@ const SERVER_SECRET = process.env.SESSION_SECRET || 'mofa-apostille-portal-secre
 // =========================================================================
 // In-memory cache store for serverless execution
 const memoryStore = new Map();
-const IS_SERVERLESS = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+const IS_SERVERLESS = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined || process.env.NOW_REGION !== undefined || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined || (() => {
+  try {
+    const testFile = path.join(ROOT_DIR, '.write_test_' + Date.now());
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    return false;
+  } catch {
+    return true; // Read-only filesystem, definitely serverless
+  }
+})();
 
 function getTmpPath(filePath) {
   if (!IS_SERVERLESS) return null;
@@ -1247,9 +1256,9 @@ async function requestHandler(req, res) {
           lastSavedAt: new Date().toISOString()
         };
         atomicWriteJson(DRAFT_CONFIG_FILE, newDraft);
-        return sendJson(res, 200, { success: true, message: "Draft saved successfully. Live site remains unchanged." });
+        return sendJson(res, 200, { success: true, message: "Draft saved successfully. Live site remains unchanged.", config: newDraft });
       } catch (err) {
-        return sendJson(res, 500, { success: false, message: "Failed to save draft." });
+        return sendJson(res, 500, { success: false, message: "Failed to save draft: " + err.message });
       }
     }
 
@@ -1270,13 +1279,17 @@ async function requestHandler(req, res) {
         const snapshotPath = path.join(HISTORY_DIR, snapshotName);
         atomicWriteJson(snapshotPath, currentPublished);
 
-        // Update published configuration
+        // Update published configuration with authoritative incremented version
+        const currentVer = currentPublished.metadata?.version || 1;
+        const draftVer = draft.metadata?.version || 0;
+        const nextVer = Math.max(currentVer, draftVer) + 1;
+
         const publishedData = {
           ...draft,
           metadata: {
             ...draft.metadata,
             lastPublishedAt: new Date().toISOString(),
-            version: (currentPublished.metadata?.version || 1) + 1
+            version: nextVer
           }
         };
 
@@ -1288,11 +1301,12 @@ async function requestHandler(req, res) {
         return sendJson(res, 200, {
           success: true,
           message: "Changes published successfully to the live public website!",
-          snapshot: snapshotName
+          snapshot: snapshotName,
+          config: publishedData
         });
       } catch (err) {
         console.error('[Publish Error]:', err);
-        return sendJson(res, 500, { success: false, message: "Publishing failed. Live site was preserved." });
+        return sendJson(res, 500, { success: false, message: "Publishing failed: " + err.message });
       }
     }
 
