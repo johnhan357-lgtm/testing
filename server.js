@@ -1250,7 +1250,10 @@ async function requestHandler(req, res) {
     // Save draft (DOES NOT TOUCH LIVE SITE)
     if (pathname === '/api/admin/config/draft' && method === 'POST') {
       try {
-        const newDraft = await parseBody(req);
+        let newDraft = await parseBody(req);
+        if (newDraft && newDraft.config && newDraft.config.branding) {
+          newDraft = newDraft.config;
+        }
         newDraft.metadata = {
           ...newDraft.metadata,
           lastSavedAt: new Date().toISOString()
@@ -1266,8 +1269,14 @@ async function requestHandler(req, res) {
     if (pathname === '/api/admin/config/publish' && method === 'POST') {
       try {
         let draft = await parseBody(req);
+        if (draft && draft.config && draft.config.branding) {
+          draft = draft.config;
+        }
         if (!draft || !draft.branding) {
           draft = readJsonSafe(DRAFT_CONFIG_FILE);
+          if (draft && draft.config && draft.config.branding) {
+            draft = draft.config;
+          }
         }
         if (!draft || !draft.branding) {
           return sendJson(res, 400, { success: false, message: "Draft data is invalid or empty." });

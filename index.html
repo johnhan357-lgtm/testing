@@ -166,6 +166,14 @@
           <span id="statusTitle">Document Certificate Verified</span>
         </div>
 
+        <!-- Stamp Expand / Collapse Toolbar -->
+        <div class="apostille-toolbar-actions" id="apostilleToolbar" style="display: none;">
+          <button type="button" class="btn-stamp-toggle" id="btnPublicStampCollapse" aria-expanded="true" title="Toggle compact or expanded certificate layout">
+            <span class="btn-stamp-toggle-icon" id="btnPublicStampCollapseIcon">−</span>
+            <span class="btn-stamp-toggle-text" id="btnPublicStampCollapseText">Collapse Stamp</span>
+          </button>
+        </div>
+
         <!-- THE AUTHENTIC APOSTILLE CERTIFICATE CONTAINER -->
         <div class="apostille-certificate-container" id="apostilleContainer">
           <div class="apostille-frame" id="apostilleFrame">
@@ -174,6 +182,17 @@
 
             <!-- Repeating Security Watermark Layer -->
             <div class="apostille-watermark-overlay" id="apostilleWatermark"></div>
+
+            <!-- Collapsed Mode Summary Card -->
+            <div class="apostille-frame-collapsed-summary" id="apostilleCollapsedSummary">
+              <div class="apos-collapsed-badge">✓ APOSTILLE VERIFIED</div>
+              <div class="apos-collapsed-info">
+                <strong id="aposCollapsedDocNum">APO-0000-0000-0000</strong> &bull; <span id="aposCollapsedDate">Date</span>
+              </div>
+              <button type="button" class="btn-stamp-expand-inner" id="btnStampExpandInner">
+                Expand Full Stamp View
+              </button>
+            </div>
 
             <div class="apostille-content">
               <table class="apostille-grid-table">

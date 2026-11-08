@@ -515,6 +515,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elDisclaimer) elDisclaimer.value = cv.disclaimerText || "";
       if (elVerifyUrl) elVerifyUrl.value = cv.verificationUrlText || "";
       if (elEnablePdf) elEnablePdf.checked = cv.enablePdfViewer !== false;
+
+      // Stamp Visual Layout & Floral Stars Customization
+      const sl = cv.stampLayout || {};
+      if (document.getElementById("cfgStampWidth")) document.getElementById("cfgStampWidth").value = sl.width !== undefined ? sl.width : 550;
+      if (document.getElementById("cfgFloralOffsetY")) document.getElementById("cfgFloralOffsetY").value = sl.borderOffsetY !== undefined ? sl.borderOffsetY : 0;
+      if (document.getElementById("cfgFloralOffsetX")) document.getElementById("cfgFloralOffsetX").value = sl.borderOffsetX !== undefined ? sl.borderOffsetX : 0;
+      if (document.getElementById("cfgStampPadding")) document.getElementById("cfgStampPadding").value = sl.borderPadding !== undefined ? sl.borderPadding : 44;
+      if (document.getElementById("cfgLineSpacing")) document.getElementById("cfgLineSpacing").value = sl.lineSpacing !== undefined ? sl.lineSpacing : 4;
+      if (document.getElementById("cfgStampFontScale")) document.getElementById("cfgStampFontScale").value = sl.fontScale !== undefined ? sl.fontScale : 100;
+      if (document.getElementById("cfgStampBorderStyle")) document.getElementById("cfgStampBorderStyle").value = sl.borderStyle || "1px solid #000000";
+      if (document.getElementById("cfgStampCollapseButton")) document.getElementById("cfgStampCollapseButton").checked = sl.enableCollapseButton !== false;
+      if (document.getElementById("cfgStampShowWatermark")) document.getElementById("cfgStampShowWatermark").checked = sl.enableWatermark !== false;
+      if (document.getElementById("cfgStampShowDisclaimer")) document.getElementById("cfgStampShowDisclaimer").checked = sl.enableDisclaimer !== false;
+      if (typeof stampDesignerStage !== 'undefined' && stampDesignerStage?.updateStage) {
+        stampDesignerStage.updateStage();
+      }
     }
 
     // Tab 8: Theme
@@ -611,7 +627,19 @@ document.addEventListener("DOMContentLoaded", () => {
         verificationUrlText: (document.getElementById("cfgCertVerifyUrl")?.value || "").trim(),
         enablePdfViewer: document.getElementById("cfgCertEnablePdf") ? document.getElementById("cfgCertEnablePdf").checked : true,
         defaultPdfFileName: updated.certificateView?.defaultPdfFileName || "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
-        defaultPdfUrl: updated.certificateView?.defaultPdfUrl || "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
+        defaultPdfUrl: updated.certificateView?.defaultPdfUrl || "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
+        stampLayout: {
+          width: parseInt(document.getElementById("cfgStampWidth")?.value, 10) || 550,
+          borderOffsetY: parseInt(document.getElementById("cfgFloralOffsetY")?.value, 10) || 0,
+          borderOffsetX: parseInt(document.getElementById("cfgFloralOffsetX")?.value, 10) || 0,
+          borderPadding: parseInt(document.getElementById("cfgStampPadding")?.value, 10) || 44,
+          lineSpacing: parseInt(document.getElementById("cfgLineSpacing")?.value, 10) || 4,
+          fontScale: parseInt(document.getElementById("cfgStampFontScale")?.value, 10) || 100,
+          borderStyle: document.getElementById("cfgStampBorderStyle")?.value || "1px solid #000000",
+          enableCollapseButton: document.getElementById("cfgStampCollapseButton") ? document.getElementById("cfgStampCollapseButton").checked : true,
+          enableWatermark: document.getElementById("cfgStampShowWatermark") ? document.getElementById("cfgStampShowWatermark").checked : true,
+          enableDisclaimer: document.getElementById("cfgStampShowDisclaimer") ? document.getElementById("cfgStampShowDisclaimer").checked : true
+        }
       };
     }
 
@@ -1209,6 +1237,219 @@ document.addEventListener("DOMContentLoaded", () => {
   const cfgCertSigStage = setupSignatureStaging("cfgCert", "cfgCertSignatory");
   const recSigStage = setupSignatureStaging("rec", "recSignatoryOfficer");
   const qgSigStage = setupSignatureStaging("qg", "qgSignatoryOfficer");
+
+  // =========================================================================
+  // APOSTILLE STAMP VISUAL LAYOUT & FLORAL STAR DESIGNER
+  // =========================================================================
+  function setupStampDesigner() {
+    const frame = document.getElementById("stampResizableFrame");
+    const handleE = document.getElementById("stampHandleE");
+    const handleS = document.getElementById("stampHandleS");
+    const handleSE = document.getElementById("stampHandleSE");
+
+    // Sliders & Selects
+    const inputWidth = document.getElementById("cfgStampWidth");
+    const inputFloralY = document.getElementById("cfgFloralOffsetY");
+    const inputFloralX = document.getElementById("cfgFloralOffsetX");
+    const inputPadding = document.getElementById("cfgStampPadding");
+    const inputLineSpacing = document.getElementById("cfgLineSpacing");
+    const inputFontScale = document.getElementById("cfgStampFontScale");
+    const selectBorderStyle = document.getElementById("cfgStampBorderStyle");
+
+    // Badges
+    const badgeWidth = document.getElementById("cfgStampWidthBadge");
+    const badgeFloralY = document.getElementById("cfgFloralOffsetYBadge");
+    const badgeFloralX = document.getElementById("cfgFloralOffsetXBadge");
+    const badgePadding = document.getElementById("cfgStampPaddingBadge");
+    const badgeLineSpacing = document.getElementById("cfgLineSpacingBadge");
+    const badgeFontScale = document.getElementById("cfgStampFontScaleBadge");
+    const badgeLiveDim = document.getElementById("stampLiveDimensionsBadge");
+
+    // Toggles & Switches
+    const toggleCollapseBtn = document.getElementById("btnToggleStampCollapse");
+    const resetLayoutBtn = document.getElementById("btnResetStampLayout");
+    const chkCollapsePublic = document.getElementById("cfgStampCollapseButton");
+    const chkWatermark = document.getElementById("cfgStampShowWatermark");
+    const chkDisclaimer = document.getElementById("cfgStampShowDisclaimer");
+
+    const watermarkLayer = document.getElementById("stampWatermarkLayer");
+    const disclaimerWrap = document.getElementById("stampDemoDisclaimerWrap");
+    const demoSigImg = document.getElementById("stampDemoSigImg");
+
+    function applyStampLayoutToStage() {
+      if (!frame) return;
+
+      const w = parseInt(inputWidth?.value, 10) || 550;
+      const fy = parseInt(inputFloralY?.value, 10) || 0;
+      const fx = parseInt(inputFloralX?.value, 10) || 0;
+      const pad = parseInt(inputPadding?.value, 10) || 44;
+      const spacing = parseInt(inputLineSpacing?.value, 10) || 4;
+      const font = parseInt(inputFontScale?.value, 10) || 100;
+      const bStyle = selectBorderStyle?.value || "1px solid #000000";
+
+      frame.style.setProperty("--stamp-max-width", `${w}px`);
+      frame.style.setProperty("--floral-offset-y", `${fy}px`);
+      frame.style.setProperty("--floral-offset-x", `${fx}px`);
+      frame.style.setProperty("--stamp-padding", `${pad}px`);
+      frame.style.setProperty("--line-padding", `${spacing}px`);
+      frame.style.setProperty("--stamp-font-scale", font / 100);
+      frame.style.setProperty("--table-border", bStyle);
+
+      if (badgeWidth) badgeWidth.textContent = `${w}px`;
+      if (badgeFloralY) badgeFloralY.textContent = `${fy}px`;
+      if (badgeFloralX) badgeFloralX.textContent = `${fx}px`;
+      if (badgePadding) badgePadding.textContent = `${pad}px`;
+      if (badgeLineSpacing) badgeLineSpacing.textContent = `${spacing}px`;
+      if (badgeFontScale) badgeFontScale.textContent = `${font}%`;
+
+      if (badgeLiveDim) {
+        const h = frame.offsetHeight || 500;
+        badgeLiveDim.textContent = `${w}px × ${h}px`;
+      }
+
+      if (watermarkLayer) {
+        watermarkLayer.style.display = chkWatermark?.checked ? "" : "none";
+      }
+      if (disclaimerWrap) {
+        disclaimerWrap.style.display = chkDisclaimer?.checked ? "" : "none";
+      }
+
+      // Sync demo signature image if available
+      const cfgSigUrl = document.getElementById("cfgCertSignatureUrl")?.value;
+      if (demoSigImg && cfgSigUrl) {
+        demoSigImg.src = cfgSigUrl;
+      }
+    }
+
+    // Attach slider listeners
+    [inputWidth, inputFloralY, inputFloralX, inputPadding, inputLineSpacing, inputFontScale].forEach(inp => {
+      if (inp) {
+        inp.addEventListener("input", () => {
+          applyStampLayoutToStage();
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+        });
+      }
+    });
+
+    if (selectBorderStyle) {
+      selectBorderStyle.addEventListener("change", () => {
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === 'function') markDraftDirty();
+      });
+    }
+
+    [chkCollapsePublic, chkWatermark, chkDisclaimer].forEach(chk => {
+      if (chk) {
+        chk.addEventListener("change", () => {
+          applyStampLayoutToStage();
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+        });
+      }
+    });
+
+    // Preset Chip Buttons
+    document.querySelectorAll(".stamp-chip-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const action = btn.getAttribute("data-action");
+        const val = btn.getAttribute("data-val");
+        if (action === "set-width" && inputWidth) {
+          inputWidth.value = val;
+        } else if (action === "set-floral-y" && inputFloralY) {
+          inputFloralY.value = val;
+        } else if (action === "set-spacing" && inputLineSpacing) {
+          inputLineSpacing.value = val;
+        }
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === 'function') markDraftDirty();
+      });
+    });
+
+    // Expand / Collapse Preview Toggle
+    if (toggleCollapseBtn) {
+      toggleCollapseBtn.addEventListener("click", () => {
+        if (!frame) return;
+        const isCollapsed = frame.classList.toggle("is-collapsed");
+        toggleCollapseBtn.textContent = isCollapsed ? "🔄 Preview Expanded View" : "🔄 Preview Collapsed View";
+      });
+    }
+
+    // Reset Layout Button
+    if (resetLayoutBtn) {
+      resetLayoutBtn.addEventListener("click", () => {
+        if (inputWidth) inputWidth.value = 550;
+        if (inputFloralY) inputFloralY.value = 0;
+        if (inputFloralX) inputFloralX.value = 0;
+        if (inputPadding) inputPadding.value = 44;
+        if (inputLineSpacing) inputLineSpacing.value = 4;
+        if (inputFontScale) inputFontScale.value = 100;
+        if (selectBorderStyle) selectBorderStyle.value = "1px solid #000000";
+        if (chkCollapsePublic) chkCollapsePublic.checked = true;
+        if (chkWatermark) chkWatermark.checked = true;
+        if (chkDisclaimer) chkDisclaimer.checked = true;
+        if (frame) frame.classList.remove("is-collapsed");
+        if (toggleCollapseBtn) toggleCollapseBtn.textContent = "🔄 Preview Expand / Collapse";
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === 'function') markDraftDirty();
+      });
+    }
+
+    // Mouse Drag Resizing Logic
+    function initMouseDragHandle(handleEl, type) {
+      if (!handleEl || !frame) return;
+
+      handleEl.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = parseInt(inputWidth?.value, 10) || frame.offsetWidth || 550;
+        const startPad = parseInt(inputPadding?.value, 10) || 44;
+
+        frame.classList.add("is-dragging");
+
+        function onMouseMove(moveEvent) {
+          moveEvent.preventDefault();
+
+          if (type === "e" || type === "se") {
+            const deltaX = (moveEvent.clientX - startX) * 2;
+            const newW = Math.min(750, Math.max(380, Math.round(startWidth + deltaX)));
+            if (inputWidth) inputWidth.value = newW;
+          }
+
+          if (type === "s" || type === "se") {
+            const deltaY = moveEvent.clientY - startY;
+            const newPad = Math.min(65, Math.max(25, Math.round(startPad + deltaY / 4)));
+            if (inputPadding) inputPadding.value = newPad;
+          }
+
+          applyStampLayoutToStage();
+        }
+
+        function onMouseUp() {
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+          frame.classList.remove("is-dragging");
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+      });
+    }
+
+    initMouseDragHandle(handleE, "e");
+    initMouseDragHandle(handleS, "s");
+    initMouseDragHandle(handleSE, "se");
+
+    applyStampLayoutToStage();
+
+    return {
+      updateStage: applyStampLayoutToStage
+    };
+  }
+
+  const stampDesignerStage = setupStampDesigner();
 
   // =========================================================================
   // NOTICE MODAL LOGO, PREVIEW & TEST POPUP HANDLERS

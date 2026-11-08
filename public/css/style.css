@@ -1085,19 +1085,59 @@ body {
   margin: 0 auto 30px auto;
 }
 
+/* Public Stamp Expand/Collapse Toolbar */
+.apostille-toolbar-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: min(100%, var(--stamp-max-width, 550px));
+  margin: 0 auto 10px auto;
+  padding: 0 4px;
+}
+
+.btn-stamp-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-stamp-toggle:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.btn-stamp-toggle-icon {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+}
+
 /* Ornate Border & Background Frame (Roomy & Uncongested layout) */
 .apostille-frame {
   position: relative;
   width: 100%;
-  max-width: 550px;
+  max-width: min(100%, var(--stamp-max-width, 550px));
   background-color: #ffffff;
   border: none;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   margin: 0 auto;
   overflow: hidden;
+  transition: max-width 0.25s ease, box-shadow 0.2s ease;
 }
 
-/* Border Frame Overlay: exact 15x21 flower border from reference */
+/* Border Frame Overlay: exact 15x21 flower border with interactive offset */
 .apostille-border-frame {
   position: absolute;
   top: 0;
@@ -1109,15 +1149,17 @@ body {
   background-repeat: no-repeat;
   pointer-events: none;
   z-index: 3;
+  transform: translate(var(--floral-offset-x, 0px), var(--floral-offset-y, 0px));
+  transition: transform 0.15s ease;
 }
 
 /* Horizontal Security Watermark Overlay - strictly inside the floral border */
 .apostille-watermark-overlay {
   position: absolute;
-  top: 42px;
-  left: 42px;
-  right: 42px;
-  bottom: 44px;
+  top: calc(var(--stamp-padding, 44px) - 2px);
+  left: calc(var(--stamp-padding, 44px) - 2px);
+  right: calc(var(--stamp-padding, 44px) - 2px);
+  bottom: calc(var(--stamp-padding, 44px) - 2px);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='165' height='28' viewBox='0 0 165 28'%3E%3Ctext x='5' y='19' font-family='Arial, sans-serif' font-weight='800' font-size='12.5' fill='rgba(0, 0, 0, 0.055)' letter-spacing='1'%3EGOVTOFPAKISTAN%3C/text%3E%3C/svg%3E");
   background-repeat: repeat;
   pointer-events: none;
@@ -1127,22 +1169,83 @@ body {
 .apostille-content {
   position: relative;
   z-index: 2;
-  padding: 44px 44px 42px 44px;
+  padding: var(--stamp-padding, 44px) var(--stamp-padding, 44px) calc(var(--stamp-padding, 44px) - 2px) var(--stamp-padding, 44px);
+  transition: padding 0.15s ease;
+}
+
+/* Collapsed Mode Representation */
+.apostille-frame-collapsed-summary {
+  display: none;
+  position: relative;
+  z-index: 2;
+  padding: 42px 28px 38px 28px;
+  text-align: center;
+}
+
+.apostille-frame.is-collapsed .apostille-content {
+  display: none;
+}
+
+.apostille-frame.is-collapsed .apostille-frame-collapsed-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.apos-collapsed-badge {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #15803d;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  padding: 4px 14px;
+  border-radius: 14px;
+  text-transform: uppercase;
+}
+
+.apos-collapsed-info {
+  font-size: 0.92rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.btn-stamp-expand-inner {
+  margin-top: 4px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.btn-stamp-expand-inner:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
 }
 
 /* Certificate Grid Table */
 .apostille-grid-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #000000;
+  border: var(--table-border, 1px solid #000000);
   font-family: Arial, Helvetica, sans-serif;
   background: transparent;
+  font-size: calc(1rem * var(--stamp-font-scale, 1));
 }
 .apostille-grid-table td {
-  border: 1px solid #000000;
-  padding: 4px 8px;
+  border: var(--table-border, 1px solid #000000);
+  padding: var(--line-padding, 4px) 8px;
   vertical-align: top;
   color: #000000;
+  transition: padding 0.15s ease;
 }
 
 /* Row 1: Main Title */
@@ -1620,10 +1723,10 @@ body {
     padding: 0 8px;
   }
   .apostille-frame {
-    max-width: 100%;
+    max-width: 100% !important;
   }
   .apostille-content {
-    padding: 28px 22px 26px 22px;
+    padding: max(22px, calc(var(--stamp-padding, 44px) * 0.65)) max(16px, calc(var(--stamp-padding, 44px) * 0.5)) max(20px, calc(var(--stamp-padding, 44px) * 0.6)) max(16px, calc(var(--stamp-padding, 44px) * 0.5)) !important;
   }
   .apos-title-text {
     font-size: 1.55rem;

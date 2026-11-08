@@ -158,11 +158,23 @@
     "verificationUrlText": "To verify this apostille, visit www.apostille.mofa.gov.pk",
     "enablePdfViewer": true,
     "defaultPdfFileName": "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
-    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf"
+    "defaultPdfUrl": "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
+    "stampLayout": {
+      "width": 550,
+      "borderOffsetY": 0,
+      "borderOffsetX": 0,
+      "borderPadding": 44,
+      "lineSpacing": 4,
+      "fontScale": 100,
+      "borderStyle": "1px solid #000000",
+      "enableCollapseButton": true,
+      "enableWatermark": true,
+      "enableDisclaimer": true
+    }
   },
   "metadata": {
-    "lastSavedAt": "2026-11-08T11:52:45.658Z",
-    "lastPublishedAt": "2026-11-08T11:52:45.665Z",
-    "version": 127
+    "lastSavedAt": "2026-11-08T13:29:06.545Z",
+    "lastPublishedAt": "2026-11-08T13:29:06.551Z",
+    "version": 134
   }
 }

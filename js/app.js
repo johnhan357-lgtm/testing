@@ -522,6 +522,52 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
         elSigImg.src = cv.signatureUrl;
       }
+
+      // Apply Stamp Visual Layout & Floral Stars Customization
+      const sl = cv.stampLayout || {};
+      const stampWidth = sl.width !== undefined ? sl.width : 550;
+      const floralOffsetY = sl.borderOffsetY !== undefined ? sl.borderOffsetY : 0;
+      const floralOffsetX = sl.borderOffsetX !== undefined ? sl.borderOffsetX : 0;
+      const stampPadding = sl.borderPadding !== undefined ? sl.borderPadding : 44;
+      const lineSpacing = sl.lineSpacing !== undefined ? sl.lineSpacing : 4;
+      const fontScale = (sl.fontScale !== undefined ? sl.fontScale : 100) / 100;
+      const borderStyle = sl.borderStyle || "1px solid #000000";
+
+      const apostilleFrame = document.getElementById("apostilleFrame");
+      if (apostilleFrame) {
+        apostilleFrame.style.setProperty("--stamp-max-width", `${stampWidth}px`);
+        apostilleFrame.style.setProperty("--floral-offset-y", `${floralOffsetY}px`);
+        apostilleFrame.style.setProperty("--floral-offset-x", `${floralOffsetX}px`);
+        apostilleFrame.style.setProperty("--stamp-padding", `${stampPadding}px`);
+        apostilleFrame.style.setProperty("--line-padding", `${lineSpacing}px`);
+        apostilleFrame.style.setProperty("--stamp-font-scale", fontScale);
+        apostilleFrame.style.setProperty("--table-border", borderStyle);
+      }
+
+      const apostilleToolbar = document.getElementById("apostilleToolbar");
+      if (apostilleToolbar) {
+        apostilleToolbar.style.setProperty("--stamp-max-width", `${stampWidth}px`);
+        const enableCollapse = sl.enableCollapseButton !== false;
+        if (apostilleContainer && apostilleContainer.style.display !== "none" && enableCollapse) {
+          apostilleToolbar.style.display = "flex";
+        } else if (!enableCollapse) {
+          apostilleToolbar.style.display = "none";
+        }
+      }
+
+      const apostilleWatermark = document.getElementById("apostilleWatermark");
+      if (apostilleWatermark && sl.enableWatermark === false) {
+        apostilleWatermark.style.display = "none";
+      } else if (apostilleWatermark) {
+        apostilleWatermark.style.display = "";
+      }
+
+      const aposDisclaimer = document.getElementById("aposDisclaimer");
+      if (aposDisclaimer && sl.enableDisclaimer === false) {
+        aposDisclaimer.style.display = "none";
+      } else if (aposDisclaimer) {
+        aposDisclaimer.style.display = "";
+      }
     }
 
     // Apply Fonts to All Applicable Elements
@@ -720,6 +766,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       resultCard.classList.add("cert-page-view");
 
       if (apostilleContainer) apostilleContainer.style.display = "flex";
+      const sl = currentConfig?.certificateView?.stampLayout;
+      const enableCollapse = !sl || sl.enableCollapseButton !== false;
+      const apostilleToolbar = document.getElementById("apostilleToolbar");
+      if (apostilleToolbar) {
+        apostilleToolbar.style.display = enableCollapse ? "flex" : "none";
+      }
+      const aposCollapsedDocNum = document.getElementById("aposCollapsedDocNum");
+      if (aposCollapsedDocNum) aposCollapsedDocNum.textContent = rec.docNumber || "";
+      const aposCollapsedDate = document.getElementById("aposCollapsedDate");
+      if (aposCollapsedDate) aposCollapsedDate.textContent = formattedDate || "";
+
       if (attachedPdfSection && (!currentConfig || !currentConfig.certificateView || currentConfig.certificateView.enablePdfViewer !== false)) {
         attachedPdfSection.style.display = "block";
       }
@@ -1375,6 +1432,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.preventDefault();
       // Revoked: Button displays visually, but clicking it performs no action as requested
     });
+  }
+
+  // Stamp Expand / Collapse Toggle Handler
+  const btnPublicStampCollapse = document.getElementById("btnPublicStampCollapse");
+  const btnStampExpandInner = document.getElementById("btnStampExpandInner");
+  const aposFrameEl = document.getElementById("apostilleFrame");
+
+  function toggleStampCollapse() {
+    if (!aposFrameEl) return;
+    const isCollapsed = aposFrameEl.classList.toggle("is-collapsed");
+    if (btnPublicStampCollapse) {
+      btnPublicStampCollapse.setAttribute("aria-expanded", !isCollapsed);
+      const iconEl = document.getElementById("btnPublicStampCollapseIcon");
+      const textEl = document.getElementById("btnPublicStampCollapseText");
+      if (iconEl) iconEl.textContent = isCollapsed ? "+" : "−";
+      if (textEl) textEl.textContent = isCollapsed ? "Expand Stamp" : "Collapse Stamp";
+    }
+  }
+
+  if (btnPublicStampCollapse) {
+    btnPublicStampCollapse.addEventListener("click", toggleStampCollapse);
+  }
+  if (btnStampExpandInner) {
+    btnStampExpandInner.addEventListener("click", toggleStampCollapse);
   }
 
   // =========================================================================

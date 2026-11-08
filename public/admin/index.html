@@ -426,6 +426,274 @@
               </div>
             </div>
 
+            <!-- Apostille Stamp Visual Layout & Floral Star Designer -->
+            <div class="stamp-staging-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                <div>
+                  <h3 style="font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    🎨 Apostille Stamp Layout &amp; Floral Stars Designer
+                  </h3>
+                  <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">
+                    Drag the blue handles with your mouse to resize width &amp; height. Nudge floral stars border up or down. 100% fluidly responsive.
+                  </p>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <button type="button" class="btn-secondary" id="btnToggleStampCollapse" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 600;">
+                    🔄 Preview Expand / Collapse
+                  </button>
+                  <button type="button" class="btn-secondary" id="btnResetStampLayout" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 600; color: #b91c1c;">
+                    ↺ Reset Layout
+                  </button>
+                </div>
+              </div>
+
+              <div class="stamp-designer-container">
+                <!-- Left/Canvas: Live interactive resizable frame with mouse drag handles -->
+                <div class="stamp-stage-canvas" id="stampStageCanvas">
+                  <div class="stamp-stage-toolbar">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                      <strong>Interactive Stage</strong> &bull; Drag handles or use sliders
+                    </span>
+                    <span class="stamp-dimension-badge" id="stampLiveDimensionsBadge">550px &times; Auto</span>
+                  </div>
+
+                  <!-- The Resizable Stamp Frame -->
+                  <div class="stamp-resizable-frame" id="stampResizableFrame" style="--stamp-max-width: 550px; --floral-offset-y: 0px; --floral-offset-x: 0px; --stamp-padding: 44px; --line-padding: 4px; --stamp-font-scale: 1; --table-border: 1px solid #000000;">
+                    <!-- Floral Border Overlay -->
+                    <div class="stamp-floral-border" id="stampFloralBorder" aria-hidden="true"></div>
+
+                    <!-- Watermark Overlay -->
+                    <div class="stamp-watermark-layer" id="stampWatermarkLayer" aria-hidden="true"></div>
+
+                    <!-- Collapsed Preview Banner -->
+                    <div class="stamp-collapsed-banner" id="stampCollapsedBanner">
+                      <div class="apos-collapsed-badge">✓ APOSTILLE VERIFIED</div>
+                      <div class="apos-collapsed-info">
+                        <strong>APO-DEMO-2026-LIVE</strong> &bull; <span>09 Jun 2026</span>
+                      </div>
+                      <span style="font-size: 0.74rem; color: #64748b; font-style: italic;">(Stamp is in collapsed mode)</span>
+                    </div>
+
+                    <!-- Interactive Content Layer -->
+                    <div class="stamp-content-layer" id="stampContentLayer">
+                      <table class="apostille-grid-table" id="stampGridTable" style="margin: 0;">
+                        <tbody>
+                          <tr class="apos-row-title">
+                            <td colspan="4" class="apos-cell-title" style="text-align: center; padding: 5px 0 2px 0 !important;">
+                              <div class="apos-title-text" id="stampDemoTitle" style="font-family: 'Times New Roman', Times, serif; font-size: 1.65rem; font-weight: 700; letter-spacing: 1px;">APOSTILLE</div>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-subtitle">
+                            <td colspan="4" class="apos-cell-subtitle" style="text-align: center; padding: 2px 0 4px 0 !important;">
+                              <div class="apos-subtitle-text" id="stampDemoSubtitle" style="font-size: 0.82rem; font-weight: 500;">(Convention de La Haye du 5 October 1961)</div>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-point1">
+                            <td colspan="2" class="apos-cell-col-left" style="width: 32%; padding: 3px 6px !important; border-right: 1px solid #000000;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">1</span> Country</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Pakistan</div>
+                            </td>
+                            <td colspan="2" class="apos-cell-col-right" style="width: 68%; padding: 3px 6px !important;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem;">This Public Document</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700;">Educational Document</div>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-full-item">
+                            <td colspan="4" style="padding: 3px 6px !important;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">2</span> has been signed by</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Muhammad Yasir</div>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-full-item">
+                            <td colspan="4" style="padding: 3px 6px !important;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">3</span> acting in the capacity of</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Director (Registration), NAVTTC</div>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-full-item">
+                            <td colspan="4" style="padding: 3px 6px !important;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">4</span> bears the seal stamp of</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">National Vocational &amp; Technical Training Commission</div>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-certified">
+                            <td colspan="4" style="text-align: center; padding: 3px 0 !important;">
+                              <span class="certified-script" style="font-family: 'Brush Script MT', cursive; font-size: 1.45rem; font-style: italic;">Certified</span>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-inline-item">
+                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+                              <span style="display: inline-block; width: 16px;">5</span> <span style="display: inline-block; width: 32px;">at</span> <strong>Karachi Pakistan</strong>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-inline-item">
+                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+                              <span style="display: inline-block; width: 16px;">6</span> <span style="display: inline-block; width: 32px;">the</span> <strong>22 Oct 2026</strong>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-inline-item">
+                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+                              <span style="display: inline-block; width: 16px;">7</span> <span style="display: inline-block; width: 32px;">by</span> <strong>Ministry of Foreign Affairs</strong>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-inline-item">
+                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+                              <span style="display: inline-block; width: 16px;">8</span> <span style="display: inline-block; width: 32px;">No</span> <strong style="letter-spacing: 0.5px;">APO-EYKO-UISR-KFKY</strong>
+                            </td>
+                          </tr>
+                          <tr class="apos-row-verification">
+                            <td style="width: 39%; border-right: 1px solid #000000; vertical-align: top; padding: 0 !important;">
+                              <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">Date: 22 Oct 2026</div>
+                              <div style="padding: 20px 6px 3px 6px; font-size: 0.82rem; font-weight: 500;">Seal/Stamp</div>
+                            </td>
+                            <td style="width: 22%; border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 3px !important;">
+                              <div style="width: 60px; height: 60px; margin: 0 auto; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569; font-weight: 700;">QR CODE</div>
+                            </td>
+                            <td style="width: 39%; vertical-align: middle; text-align: center; padding: 4px 8px !important;">
+                              <div style="width: 80px; height: 30px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                                <img id="stampDemoSigImg" src="/uploads/signature_ali_faraz_clean.png" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                              </div>
+                              <div style="font-size: 0.72rem; font-weight: 600; border-top: 1px solid #000000; width: 85%; margin: 2px auto 0 auto; padding-top: 1px;">Ali Faraz</div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div id="stampDemoDisclaimerWrap" style="margin-top: 6px; font-size: 0.65rem; color: #475569; line-height: 1.25;">
+                        This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp.
+                      </div>
+                    </div>
+
+                    <!-- Mouse Drag Resize Handles -->
+                    <div class="stamp-resize-handle handle-e" id="stampHandleE" title="Click &amp; drag mouse left/right to resize width"></div>
+                    <div class="stamp-resize-handle handle-s" id="stampHandleS" title="Click &amp; drag mouse up/down to adjust padding &amp; height"></div>
+                    <div class="stamp-resize-handle handle-se" id="stampHandleSE" title="Click &amp; drag mouse corner to resize both width and height"></div>
+                  </div>
+                </div>
+
+                <!-- Right/Controls Panel: Fine-tuning sliders, floral offsets, line spacing -->
+                <div class="stamp-controls-panel">
+                  <!-- Section 1: Frame Width & Sizing -->
+                  <div class="stamp-control-section">
+                    <div class="stamp-control-title">
+                      <span>📐 Stamp Width &amp; Canvas Sizing</span>
+                    </div>
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Max Frame Width:</span>
+                        <span class="stamp-val-badge" id="cfgStampWidthBadge">550px</span>
+                      </div>
+                      <input type="range" id="cfgStampWidth" class="stamp-range-slider" min="380" max="750" value="550" step="5">
+                      <div class="stamp-chip-group">
+                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="480">Compact (480px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="550">Default (550px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="620">Wide (620px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="680">Large (680px)</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Section 2: Floral Stars Border Controls (Exact user request) -->
+                  <div class="stamp-control-section" style="border-left: 3px solid #0284c7;">
+                    <div class="stamp-control-title">
+                      <span>🌸 Floral Stars Border Offset (پھول جیسے سٹارز)</span>
+                    </div>
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Vertical Shift (اوپر / نیچے):</span>
+                        <span class="stamp-val-badge" id="cfgFloralOffsetYBadge">0px</span>
+                      </div>
+                      <input type="range" id="cfgFloralOffsetY" class="stamp-range-slider" min="-25" max="25" value="0" step="1">
+                      <div class="stamp-chip-group">
+                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="-6">Nudge Up (-6px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="0">Center (0px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="6">Nudge Down (+6px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="12">Lower (+12px)</button>
+                      </div>
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Horizontal Shift (دائیں / بائیں):</span>
+                        <span class="stamp-val-badge" id="cfgFloralOffsetXBadge">0px</span>
+                      </div>
+                      <input type="range" id="cfgFloralOffsetX" class="stamp-range-slider" min="-25" max="25" value="0" step="1">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Border Breathing Inset / Padding:</span>
+                        <span class="stamp-val-badge" id="cfgStampPaddingBadge">44px</span>
+                      </div>
+                      <input type="range" id="cfgStampPadding" class="stamp-range-slider" min="25" max="65" value="44" step="1">
+                    </div>
+                  </div>
+
+                  <!-- Section 3: Inner Lines & Typography -->
+                  <div class="stamp-control-section">
+                    <div class="stamp-control-title">
+                      <span>📏 Table Lines, Spacing &amp; Scale</span>
+                    </div>
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Line Padding / Row Height:</span>
+                        <span class="stamp-val-badge" id="cfgLineSpacingBadge">4px</span>
+                      </div>
+                      <input type="range" id="cfgLineSpacing" class="stamp-range-slider" min="2" max="10" value="4" step="1">
+                      <div class="stamp-chip-group">
+                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="2">Tight (2px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="4">Standard (4px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="6">Comfortable (6px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="8">Spacious (8px)</button>
+                      </div>
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Text Font Scale:</span>
+                        <span class="stamp-val-badge" id="cfgStampFontScaleBadge">100%</span>
+                      </div>
+                      <input type="range" id="cfgStampFontScale" class="stamp-range-slider" min="80" max="120" value="100" step="1">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Grid Border Line Thickness:</span>
+                      </div>
+                      <select id="cfgStampBorderStyle" class="form-input" style="font-size: 0.82rem; padding: 4px 8px;">
+                        <option value="1px solid #000000">1.0px Solid Black (Standard Reference)</option>
+                        <option value="0.75px solid #000000">0.75px Fine Hairline</option>
+                        <option value="1.5px solid #000000">1.5px Medium Crisp</option>
+                        <option value="2px solid #000000">2.0px Heavy Outline</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Section 4: Public Page Options & Collapse Switch -->
+                  <div class="stamp-control-section">
+                    <div class="stamp-control-title">
+                      <span>⚙️ Public Display &amp; Collapse Controls</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #1e293b; cursor: pointer;">
+                        <input type="checkbox" id="cfgStampCollapseButton" checked>
+                        Enable Expand / Collapse Toggle Button on Verification Page
+                      </label>
+                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #1e293b; cursor: pointer;">
+                        <input type="checkbox" id="cfgStampShowWatermark" checked>
+                        Show Repeating Security Watermark (GOVTOFPAKISTAN)
+                      </label>
+                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #1e293b; cursor: pointer;">
+                        <input type="checkbox" id="cfgStampShowDisclaimer" checked>
+                        Show Bottom Legal Disclaimer &amp; Verification URL
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Default Signatory Signature Graphic & Global Size Staging (CMS Defaults) -->
             <div class="sig-staging-card" style="margin-bottom: 15px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
