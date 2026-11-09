@@ -1279,15 +1279,30 @@ body {
 }
 
 /* Row 3: Point 1 (Country: 32% | This Public Document: 68%) */
+.apos-row-point1 td {
+  padding: 0 !important;
+  border-bottom: var(--table-border, 1px solid #000000);
+  vertical-align: top;
+}
+.apos-row1-wrapper {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: stretch;
+}
 .apos-cell-col-left {
   position: relative;
   width: var(--box1-split, 32%);
+  flex: 0 0 var(--box1-split, 32%);
   padding: var(--box1-padding, 3px) 6px !important;
   border-right: var(--table-border, 1px solid #000000);
+  box-sizing: border-box;
 }
 .apos-cell-col-right {
-  width: calc(100% - var(--box1-split, 32%));
-  padding: var(--box1-padding, 3px) 6px !important;
+  flex: 1;
+  min-width: 0;
+  padding: var(--box1-padding, 3px) 8px !important;
+  box-sizing: border-box;
 }
 
 /* Row Headers & Indented Bold Values */

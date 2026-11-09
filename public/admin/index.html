@@ -503,24 +503,28 @@
 
                           <!-- Row 3: Point 1 (Country: Left | This Public Document: Right) -->
                           <tr class="apos-row-point1" style="position: relative;">
-                            <td colspan="2" class="apos-cell-col-left" id="stampDemoColLeft" style="position: relative; width: var(--box1-split, 32%); padding: var(--box1-padding, 6px) 8px !important; border-right: 1px solid #000000; border-bottom: 1px solid #000000;">
-                              <!-- Excel Vertical Drag Line between Country & Document -->
-                              <div class="excel-drag-line-v" data-target="box1Split" data-label="Box 1 Split" title="Drag left/right to resize Country vs Document column split">
-                                <span class="excel-drag-badge">↔ Drag Split</span>
-                              </div>
-                              <!-- Excel Horizontal Drag Line at bottom of Box 1 -->
-                              <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
-                                <span class="excel-drag-badge">↕ Drag Row</span>
-                              </div>
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;"><span class="apos-num-prefix" style="display: inline-block; min-width: 14px; margin-right: 4px;">1</span> Country</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000; padding-left: 18px;">Pakistan</div>
-                            </td>
-                            <td colspan="2" class="apos-cell-col-right" style="position: relative; width: calc(100% - var(--box1-split, 32%)); padding: var(--box1-padding, 6px) 8px !important; border-bottom: 1px solid #000000;">
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;">This Public Document</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000;">Personal Document</div>
-                              <!-- Excel Horizontal Drag Line at bottom of Box 1 (Right cell) -->
-                              <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
-                                <span class="excel-drag-badge">↕ Drag Row</span>
+                            <td colspan="4" style="padding: 0 !important; border-bottom: 1px solid #000000; vertical-align: top;">
+                              <div style="display: flex; width: 100%; box-sizing: border-box; align-items: stretch;">
+                                <div class="apos-cell-col-left" id="stampDemoColLeft" style="position: relative; width: var(--box1-split, 32%); flex: 0 0 var(--box1-split, 32%); padding: var(--box1-padding, 6px) 8px !important; border-right: 1px solid #000000; box-sizing: border-box;">
+                                  <!-- Excel Vertical Drag Line between Country & Document -->
+                                  <div class="excel-drag-line-v" data-target="box1Split" data-label="Box 1 Split" title="Drag left/right to resize Country vs Document column split">
+                                    <span class="excel-drag-badge">↔ Drag Split</span>
+                                  </div>
+                                  <!-- Excel Horizontal Drag Line at bottom of Box 1 -->
+                                  <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
+                                    <span class="excel-drag-badge">↕ Drag Row</span>
+                                  </div>
+                                  <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;"><span class="apos-num-prefix" style="display: inline-block; min-width: 14px; margin-right: 4px;">1</span> Country</div>
+                                  <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000; padding-left: 18px;">Pakistan</div>
+                                </div>
+                                <div class="apos-cell-col-right" style="position: relative; flex: 1; min-width: 0; padding: var(--box1-padding, 6px) 8px !important; box-sizing: border-box;">
+                                  <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;">This Public Document</div>
+                                  <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000;">Personal Document</div>
+                                  <!-- Excel Horizontal Drag Line at bottom of Box 1 (Right cell) -->
+                                  <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
+                                    <span class="excel-drag-badge">↕ Drag Row</span>
+                                  </div>
+                                </div>
                               </div>
                             </td>
                           </tr>
