@@ -1169,7 +1169,7 @@ body {
 .apostille-content {
   position: relative;
   z-index: 2;
-  padding: var(--stamp-padding, 44px) var(--stamp-padding, 44px) calc(var(--stamp-padding, 44px) - 2px) var(--stamp-padding, 44px);
+  padding: var(--stamp-padding, 44px) var(--stamp-padding, 44px) calc(var(--stamp-padding, 44px) + 8px) var(--stamp-padding, 44px);
   transition: padding 0.15s ease;
 }
 
@@ -1468,26 +1468,31 @@ body {
 
 /* Legal disclaimer at bottom of certificate */
 .apostille-legal-block {
-  margin-top: 14px;
-  margin-bottom: 4px;
+  margin-top: 12px;
+  margin-bottom: 2px;
+  padding: 0 16px;
+  box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   text-decoration: none !important;
 }
 .apos-legal-disclaimer {
-  font-size: 0.70rem;
-  line-height: 1.45;
+  max-width: 430px;
+  margin: 0 auto 5px auto;
+  font-size: 0.68rem;
+  line-height: 1.42;
   color: #000000;
-  margin: 0 0 5px 0;
   font-weight: 400;
   text-decoration: none !important;
+  word-break: normal;
 }
 .apos-legal-url {
-  font-size: 0.74rem;
+  max-width: 430px;
+  margin: 0 auto;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #000000;
   word-break: break-all;
-  margin: 0;
   text-decoration: none !important;
 }
 .apos-legal-url u, .apos-legal-url span { text-decoration: underline !important; }
@@ -1742,7 +1747,7 @@ body {
     max-width: 100% !important;
   }
   .apostille-content {
-    padding: max(22px, calc(var(--stamp-padding, 44px) * 0.65)) max(16px, calc(var(--stamp-padding, 44px) * 0.5)) max(20px, calc(var(--stamp-padding, 44px) * 0.6)) max(16px, calc(var(--stamp-padding, 44px) * 0.5)) !important;
+    padding: max(24px, calc(var(--stamp-padding, 44px) * 0.7)) max(20px, calc(var(--stamp-padding, 44px) * 0.55)) max(28px, calc(var(--stamp-padding, 44px) * 0.78)) max(20px, calc(var(--stamp-padding, 44px) * 0.55)) !important;
   }
   .apos-title-text {
     font-size: 1.55rem;
@@ -1792,11 +1797,15 @@ body {
     font-size: 0.72rem;
   }
   .apos-legal-disclaimer {
-    font-size: 0.7rem;
-    line-height: 1.4;
+    font-size: 0.65rem;
+    line-height: 1.38;
+    max-width: 95%;
+    margin: 0 auto 4px auto;
   }
   .apos-legal-url {
-    font-size: 0.74rem;
+    font-size: 0.70rem;
+    max-width: 95%;
+    margin: 0 auto;
   }
 
   /* Ensure interactive PDF viewer is active on mobile and hide legacy charcoal box */

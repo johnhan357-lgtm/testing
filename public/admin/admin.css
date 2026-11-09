@@ -865,7 +865,7 @@ body {
 .stamp-content-layer {
   position: relative;
   z-index: 2;
-  padding: var(--stamp-padding, 44px) var(--stamp-padding, 44px) calc(var(--stamp-padding, 44px) - 2px) var(--stamp-padding, 44px);
+  padding: var(--stamp-padding, 44px) var(--stamp-padding, 44px) calc(var(--stamp-padding, 44px) + 8px) var(--stamp-padding, 44px);
   transition: padding 0.15s ease;
 }
 

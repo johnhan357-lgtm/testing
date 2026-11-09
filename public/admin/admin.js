@@ -1266,7 +1266,7 @@ document.addEventListener("DOMContentLoaded", () => {
     width: 550,
     borderOffsetY: 0,
     borderOffsetX: 0,
-    borderPadding: 38,
+    borderPadding: 44,
     lineSpacing: 4,
     fontScale: 100,
     borderStyle: "1px solid #000000",
@@ -1565,7 +1565,7 @@ document.addEventListener("DOMContentLoaded", () => {
           currentStampLayout.certifiedPadding = 6;
           currentStampLayout.boxes58Padding = 4;
           currentStampLayout.sealSpace = 38;
-          currentStampLayout.borderPadding = 38;
+          currentStampLayout.borderPadding = 44;
           currentStampLayout.qrBoxSize = 92;
         } else if (preset === "compact") {
           currentStampLayout.width = 480;
@@ -1674,7 +1674,7 @@ document.addEventListener("DOMContentLoaded", () => {
           width: 550,
           borderOffsetY: 0,
           borderOffsetX: 0,
-          borderPadding: 38,
+          borderPadding: 44,
           lineSpacing: 4,
           fontScale: 100,
           borderStyle: "1px solid #000000",
