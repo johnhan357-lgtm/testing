@@ -1,5 +1,35 @@
 [
   {
+    "id": "rec-test-upsert-999",
+    "docNumber": "TEST-UPSERT-1234",
+    "applicantName": "Testing Upsert",
+    "documentType": "Personal Document",
+    "documentCategory": "Personal Document",
+    "country": "Pakistan",
+    "signedBy": "N/A",
+    "capacity": "Registrar",
+    "sealOf": "Preston University",
+    "issuePlace": "Lahore Pakistan",
+    "issueDate": "2026-11-09",
+    "expiryDate": "",
+    "issuingAuthority": "Ministry of Foreign Affairs",
+    "signatoryOfficer": "Ali Faraz",
+    "signatureUrl": "/uploads/signature_ali_faraz_clean.png",
+    "signatureWidth": 88,
+    "signatureHeight": 34,
+    "signatureOffsetY": 0,
+    "signatureFilter": "none",
+    "signatureData": "",
+    "pdfFileName": "",
+    "pdfUrl": "",
+    "pdfData": "",
+    "status": "VERIFIED",
+    "securityHash": "60d23e257033d2f5c92866611c7580",
+    "notes": "",
+    "createdAt": "2026-11-09T07:50:51.820Z",
+    "updatedAt": "2026-11-09T07:50:51.820Z"
+  },
+  {
     "docNumber": "APO-QWTU-DCIJ-AYXV",
     "issueDate": "2026-11-05",
     "applicantName": "Sana Ullah",
@@ -18,7 +48,15 @@
     "signatureOffsetY": 0,
     "signatureFilter": "none",
     "pdfFileName": "CamScanner 19-10-2026 16.23.pdf",
-    "status": "VERIFIED"
+    "status": "VERIFIED",
+    "id": "rec-apo-qwtu-dcij-ayxv",
+    "pdfUrl": "/uploads/CamScanner%2019-10-2026%2016.23.pdf",
+    "securityHash": "9b12a0f81d457632ce9a4185bc01fa",
+    "notes": "Verified resilient update",
+    "createdAt": "2026-11-09T07:00:00.000Z",
+    "signatureData": "",
+    "pdfData": "",
+    "updatedAt": "2026-11-09T07:50:51.814Z"
   },
   {
     "id": "rec-2",
@@ -197,7 +235,8 @@
     "documentType": "Special Diplomatic Clearance",
     "documentCategory": "Official Document",
     "issueDate": "2026-10-27",
-    "status": "VERIFIED"
+    "status": "VERIFIED",
+    "id": "rec-heal-doc-1794144536986"
   },
   {
     "docNumber": "HEAL-DOC-1793544015786",
@@ -205,7 +244,8 @@
     "documentType": "Special Diplomatic Clearance",
     "documentCategory": "Official Document",
     "issueDate": "2026-10-27",
-    "status": "VERIFIED"
+    "status": "VERIFIED",
+    "id": "rec-heal-doc-1793544015786"
   },
   {
     "id": "rec-1794126880906-s006",
