@@ -354,6 +354,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (cardHeadingEl && cfg.verificationCard.heading) cardHeadingEl.textContent = cfg.verificationCard.heading;
       if (btnVerify && cfg.verificationCard.verifyButtonText) btnVerify.textContent = cfg.verificationCard.verifyButtonText;
       if (btnClear && cfg.verificationCard.clearButtonText) btnClear.textContent = cfg.verificationCard.clearButtonText;
+      if (cfg.verificationCard.docNumberLabel) {
+        const lbl = document.querySelector("label[for='docNumber']");
+        if (lbl) lbl.innerHTML = `${cfg.verificationCard.docNumberLabel} <span class="required">*</span>`;
+      }
+      if (cfg.verificationCard.docNumberPlaceholder && docNumberInput) {
+        docNumberInput.placeholder = cfg.verificationCard.docNumberPlaceholder;
+      }
+      if (cfg.verificationCard.docDateLabel) {
+        const lbl = document.getElementById("dateLabel") || document.querySelector("label[for='docDate']");
+        if (lbl) lbl.innerHTML = `${cfg.verificationCard.docDateLabel} <span class="required">*</span>`;
+      }
       if (helpTextEl) {
         const customText = (cfg.verificationCard.helpText !== undefined && cfg.verificationCard.helpText !== null)
           ? cfg.verificationCard.helpText.trim()
@@ -799,8 +810,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (resSummaryDate) resSummaryDate.textContent = formattedDate;
       if (resSummaryAuthority) resSummaryAuthority.textContent = rec.issuingAuthority || "Ministry of Foreign Affairs Pakistan";
 
+      const certIssuerStmtEl = document.getElementById("certIssuerStatement") || document.querySelector(".cert-issuer-statement");
+      if (certIssuerStmtEl && currentConfig?.certificateView?.summaryTemplate) {
+        const tpl = currentConfig.certificateView.summaryTemplate;
+        certIssuerStmtEl.textContent = tpl
+          .replace(/{category}/gi, rec.documentCategory || rec.documentType || "Educational Document")
+          .replace(/{date}/gi, formattedDate)
+          .replace(/{authority}/gi, rec.issuingAuthority || "Ministry of Foreign Affairs Pakistan");
+      }
+
       // Numbered Certificate Grid
-      if (aposCountry) aposCountry.textContent = rec.country || "Pakistan";
+      if (aposCountry) aposCountry.textContent = rec.country || currentConfig?.certificateView?.defaultCountry || "Pakistan";
       if (aposDocCategory) aposDocCategory.textContent = rec.documentCategory || rec.documentType || "Personal Document";
       if (aposSignedBy) aposSignedBy.textContent = rec.signedBy || "N/A";
       if (aposCapacity) aposCapacity.textContent = rec.capacity || "Registrar";
@@ -810,7 +830,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (aposAuthority) aposAuthority.textContent = rec.issuingAuthority || "Ministry of Foreign Affairs";
       if (aposDocNumber) aposDocNumber.textContent = rec.docNumber;
       if (aposDateBlock) aposDateBlock.textContent = `Date: ${formattedDate}`;
-      if (aposSignatory) aposSignatory.textContent = rec.signatoryOfficer || "Ali Faraz";
+      if (aposSignatory) aposSignatory.textContent = rec.signatoryOfficer || currentConfig?.certificateView?.defaultSignatory || "Ali Faraz";
 
       // Officer Signature Graphic
       const aposSigImg = document.getElementById("aposSigImg");
@@ -873,7 +893,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const pdfUrl = (rec.pdfData && rec.pdfData.startsWith('data:application/pdf'))
         ? rec.pdfData
         : (rec.pdfUrl || (rec.pdfFileName ? `/uploads/${rec.pdfFileName}` : ''));
-      const pdfName = rec.pdfFileName || (rec.docNumber ? `${rec.docNumber}.pdf` : 'document.pdf');
+      const pdfName = rec.pdfFileName || currentConfig?.certificateView?.defaultPdfFileName || (rec.docNumber ? `${rec.docNumber}.pdf` : 'document.pdf');
 
       if (pdfUrl) {
         if (pdfIframe) pdfIframe.src = `${pdfUrl}#toolbar=0`;
@@ -1432,7 +1452,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (btnFeedback) {
     btnFeedback.addEventListener("click", (e) => {
       e.preventDefault();
-      // Revoked: Button displays visually, but clicking it performs no action as requested
+      if (currentConfig && currentConfig.floatingFeedback) {
+        const ff = currentConfig.floatingFeedback;
+        if (ff.actionType === 'custom_url' && ff.customUrl) {
+          window.open(ff.customUrl, '_blank', 'noopener,noreferrer');
+        }
+      }
     });
   }
 
