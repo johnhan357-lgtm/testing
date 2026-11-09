@@ -1267,7 +1267,7 @@ body {
 /* Row 2: Subtitle */
 .apos-row-subtitle td {
   text-align: center;
-  padding: 2px 0 var(--header-padding-bottom, 4px) 0 !important;
+  padding: var(--subtitle-padding, 2px) 0 var(--header-padding-bottom, 4px) 0 !important;
   border-bottom: var(--table-border, 1px solid #000000);
 }
 .apos-subtitle-text {

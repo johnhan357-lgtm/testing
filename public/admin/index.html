@@ -426,37 +426,41 @@
               </div>
             </div>
 
-            <!-- Apostille Stamp Visual Layout & Floral Star Designer -->
+            <!-- Apostille Stamp Visual Layout & Floral Star Designer (Excel Mode) -->
             <div class="stamp-staging-card">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
                 <div>
-                  <h3 style="font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
-                    🎨 Apostille Stamp Layout &amp; Floral Stars Designer
+                  <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 1.25rem;">📊</span> Apostille Stamp Layout &amp; Floral Stars Designer
+                    <span style="background: #e0f2fe; color: #0369a1; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">Excel Drag Mode</span>
                   </h3>
-                  <p style="font-size: 0.78rem; color: #64748b; margin: 2px 0 0 0;">
-                    Drag the blue handles with your mouse to resize width &amp; height. Nudge floral stars border up or down. 100% fluidly responsive.
+                  <p style="font-size: 0.8rem; color: #64748b; margin: 3px 0 0 0;">
+                    Excel ki tarah stamp ki kisi bhi line par mouse le ja kar drag karein (↕ Row Height / ↔ Column Width). Layout save hone par <strong>sab hi saved documents</strong> par apply ho jayega.
                   </p>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                  <button type="button" class="btn-secondary" id="btnToggleStampCollapse" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 600;">
-                    🔄 Preview Expand / Collapse
-                  </button>
-                  <button type="button" class="btn-secondary" id="btnResetStampLayout" style="padding: 4px 10px; font-size: 0.76rem; font-weight: 600; color: #b91c1c;">
+                  <button type="button" class="btn-secondary" id="btnResetStampLayout" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 600; color: #b91c1c;">
                     ↺ Reset Layout
+                  </button>
+                  <button type="button" class="btn-primary" id="btnSaveStampLayoutAll" style="padding: 6px 16px; font-size: 0.82rem; font-weight: 700; background: #059669; border-color: #047857; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
+                    <span>💾</span> Save &amp; Apply to All Documents
                   </button>
                 </div>
               </div>
 
               <div class="stamp-designer-container">
-                <!-- Left/Canvas: Live interactive resizable frame with mouse drag handles -->
+                <!-- Left/Canvas: Live interactive resizable frame with direct Excel-style drag lines -->
                 <div class="stamp-stage-canvas" id="stampStageCanvas">
                   <div class="stamp-stage-toolbar">
                     <span style="display: flex; align-items: center; gap: 6px;">
                       <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
-                      <strong>Interactive Stage</strong> &bull; Drag handles or use sliders
+                      <strong>Interactive Stage</strong> &bull; Hover on ANY line inside stamp to resize directly
                     </span>
                     <span class="stamp-dimension-badge" id="stampLiveDimensionsBadge">550px &times; Auto</span>
                   </div>
+
+                  <!-- Live Floating Guideline Tooltip -->
+                  <div id="excelDragTooltip" class="excel-drag-tooltip" style="display: none;"></div>
 
                   <!-- The Resizable Stamp Frame -->
                   <div class="stamp-resizable-frame" id="stampResizableFrame" style="--stamp-max-width: 550px; --floral-offset-y: 0px; --floral-offset-x: 0px; --stamp-padding: 44px; --line-padding: 4px; --stamp-font-scale: 1; --table-border: 1px solid #000000;">
@@ -466,326 +470,298 @@
                     <!-- Watermark Overlay -->
                     <div class="stamp-watermark-layer" id="stampWatermarkLayer" aria-hidden="true"></div>
 
-                    <!-- Collapsed Preview Banner -->
-                    <div class="stamp-collapsed-banner" id="stampCollapsedBanner">
-                      <div class="apos-collapsed-badge">✓ APOSTILLE VERIFIED</div>
-                      <div class="apos-collapsed-info">
-                        <strong>APO-DEMO-2026-LIVE</strong> &bull; <span>09 Jun 2026</span>
-                      </div>
-                      <span style="font-size: 0.74rem; color: #64748b; font-style: italic;">(Stamp is in collapsed mode)</span>
-                    </div>
+                    <!-- Outer Frame Drag Handles (East, South, South-East) -->
+                    <div class="stamp-drag-handle handle-e" id="stampHandleE" title="Drag Left/Right to resize Stamp Width"></div>
+                    <div class="stamp-drag-handle handle-s" id="stampHandleS" title="Drag Up/Down to resize Bottom Space"></div>
+                    <div class="stamp-drag-handle handle-se" id="stampHandleSE" title="Drag Corner to resize Width &amp; Height"></div>
 
                     <!-- Interactive Content Layer -->
                     <div class="stamp-content-layer" id="stampContentLayer">
-                      <table class="apostille-grid-table" id="stampGridTable" style="margin: 0;">
+                      <table class="apostille-grid-table excel-interactive-table" id="stampGridTable" style="margin: 0; position: relative;">
                         <tbody>
-                          <tr class="apos-row-title">
-                            <td colspan="4" class="apos-cell-title" style="text-align: center; padding: 5px 0 2px 0 !important;">
+                          <!-- Row 1: Title (APOSTILLE) -->
+                          <tr class="apos-row-title" style="position: relative;">
+                            <td colspan="4" class="apos-cell-title" style="text-align: center; position: relative; padding: var(--header-padding-top, 5px) 0 var(--header-padding-bottom, 2px) 0 !important;">
                               <div class="apos-title-text" id="stampDemoTitle" style="font-family: 'Times New Roman', Times, serif; font-size: 1.65rem; font-weight: 700; letter-spacing: 1px;">APOSTILLE</div>
+                              <!-- Excel Horizontal Drag Line after Row 1 -->
+                              <div class="excel-drag-line-h" data-target="headerPadding" data-label="Title Spacing" title="Drag up/down to resize Title row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-subtitle">
-                            <td colspan="4" class="apos-cell-subtitle" style="text-align: center; padding: 2px 0 4px 0 !important;">
+
+                          <!-- Row 2: Subtitle ((Convention de La Haye du 5 October 1961)) -->
+                          <tr class="apos-row-subtitle" style="position: relative;">
+                            <td colspan="4" class="apos-cell-subtitle" style="text-align: center; position: relative; padding: var(--subtitle-padding, 2px) 0 var(--header-padding-bottom, 4px) 0 !important;">
                               <div class="apos-subtitle-text" id="stampDemoSubtitle" style="font-size: 0.82rem; font-weight: 500;">(Convention de La Haye du 5 October 1961)</div>
+                              <!-- Excel Horizontal Drag Line after Row 2 -->
+                              <div class="excel-drag-line-h" data-target="subtitlePadding" data-label="Subtitle Spacing" title="Drag up/down to resize Subtitle row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-point1">
+
+                          <!-- Row 3: Point 1 (Country: Left | This Public Document: Right) -->
+                          <tr class="apos-row-point1" style="position: relative;">
                             <td colspan="2" class="apos-cell-col-left" id="stampDemoColLeft" style="position: relative; width: var(--box1-split, 32%); padding: var(--box1-padding, 3px) 6px !important; border-right: 1px solid #000000;">
-                                <div class="divider-drag-handle-v" id="handleBox1Split" title="Drag Left/Right to adjust Country vs Document width split"></div>
+                              <!-- Excel Vertical Drag Line between Country & Document -->
+                              <div class="excel-drag-line-v" data-target="box1Split" data-label="Box 1 Split" title="Drag left/right to resize Country vs Document column split">
+                                <span class="excel-drag-badge">↔ Drag Split</span>
+                              </div>
+                              <!-- Excel Horizontal Drag Line at bottom of Box 1 -->
+                              <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                               <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">1</span> Country</div>
                               <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Pakistan</div>
                             </td>
-                            <td colspan="2" class="apos-cell-col-right" style="width: 68%; padding: 3px 6px !important;">
+                            <td colspan="2" class="apos-cell-col-right" style="position: relative; width: calc(100% - var(--box1-split, 32%)); padding: var(--box1-padding, 3px) 6px !important;">
                               <div class="apos-cell-header-text" style="font-size: 0.82rem;">This Public Document</div>
                               <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700;">Educational Document</div>
+                              <!-- Excel Horizontal Drag Line at bottom of Box 1 (Right cell) -->
+                              <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-full-item">
-                            <td colspan="4" style="padding: 3px 6px !important;">
+
+                          <!-- Row 4: Point 2 (has been signed by) -->
+                          <tr class="apos-row-full-item" style="position: relative;">
+                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 3px) 6px !important;">
                               <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">2</span> has been signed by</div>
                               <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Muhammad Yasir</div>
+                              <div class="excel-drag-line-h" data-target="boxes24Padding" data-label="Boxes 2-4 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-full-item">
-                            <td colspan="4" style="padding: 3px 6px !important;">
+
+                          <!-- Row 5: Point 3 (acting in the capacity of) -->
+                          <tr class="apos-row-full-item" style="position: relative;">
+                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 3px) 6px !important;">
                               <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">3</span> acting in the capacity of</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Director (Registration), NAVTTC</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Assistant Director (Registration)</div>
+                              <div class="excel-drag-line-h" data-target="boxes24Padding" data-label="Boxes 2-4 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-full-item">
-                            <td colspan="4" style="padding: 3px 6px !important;">
+
+                          <!-- Row 6: Point 4 (bears the seal stamp of) -->
+                          <tr class="apos-row-full-item" style="position: relative;">
+                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 3px) 6px !important;">
                               <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">4</span> bears the seal stamp of</div>
                               <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">National Vocational &amp; Technical Training Commission</div>
+                              <!-- Excel Horizontal Drag Line after Box 4 -->
+                              <div class="excel-drag-line-h" data-target="boxes24Padding" data-label="Boxes 2-4 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-certified">
-                            <td colspan="4" style="text-align: center; padding: 3px 0 !important;">
-                              <span class="certified-script" style="font-family: 'Brush Script MT', cursive; font-size: 1.45rem; font-style: italic;">Certified</span>
+
+                          <!-- Row 7: Certified Script Banner -->
+                          <tr class="apos-row-certified" style="position: relative;">
+                            <td colspan="4" style="text-align: center; position: relative; padding: var(--certified-padding, 3px) 0 !important;">
+                              <div class="certified-script" id="stampDemoCertified" style="font-family: 'Brush Script MT', 'Great Vibes', cursive; font-size: var(--certified-font-size, 1.45rem); font-style: italic; font-weight: 600; line-height: 1.1;">Certified / Attest&eacute;</div>
+                              <!-- Excel Horizontal Drag Line after Certified -->
+                              <div class="excel-drag-line-h" data-target="certifiedPadding" data-label="Certified Banner Height" title="Drag up/down to resize Certified banner height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-inline-item">
-                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+
+                          <!-- Row 8: Points 5 & 6 (at & the) -->
+                          <tr class="apos-row-inline-item" style="position: relative;">
+                            <td colspan="2" style="padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-right: none !important;">
                               <span style="display: inline-block; width: 16px;">5</span> <span style="display: inline-block; width: 32px;">at</span> <strong>Karachi Pakistan</strong>
                             </td>
-                          </tr>
-                          <tr class="apos-row-inline-item">
-                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+                            <td colspan="2" style="padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-left: none !important;">
                               <span style="display: inline-block; width: 16px;">6</span> <span style="display: inline-block; width: 32px;">the</span> <strong>22 Oct 2026</strong>
                             </td>
                           </tr>
-                          <tr class="apos-row-inline-item">
-                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+
+                          <!-- Row 9: Point 7 (by) -->
+                          <tr class="apos-row-inline-item" style="position: relative;">
+                            <td colspan="4" style="padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
                               <span style="display: inline-block; width: 16px;">7</span> <span style="display: inline-block; width: 32px;">by</span> <strong>Ministry of Foreign Affairs</strong>
                             </td>
                           </tr>
-                          <tr class="apos-row-inline-item">
-                            <td colspan="4" style="padding: 2.5px 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
-                              <span style="display: inline-block; width: 16px;">8</span> <span style="display: inline-block; width: 32px;">No</span> <strong style="letter-spacing: 0.5px;">APO-EYKO-UISR-KFKY</strong>
+
+                          <!-- Row 10: Point 8 (N°) -->
+                          <tr class="apos-row-inline-item" style="position: relative;">
+                            <td colspan="4" style="position: relative; padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
+                              <span style="display: inline-block; width: 16px;">8</span> <span style="display: inline-block; width: 32px;">No</span> <strong style="letter-spacing: 0.5px;">APO-DEMO-2026-LIVE</strong>
+                              <!-- Excel Horizontal Drag Line after Box 8 -->
+                              <div class="excel-drag-line-h" data-target="boxes58Padding" data-label="Boxes 5-8 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
                             </td>
                           </tr>
-                          <tr class="apos-row-verification">
+
+                          <!-- Row 11: Verification Grid (Seal, QR, Signature) -->
+                          <tr class="apos-row-verification" style="position: relative;">
+                            <!-- Col 1: Date & Seal -->
                             <td id="stampDemoSealCell" style="position: relative; width: var(--bottom-seal-width, 39%); border-right: 1px solid #000000; vertical-align: top; padding: 0 !important;">
-                                <div class="divider-drag-handle-v" id="handleBottomDiv1" title="Drag Left/Right to adjust Seal vs QR column width"></div>
-                              <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">Date: 22 Oct 2026</div>
-                              <div style="padding: 20px 6px 3px 6px; font-size: 0.82rem; font-weight: 500;">Seal/Stamp</div>
-                            </td>
-                            <td id="stampDemoQrCell" style="position: relative; width: var(--bottom-qr-width, 22%); border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 3px !important;">
-                                <div class="divider-drag-handle-v" id="handleBottomDiv2" title="Drag Left/Right to adjust QR vs Signature column width"></div>
-                              <div style="width: 60px; height: 60px; margin: 0 auto; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569; font-weight: 700;">QR CODE</div>
-                            </td>
-                            <td id="stampDemoSigCell" style="width: var(--bottom-sig-width, 39%); vertical-align: middle; text-align: center; padding: 4px 8px !important;">
-                              <div style="width: 80px; height: 30px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
-                                <img id="stampDemoSigImg" src="/uploads/signature_ali_faraz_clean.png" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                              <!-- Excel Vertical Drag Line between Seal & QR -->
+                              <div class="excel-drag-line-v" data-target="bottomSealWidth" data-label="Seal vs QR Column" title="Drag left/right to resize Seal vs QR column split">
+                                <span class="excel-drag-badge">↔ Drag Split</span>
                               </div>
-                              <div style="font-size: 0.72rem; font-weight: 600; border-top: 1px solid #000000; width: 85%; margin: 2px auto 0 auto; padding-top: 1px;">Ali Faraz</div>
+                              <!-- Excel Horizontal Drag Line at bottom of table -->
+                              <div class="excel-drag-line-h" data-target="sealSpace" data-label="Seal &amp; Bottom Height" title="Drag up/down to resize Seal / Bottom height">
+                                <span class="excel-drag-badge">↕ Drag Height</span>
+                              </div>
+                              <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">Date: 22 Oct 2026</div>
+                              <div style="padding: var(--bottom-seal-padding-top, 22px) 6px 3px 6px; font-size: 0.82rem; font-weight: 500;">Seal/Stamp</div>
+                            </td>
+
+                            <!-- Col 2: Center QR Code -->
+                            <td id="stampDemoQrCell" style="position: relative; width: var(--bottom-qr-width, 22%); border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 3px !important;">
+                              <!-- Excel Vertical Drag Line between QR & Sig -->
+                              <div class="excel-drag-line-v" data-target="bottomSigWidth" data-label="QR vs Sig Column" title="Drag left/right to resize QR vs Signature column split">
+                                <span class="excel-drag-badge">↔ Drag Split</span>
+                              </div>
+                              <!-- Excel Horizontal Drag Line at bottom of table -->
+                              <div class="excel-drag-line-h" data-target="sealSpace" data-label="Seal &amp; Bottom Height" title="Drag up/down to resize Seal / Bottom height">
+                                <span class="excel-drag-badge">↕ Drag Height</span>
+                              </div>
+                              <div style="width: var(--qr-box-size, 76px); height: var(--qr-box-size, 76px); margin: 0 auto; background: #ffffff; border: 1px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569; font-weight: 700;">QR CODE</div>
+                            </td>
+
+                            <!-- Col 3: Signature -->
+                            <td id="stampDemoSigCell" style="position: relative; width: var(--bottom-sig-width, 39%); vertical-align: top; padding: 0 !important;">
+                              <!-- Excel Horizontal Drag Line at bottom of table -->
+                              <div class="excel-drag-line-h" data-target="sealSpace" data-label="Seal &amp; Bottom Height" title="Drag up/down to resize Seal / Bottom height">
+                                <span class="excel-drag-badge">↕ Drag Height</span>
+                              </div>
+                              <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">10 Signature</div>
+                              <div style="padding: 4px 6px 2px 6px; min-height: 44px; display: flex; align-items: center; justify-content: center;">
+                                <img id="stampDemoSigImg" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-height: 38px; width: auto; object-fit: contain;">
+                              </div>
+                              <div style="padding: 2px 6px 4px 6px; font-size: 0.82rem; font-weight: 700; border-top: 1px solid #000000;">Ali Faraz</div>
                             </td>
                           </tr>
                         </tbody>
                       </table>
 
-                      <div id="stampDemoDisclaimerWrap" style="margin-top: 6px; font-size: 0.65rem; color: #475569; line-height: 1.25;">
-                        This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp.
+                      <!-- Bottom Legal Disclaimer Preview -->
+                      <div id="stampDemoDisclaimerWrap" style="margin-top: 6px; padding: 0 4px; font-size: 0.72rem; color: #000000; text-align: center; line-height: 1.35; font-family: Arial, sans-serif;">
+                        This Apostille certificate verifies the authenticity of the signature, the capacity in which the person signing the document has acted and, where appropriate, the identity of the seal or stamp which it bears. It does not certify the content of the document for which it was issued. To verify this Apostille, please visit: <strong style="text-decoration: underline;">https://apostille.mofa.gov.pk/</strong>
                       </div>
                     </div>
-
-                    <!-- Mouse Drag Resize Handles -->
-                    <div class="stamp-resize-handle handle-e" id="stampHandleE" title="Click &amp; drag mouse left/right to resize width"></div>
-                    <div class="stamp-resize-handle handle-s" id="stampHandleS" title="Click &amp; drag mouse up/down to adjust padding &amp; height"></div>
-                    <div class="stamp-resize-handle handle-se" id="stampHandleSE" title="Click &amp; drag mouse corner to resize both width and height"></div>
                   </div>
                 </div>
 
-                <!-- Right/Controls Panel: Fine-tuning sliders, floral offsets, line spacing -->
+                <!-- Right/Sidebar: Clean, effortless Excel-style Controls & Nudges -->
                 <div class="stamp-controls-panel">
-                  <!-- Section 1: Frame Width & Sizing -->
-                  <div class="stamp-control-section">
-                    <div class="stamp-control-title">
-                      <span>📐 Stamp Width &amp; Canvas Sizing</span>
-                    </div>
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Max Frame Width:</span>
-                        <span class="stamp-val-badge" id="cfgStampWidthBadge">550px</span>
-                      </div>
-                      <input type="range" id="cfgStampWidth" class="stamp-range-slider" min="380" max="750" value="550" step="5">
-                      <div class="stamp-chip-group">
-                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="480">Compact (480px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="550">Default (550px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="620">Wide (620px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-width" data-val="680">Large (680px)</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Section 2: Floral Stars Border Controls (Exact user request) -->
+                  <!-- Section 1: Quick Sizing Presets -->
                   <div class="stamp-control-section" style="border-left: 3px solid #0284c7;">
                     <div class="stamp-control-title">
-                      <span>🌸 Floral Stars Border Offset (پھول جیسے سٹارز)</span>
+                      <span>📐 Quick Stamp Size Presets</span>
                     </div>
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Vertical Shift (اوپر / نیچے):</span>
-                        <span class="stamp-val-badge" id="cfgFloralOffsetYBadge">0px</span>
-                      </div>
-                      <input type="range" id="cfgFloralOffsetY" class="stamp-range-slider" min="-25" max="25" value="0" step="1">
-                      <div class="stamp-chip-group">
-                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="-6">Nudge Up (-6px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="0">Center (0px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="6">Nudge Down (+6px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-floral-y" data-val="12">Lower (+12px)</button>
-                      </div>
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Horizontal Shift (دائیں / بائیں):</span>
-                        <span class="stamp-val-badge" id="cfgFloralOffsetXBadge">0px</span>
-                      </div>
-                      <input type="range" id="cfgFloralOffsetX" class="stamp-range-slider" min="-25" max="25" value="0" step="1">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Border Breathing Inset / Padding:</span>
-                        <span class="stamp-val-badge" id="cfgStampPaddingBadge">44px</span>
-                      </div>
-                      <input type="range" id="cfgStampPadding" class="stamp-range-slider" min="25" max="65" value="44" step="1">
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 8px 0;">
+                      Ek click se authentic size set karein ya stage par drag karke adjust karein:
+                    </p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                      <button type="button" class="btn-secondary stamp-preset-btn" data-preset="standard" style="padding: 6px 8px; font-size: 0.76rem; font-weight: 600; text-align: center;">
+                        🏛️ MOFA Default (550px)
+                      </button>
+                      <button type="button" class="btn-secondary stamp-preset-btn" data-preset="compact" style="padding: 6px 8px; font-size: 0.76rem; font-weight: 600; text-align: center;">
+                        📐 Compact (480px)
+                      </button>
+                      <button type="button" class="btn-secondary stamp-preset-btn" data-preset="wide" style="padding: 6px 8px; font-size: 0.76rem; font-weight: 600; text-align: center;">
+                        ↔️ Wide (620px)
+                      </button>
+                      <button type="button" class="btn-secondary stamp-preset-btn" data-preset="large" style="padding: 6px 8px; font-size: 0.76rem; font-weight: 600; text-align: center;">
+                        🔍 Large HD (680px)
+                      </button>
                     </div>
                   </div>
 
-                  <!-- Section 3: Box 1 Split & Individual Section Heights (Complete Master Control) -->
+                  <!-- Section 2: Floral Stars (Phool Jaise Stars) Direct Nudge Buttons -->
                   <div class="stamp-control-section" style="border-left: 3px solid #10b981;">
                     <div class="stamp-control-title">
-                      <span>⚡ Box 1 Column Split &amp; Section Layouts</span>
+                      <span>🌸 Floral Stars Border Nudge (پھول جیسے سٹارز)</span>
                     </div>
-
-                    <!-- Box 1 Column Split Slider -->
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Box 1 Left Split (Country Width):</span>
-                        <span class="stamp-val-badge" id="cfgBox1SplitBadge">32%</span>
-                      </div>
-                      <input type="range" id="cfgBox1Split" class="stamp-range-slider" min="20" max="50" value="32" step="1">
-                      <div class="stamp-chip-group">
-                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="26">Compact (26%)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="32">Default (32%)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="38">Balanced (38%)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="50">Half (50%)</button>
-                      </div>
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 8px 0;">
+                      Phoolon wale border ko table ke upar / neeche direct move karein:
+                    </p>
+                    <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                      <button type="button" class="btn-secondary" id="btnNudgeFloralUp" style="flex: 1; padding: 6px 8px; font-size: 0.78rem; font-weight: 700; color: #0284c7;">
+                        ⬆ Move Stars Up (-2px)
+                      </button>
+                      <button type="button" class="btn-secondary" id="btnNudgeFloralDown" style="flex: 1; padding: 6px 8px; font-size: 0.78rem; font-weight: 700; color: #0284c7;">
+                        ⬇ Move Stars Down (+2px)
+                      </button>
                     </div>
-
-                    <!-- Header Padding Slider -->
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Header (Apostille Title) Height / Spacing:</span>
-                        <span class="stamp-val-badge" id="cfgHeaderPaddingBadge">5px</span>
-                      </div>
-                      <input type="range" id="cfgHeaderPadding" class="stamp-range-slider" min="2" max="14" value="5" step="1">
+                    <div style="display: flex; gap: 6px;">
+                      <button type="button" class="btn-secondary" id="btnNudgeFloralLeft" style="flex: 1; padding: 5px 8px; font-size: 0.75rem;">
+                        ⬅ Shift Left (-2px)
+                      </button>
+                      <button type="button" class="btn-secondary" id="btnNudgeFloralCenter" style="padding: 5px 10px; font-size: 0.75rem; font-weight: 600;">
+                        ⟲ Center (0px)
+                      </button>
+                      <button type="button" class="btn-secondary" id="btnNudgeFloralRight" style="flex: 1; padding: 5px 8px; font-size: 0.75rem;">
+                        ➡ Shift Right (+2px)
+                      </button>
                     </div>
-
-                    <!-- Box 1 (Country/Doc) Padding Slider -->
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Box 1 (Country / Public Doc) Row Height:</span>
-                        <span class="stamp-val-badge" id="cfgBox1PaddingBadge">3px</span>
-                      </div>
-                      <input type="range" id="cfgBox1Padding" class="stamp-range-slider" min="2" max="12" value="3" step="1">
-                    </div>
-
-                    <!-- Boxes 2-4 (Signatories) Padding Slider -->
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Boxes 2, 3, 4 (Signatories) Row Height:</span>
-                        <span class="stamp-val-badge" id="cfgBoxes24PaddingBadge">3px</span>
-                      </div>
-                      <input type="range" id="cfgBoxes24Padding" class="stamp-range-slider" min="2" max="12" value="3" step="1">
-                    </div>
-
-                    <!-- Certified Row Padding & Script Font Size -->
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>'Certified' Cursive Script Size:</span>
-                        <span class="stamp-val-badge" id="cfgCertifiedFontSizeBadge">1.45rem</span>
-                      </div>
-                      <input type="range" id="cfgCertifiedFontSize" class="stamp-range-slider" min="1.1" max="2.0" value="1.45" step="0.05">
-                    </div>
-
-                    <!-- Boxes 5-8 (Place/Date/No) Padding Slider -->
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Boxes 5 to 8 (Place, Date, No.) Row Height:</span>
-                        <span class="stamp-val-badge" id="cfgBoxes58PaddingBadge">2.5px</span>
-                      </div>
-                      <input type="range" id="cfgBoxes58Padding" class="stamp-range-slider" min="1.5" max="10" value="2.5" step="0.5">
+                    <div style="margin-top: 6px; font-size: 0.74rem; color: #475569; display: flex; justify-content: space-between;">
+                      <span>Current Offset:</span>
+                      <strong id="lblFloralOffset">Y: 0px, X: 0px</strong>
                     </div>
                   </div>
 
-                  <!-- Section 3B: Bottom Verification Grid Master Controls -->
-                  <div class="stamp-control-section" style="border-left: 3px solid #8b5cf6;">
+                  <!-- Section 3: Line Style & Options -->
+                  <div class="stamp-control-section" style="border-left: 3px solid #6366f1;">
                     <div class="stamp-control-title">
-                      <span>🏁 Bottom Verification Grid (Seal, QR &amp; Sig)</span>
+                      <span>🖋️ Border Line &amp; Security Options</span>
                     </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Date &amp; Seal Column Width:</span>
-                        <span class="stamp-val-badge" id="cfgBottomSealWidthBadge">39%</span>
-                      </div>
-                      <input type="range" id="cfgBottomSealWidth" class="stamp-range-slider" min="25" max="50" value="39" step="1">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Center QR Code Column Width:</span>
-                        <span class="stamp-val-badge" id="cfgBottomQrWidthBadge">22%</span>
-                      </div>
-                      <input type="range" id="cfgBottomQrWidth" class="stamp-range-slider" min="15" max="40" value="22" step="1">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Signature Column Width:</span>
-                        <span class="stamp-val-badge" id="cfgBottomSigWidthBadge">39%</span>
-                      </div>
-                      <input type="range" id="cfgBottomSigWidth" class="stamp-range-slider" min="25" max="50" value="39" step="1">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>QR Code Box Size:</span>
-                        <span class="stamp-val-badge" id="cfgQrBoxSizeBadge">76px</span>
-                      </div>
-                      <input type="range" id="cfgQrBoxSize" class="stamp-range-slider" min="50" max="95" value="76" step="2">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Seal / Stamp Space (Height):</span>
-                        <span class="stamp-val-badge" id="cfgSealSpaceBadge">22px</span>
-                      </div>
-                      <input type="range" id="cfgSealSpace" class="stamp-range-slider" min="10" max="45" value="22" step="1">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Overall Font Scale:</span>
-                        <span class="stamp-val-badge" id="cfgStampFontScaleBadge">100%</span>
-                      </div>
-                      <input type="range" id="cfgStampFontScale" class="stamp-range-slider" min="80" max="120" value="100" step="1">
-                    </div>
-
-                    <div class="stamp-slider-item">
-                      <div class="stamp-slider-header">
-                        <span>Grid Border Line Thickness:</span>
-                      </div>
-                      <select id="cfgStampBorderStyle" class="form-input" style="font-size: 0.82rem; padding: 4px 8px;">
+                    <div style="margin-bottom: 8px;">
+                      <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #334155; margin-bottom: 4px;">
+                        Grid Border Line Thickness:
+                      </label>
+                      <select id="cfgStampBorderStyle" class="form-input" style="font-size: 0.82rem; padding: 5px 8px;">
                         <option value="1px solid #000000">1.0px Solid Black (Standard Reference)</option>
                         <option value="0.75px solid #000000">0.75px Fine Hairline</option>
                         <option value="1.5px solid #000000">1.5px Medium Crisp</option>
                         <option value="2px solid #000000">2.0px Heavy Outline</option>
                       </select>
                     </div>
-                  </div>
-
-                  <!-- Section 4: Public Page Options & Collapse Switch -->
-                  <div class="stamp-control-section">
-                    <div class="stamp-control-title">
-                      <span>⚙️ Public Display &amp; Collapse Controls</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #1e293b; cursor: pointer;">
-                        <input type="checkbox" id="cfgStampCollapseButton" checked>
-                        Enable Expand / Collapse Toggle Button on Verification Page
-                      </label>
-                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #1e293b; cursor: pointer;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; color: #1e293b; cursor: pointer;">
                         <input type="checkbox" id="cfgStampShowWatermark" checked>
-                        Show Repeating Security Watermark (GOVTOFPAKISTAN)
+                        Show Repeating Watermark (GOVTOFPAKISTAN)
                       </label>
-                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: #1e293b; cursor: pointer;">
+                      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; color: #1e293b; cursor: pointer;">
                         <input type="checkbox" id="cfgStampShowDisclaimer" checked>
                         Show Bottom Legal Disclaimer &amp; Verification URL
                       </label>
                     </div>
+                  </div>
+
+                  <!-- Section 4: Live Measurements (Auto-updated on Drag) -->
+                  <div class="stamp-control-section" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #0f172a; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                      <span>📊 Live Dimensions &amp; Splits</span>
+                      <span style="font-size: 0.7rem; color: #059669; font-weight: 600;">● Live Sync</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.74rem;">
+                      <div>Stamp Width: <strong id="lblMetricWidth">550px</strong></div>
+                      <div>Box 1 Split: <strong id="lblMetricBox1">32% : 68%</strong></div>
+                      <div>Seal Column: <strong id="lblMetricSeal">39%</strong></div>
+                      <div>QR Column: <strong id="lblMetricQr">22%</strong></div>
+                      <div>Sig Column: <strong id="lblMetricSig">39%</strong></div>
+                      <div>Row Padding: <strong id="lblMetricPad">3px</strong></div>
+                    </div>
+                  </div>
+
+                  <!-- Section 5: Universal Save Button (Applies to ALL saved documents) -->
+                  <div style="padding-top: 4px;">
+                    <button type="button" class="btn-primary" id="btnSaveStampLayoutSide" style="width: 100%; padding: 10px 14px; font-size: 0.88rem; font-weight: 800; background: #059669; border-color: #047857; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);">
+                      <span>💾</span> Save &amp; Apply to All Documents
+                    </button>
+                    <p style="font-size: 0.72rem; color: #64748b; text-align: center; margin: 5px 0 0 0;">
+                      Yeh format website ke <strong>tamam saved documents</strong> par foran apply ho jayega.
+                    </p>
                   </div>
                 </div>
               </div>

@@ -516,29 +516,42 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elVerifyUrl) elVerifyUrl.value = cv.verificationUrlText || "";
       if (elEnablePdf) elEnablePdf.checked = cv.enablePdfViewer !== false;
 
-      // Stamp Visual Layout & Floral Stars Customization
+      // Stamp Visual Layout & Floral Stars Customization (Excel Mode)
       const sl = cv.stampLayout || {};
-      if (document.getElementById("cfgStampWidth")) document.getElementById("cfgStampWidth").value = sl.width !== undefined ? sl.width : 550;
-      if (document.getElementById("cfgFloralOffsetY")) document.getElementById("cfgFloralOffsetY").value = sl.borderOffsetY !== undefined ? sl.borderOffsetY : 0;
-      if (document.getElementById("cfgFloralOffsetX")) document.getElementById("cfgFloralOffsetX").value = sl.borderOffsetX !== undefined ? sl.borderOffsetX : 0;
-      if (document.getElementById("cfgStampPadding")) document.getElementById("cfgStampPadding").value = sl.borderPadding !== undefined ? sl.borderPadding : 44;
-      if (document.getElementById("cfgLineSpacing")) document.getElementById("cfgLineSpacing").value = sl.lineSpacing !== undefined ? sl.lineSpacing : 4;
-      if (document.getElementById("cfgStampFontScale")) document.getElementById("cfgStampFontScale").value = sl.fontScale !== undefined ? sl.fontScale : 100;
-      if (document.getElementById("cfgStampBorderStyle")) document.getElementById("cfgStampBorderStyle").value = sl.borderStyle || "1px solid #000000";
-      if (document.getElementById("cfgBox1Split")) document.getElementById("cfgBox1Split").value = sl.box1Split !== undefined ? sl.box1Split : 32;
-      if (document.getElementById("cfgHeaderPadding")) document.getElementById("cfgHeaderPadding").value = sl.headerPadding !== undefined ? sl.headerPadding : 5;
-      if (document.getElementById("cfgBox1Padding")) document.getElementById("cfgBox1Padding").value = sl.box1Padding !== undefined ? sl.box1Padding : 3;
-      if (document.getElementById("cfgBoxes24Padding")) document.getElementById("cfgBoxes24Padding").value = sl.boxes24Padding !== undefined ? sl.boxes24Padding : 3;
-      if (document.getElementById("cfgCertifiedFontSize")) document.getElementById("cfgCertifiedFontSize").value = sl.certifiedFontSize !== undefined ? sl.certifiedFontSize : 1.45;
-      if (document.getElementById("cfgBoxes58Padding")) document.getElementById("cfgBoxes58Padding").value = sl.boxes58Padding !== undefined ? sl.boxes58Padding : 2.5;
-      if (document.getElementById("cfgBottomSealWidth")) document.getElementById("cfgBottomSealWidth").value = sl.bottomSealWidth !== undefined ? sl.bottomSealWidth : 39;
-      if (document.getElementById("cfgBottomQrWidth")) document.getElementById("cfgBottomQrWidth").value = sl.bottomQrWidth !== undefined ? sl.bottomQrWidth : 22;
-      if (document.getElementById("cfgBottomSigWidth")) document.getElementById("cfgBottomSigWidth").value = sl.bottomSigWidth !== undefined ? sl.bottomSigWidth : 39;
-      if (document.getElementById("cfgQrBoxSize")) document.getElementById("cfgQrBoxSize").value = sl.qrBoxSize !== undefined ? sl.qrBoxSize : 76;
-      if (document.getElementById("cfgSealSpace")) document.getElementById("cfgSealSpace").value = sl.sealSpace !== undefined ? sl.sealSpace : 22;
-      if (document.getElementById("cfgStampCollapseButton")) document.getElementById("cfgStampCollapseButton").checked = sl.enableCollapseButton !== false;
-      if (document.getElementById("cfgStampShowWatermark")) document.getElementById("cfgStampShowWatermark").checked = sl.enableWatermark !== false;
-      if (document.getElementById("cfgStampShowDisclaimer")) document.getElementById("cfgStampShowDisclaimer").checked = sl.enableDisclaimer !== false;
+      currentStampLayout = {
+        width: sl.width !== undefined ? sl.width : 550,
+        borderOffsetY: sl.borderOffsetY !== undefined ? sl.borderOffsetY : 0,
+        borderOffsetX: sl.borderOffsetX !== undefined ? sl.borderOffsetX : 0,
+        borderPadding: sl.borderPadding !== undefined ? sl.borderPadding : 44,
+        lineSpacing: sl.lineSpacing !== undefined ? sl.lineSpacing : 4,
+        fontScale: sl.fontScale !== undefined ? sl.fontScale : 100,
+        borderStyle: sl.borderStyle || "1px solid #000000",
+        box1Split: sl.box1Split !== undefined ? sl.box1Split : 32,
+        headerPadding: sl.headerPadding !== undefined ? sl.headerPadding : 5,
+        subtitlePadding: sl.subtitlePadding !== undefined ? sl.subtitlePadding : 2,
+        box1Padding: sl.box1Padding !== undefined ? sl.box1Padding : 3,
+        boxes24Padding: sl.boxes24Padding !== undefined ? sl.boxes24Padding : 3,
+        certifiedFontSize: sl.certifiedFontSize !== undefined ? sl.certifiedFontSize : 1.45,
+        boxes58Padding: sl.boxes58Padding !== undefined ? sl.boxes58Padding : 2.5,
+        bottomSealWidth: sl.bottomSealWidth !== undefined ? sl.bottomSealWidth : 39,
+        bottomQrWidth: sl.bottomQrWidth !== undefined ? sl.bottomQrWidth : 22,
+        bottomSigWidth: sl.bottomSigWidth !== undefined ? sl.bottomSigWidth : 39,
+        qrBoxSize: sl.qrBoxSize !== undefined ? sl.qrBoxSize : 76,
+        sealSpace: sl.sealSpace !== undefined ? sl.sealSpace : 22,
+        enableCollapseButton: false,
+        enableWatermark: sl.enableWatermark !== false,
+        enableDisclaimer: sl.enableDisclaimer !== false
+      };
+
+      if (document.getElementById("cfgStampBorderStyle")) {
+        document.getElementById("cfgStampBorderStyle").value = currentStampLayout.borderStyle;
+      }
+      if (document.getElementById("cfgStampShowWatermark")) {
+        document.getElementById("cfgStampShowWatermark").checked = currentStampLayout.enableWatermark;
+      }
+      if (document.getElementById("cfgStampShowDisclaimer")) {
+        document.getElementById("cfgStampShowDisclaimer").checked = currentStampLayout.enableDisclaimer;
+      }
       if (typeof stampDesignerStage !== 'undefined' && stampDesignerStage?.updateStage) {
         stampDesignerStage.updateStage();
       }
@@ -640,27 +653,11 @@ document.addEventListener("DOMContentLoaded", () => {
         defaultPdfFileName: updated.certificateView?.defaultPdfFileName || "wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
         defaultPdfUrl: updated.certificateView?.defaultPdfUrl || "/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf",
         stampLayout: {
-          width: parseInt(document.getElementById("cfgStampWidth")?.value, 10) || 550,
-          borderOffsetY: parseInt(document.getElementById("cfgFloralOffsetY")?.value, 10) || 0,
-          borderOffsetX: parseInt(document.getElementById("cfgFloralOffsetX")?.value, 10) || 0,
-          borderPadding: parseInt(document.getElementById("cfgStampPadding")?.value, 10) || 44,
-          lineSpacing: parseInt(document.getElementById("cfgLineSpacing")?.value, 10) || 4,
-          fontScale: parseInt(document.getElementById("cfgStampFontScale")?.value, 10) || 100,
-          borderStyle: document.getElementById("cfgStampBorderStyle")?.value || "1px solid #000000",
-          box1Split: parseInt(document.getElementById("cfgBox1Split")?.value, 10) || 32,
-          headerPadding: parseInt(document.getElementById("cfgHeaderPadding")?.value, 10) || 5,
-          box1Padding: parseInt(document.getElementById("cfgBox1Padding")?.value, 10) || 3,
-          boxes24Padding: parseInt(document.getElementById("cfgBoxes24Padding")?.value, 10) || 3,
-          certifiedFontSize: parseFloat(document.getElementById("cfgCertifiedFontSize")?.value) || 1.45,
-          boxes58Padding: parseFloat(document.getElementById("cfgBoxes58Padding")?.value) || 2.5,
-          bottomSealWidth: parseInt(document.getElementById("cfgBottomSealWidth")?.value, 10) || 39,
-          bottomQrWidth: parseInt(document.getElementById("cfgBottomQrWidth")?.value, 10) || 22,
-          bottomSigWidth: parseInt(document.getElementById("cfgBottomSigWidth")?.value, 10) || 39,
-          qrBoxSize: parseInt(document.getElementById("cfgQrBoxSize")?.value, 10) || 76,
-          sealSpace: parseInt(document.getElementById("cfgSealSpace")?.value, 10) || 22,
-          enableCollapseButton: false,
+          ...currentStampLayout,
+          borderStyle: document.getElementById("cfgStampBorderStyle")?.value || currentStampLayout.borderStyle || "1px solid #000000",
           enableWatermark: document.getElementById("cfgStampShowWatermark") ? document.getElementById("cfgStampShowWatermark").checked : true,
-          enableDisclaimer: document.getElementById("cfgStampShowDisclaimer") ? document.getElementById("cfgStampShowDisclaimer").checked : true
+          enableDisclaimer: document.getElementById("cfgStampShowDisclaimer") ? document.getElementById("cfgStampShowDisclaimer").checked : true,
+          enableCollapseButton: false
         }
       };
     }
@@ -1263,100 +1260,72 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================================================================
   // APOSTILLE STAMP VISUAL LAYOUT & FLORAL STAR DESIGNER
   // =========================================================================
+  
+  // Global authoritative stamp layout state (Excel Mode)
+  let currentStampLayout = {
+    width: 550,
+    borderOffsetY: 0,
+    borderOffsetX: 0,
+    borderPadding: 44,
+    lineSpacing: 4,
+    fontScale: 100,
+    borderStyle: "1px solid #000000",
+    box1Split: 32,
+    headerPadding: 5,
+    subtitlePadding: 2,
+    box1Padding: 3,
+    boxes24Padding: 3,
+    certifiedFontSize: 1.45,
+    boxes58Padding: 2.5,
+    bottomSealWidth: 39,
+    bottomQrWidth: 22,
+    bottomSigWidth: 39,
+    qrBoxSize: 76,
+    sealSpace: 22,
+    enableCollapseButton: false,
+    enableWatermark: true,
+    enableDisclaimer: true
+  };
+
   function setupStampDesigner() {
     const frame = document.getElementById("stampResizableFrame");
-    const handleE = document.getElementById("stampHandleE");
-    const handleS = document.getElementById("stampHandleS");
-    const handleSE = document.getElementById("stampHandleSE");
-
-    // Divider Drag Handles inside Table
-    const handleBox1 = document.getElementById("handleBox1Split");
-    const handleBottom1 = document.getElementById("handleBottomDiv1");
-    const handleBottom2 = document.getElementById("handleBottomDiv2");
-
-    // Sliders & Controls
-    const inputWidth = document.getElementById("cfgStampWidth");
-    const inputFloralY = document.getElementById("cfgFloralOffsetY");
-    const inputFloralX = document.getElementById("cfgFloralOffsetX");
-    const inputPadding = document.getElementById("cfgStampPadding");
-    const inputFontScale = document.getElementById("cfgStampFontScale");
-    const selectBorderStyle = document.getElementById("cfgStampBorderStyle");
-
-    // New Master Section Sliders
-    const inputBox1Split = document.getElementById("cfgBox1Split");
-    const inputHeaderPadding = document.getElementById("cfgHeaderPadding");
-    const inputBox1Padding = document.getElementById("cfgBox1Padding");
-    const inputBoxes24Padding = document.getElementById("cfgBoxes24Padding");
-    const inputCertifiedFontSize = document.getElementById("cfgCertifiedFontSize");
-    const inputBoxes58Padding = document.getElementById("cfgBoxes58Padding");
-    const inputBottomSealWidth = document.getElementById("cfgBottomSealWidth");
-    const inputBottomQrWidth = document.getElementById("cfgBottomQrWidth");
-    const inputBottomSigWidth = document.getElementById("cfgBottomSigWidth");
-    const inputQrBoxSize = document.getElementById("cfgQrBoxSize");
-    const inputSealSpace = document.getElementById("cfgSealSpace");
-
-    // Badges
-    const badgeWidth = document.getElementById("cfgStampWidthBadge");
-    const badgeFloralY = document.getElementById("cfgFloralOffsetYBadge");
-    const badgeFloralX = document.getElementById("cfgFloralOffsetXBadge");
-    const badgePadding = document.getElementById("cfgStampPaddingBadge");
-    const badgeFontScale = document.getElementById("cfgStampFontScaleBadge");
-    const badgeLiveDim = document.getElementById("stampLiveDimensionsBadge");
-
-    const badgeBox1Split = document.getElementById("cfgBox1SplitBadge");
-    const badgeHeaderPadding = document.getElementById("cfgHeaderPaddingBadge");
-    const badgeBox1Padding = document.getElementById("cfgBox1PaddingBadge");
-    const badgeBoxes24Padding = document.getElementById("cfgBoxes24PaddingBadge");
-    const badgeCertifiedFontSize = document.getElementById("cfgCertifiedFontSizeBadge");
-    const badgeBoxes58Padding = document.getElementById("cfgBoxes58PaddingBadge");
-    const badgeBottomSealWidth = document.getElementById("cfgBottomSealWidthBadge");
-    const badgeBottomQrWidth = document.getElementById("cfgBottomQrWidthBadge");
-    const badgeBottomSigWidth = document.getElementById("cfgBottomSigWidthBadge");
-    const badgeQrBoxSize = document.getElementById("cfgQrBoxSizeBadge");
-    const badgeSealSpace = document.getElementById("cfgSealSpaceBadge");
-
-    // Toggles
-    const resetLayoutBtn = document.getElementById("btnResetStampLayout");
-    const chkWatermark = document.getElementById("cfgStampShowWatermark");
-    const chkDisclaimer = document.getElementById("cfgStampShowDisclaimer");
-
-    const watermarkLayer = document.getElementById("stampWatermarkLayer");
-    const disclaimerWrap = document.getElementById("stampDemoDisclaimerWrap");
-    const demoSigImg = document.getElementById("stampDemoSigImg");
+    const tableEl = document.getElementById("stampGridTable");
+    const tooltip = document.getElementById("excelDragTooltip");
 
     function applyStampLayoutToStage() {
       if (!frame) return;
 
-      const w = parseInt(inputWidth?.value, 10) || 550;
-      const fy = parseInt(inputFloralY?.value, 10) || 0;
-      const fx = parseInt(inputFloralX?.value, 10) || 0;
-      const pad = parseInt(inputPadding?.value, 10) || 44;
-      const font = parseInt(inputFontScale?.value, 10) || 100;
-      const bStyle = selectBorderStyle?.value || "1px solid #000000";
+      const sl = currentStampLayout;
+      const w = sl.width || 550;
+      const fy = sl.borderOffsetY || 0;
+      const fx = sl.borderOffsetX || 0;
+      const pad = sl.borderPadding || 44;
+      const bStyle = sl.borderStyle || "1px solid #000000";
 
-      const b1Split = parseInt(inputBox1Split?.value, 10) || 32;
-      const hPad = parseInt(inputHeaderPadding?.value, 10) || 5;
-      const b1Pad = parseInt(inputBox1Padding?.value, 10) || 3;
-      const b24Pad = parseInt(inputBoxes24Padding?.value, 10) || 3;
-      const certFont = parseFloat(inputCertifiedFontSize?.value) || 1.45;
-      const b58Pad = parseFloat(inputBoxes58Padding?.value) || 2.5;
-      const bSealW = parseInt(inputBottomSealWidth?.value, 10) || 39;
-      const bQrW = parseInt(inputBottomQrWidth?.value, 10) || 22;
-      const bSigW = parseInt(inputBottomSigWidth?.value, 10) || 39;
-      const qrSize = parseInt(inputQrBoxSize?.value, 10) || 76;
-      const sealSp = parseInt(inputSealSpace?.value, 10) || 22;
+      const b1Split = sl.box1Split !== undefined ? sl.box1Split : 32;
+      const hPad = sl.headerPadding !== undefined ? sl.headerPadding : 5;
+      const subPad = sl.subtitlePadding !== undefined ? sl.subtitlePadding : 2;
+      const b1Pad = sl.box1Padding !== undefined ? sl.box1Padding : 3;
+      const b24Pad = sl.boxes24Padding !== undefined ? sl.boxes24Padding : 3;
+      const certFont = sl.certifiedFontSize !== undefined ? sl.certifiedFontSize : 1.45;
+      const b58Pad = sl.boxes58Padding !== undefined ? sl.boxes58Padding : 2.5;
+      const bSealW = sl.bottomSealWidth !== undefined ? sl.bottomSealWidth : 39;
+      const bQrW = sl.bottomQrWidth !== undefined ? sl.bottomQrWidth : 22;
+      const bSigW = sl.bottomSigWidth !== undefined ? sl.bottomSigWidth : 39;
+      const qrSize = sl.qrBoxSize !== undefined ? sl.qrBoxSize : 76;
+      const sealSp = sl.sealSpace !== undefined ? sl.sealSpace : 22;
 
-      // Apply CSS custom properties to preview frame
+      // Apply CSS Custom Properties
       frame.style.setProperty("--stamp-max-width", `${w}px`);
       frame.style.setProperty("--floral-offset-y", `${fy}px`);
       frame.style.setProperty("--floral-offset-x", `${fx}px`);
       frame.style.setProperty("--stamp-padding", `${pad}px`);
-      frame.style.setProperty("--stamp-font-scale", font / 100);
       frame.style.setProperty("--table-border", bStyle);
 
       frame.style.setProperty("--box1-split", `${b1Split}%`);
       frame.style.setProperty("--header-padding-top", `${hPad}px`);
       frame.style.setProperty("--header-padding-bottom", `${Math.max(2, hPad - 1)}px`);
+      frame.style.setProperty("--subtitle-padding", `${subPad}px`);
       frame.style.setProperty("--box1-padding", `${b1Pad}px`);
       frame.style.setProperty("--boxes24-padding", `${b24Pad}px`);
       frame.style.setProperty("--certified-padding", `${Math.max(2, Math.round(b24Pad))}px`);
@@ -1368,281 +1337,442 @@ document.addEventListener("DOMContentLoaded", () => {
       frame.style.setProperty("--qr-box-size", `${qrSize}px`);
       frame.style.setProperty("--bottom-seal-padding-top", `${sealSp}px`);
 
-      // Update badge text values
-      if (badgeWidth) badgeWidth.textContent = `${w}px`;
-      if (badgeFloralY) badgeFloralY.textContent = `${fy}px`;
-      if (badgeFloralX) badgeFloralX.textContent = `${fx}px`;
-      if (badgePadding) badgePadding.textContent = `${pad}px`;
-      if (badgeFontScale) badgeFontScale.textContent = `${font}%`;
-
-      if (badgeBox1Split) badgeBox1Split.textContent = `${b1Split}%`;
-      if (badgeHeaderPadding) badgeHeaderPadding.textContent = `${hPad}px`;
-      if (badgeBox1Padding) badgeBox1Padding.textContent = `${b1Pad}px`;
-      if (badgeBoxes24Padding) badgeBoxes24Padding.textContent = `${b24Pad}px`;
-      if (badgeCertifiedFontSize) badgeCertifiedFontSize.textContent = `${certFont}rem`;
-      if (badgeBoxes58Padding) badgeBoxes58Padding.textContent = `${b58Pad}px`;
-      if (badgeBottomSealWidth) badgeBottomSealWidth.textContent = `${bSealW}%`;
-      if (badgeBottomQrWidth) badgeBottomQrWidth.textContent = `${bQrW}%`;
-      if (badgeBottomSigWidth) badgeBottomSigWidth.textContent = `${bSigW}%`;
-      if (badgeQrBoxSize) badgeQrBoxSize.textContent = `${qrSize}px`;
-      if (badgeSealSpace) badgeSealSpace.textContent = `${sealSp}px`;
-
+      // Update Live Dimension & Metric Badges
+      const badgeLiveDim = document.getElementById("stampLiveDimensionsBadge");
       if (badgeLiveDim) {
         const h = frame.offsetHeight || 500;
         badgeLiveDim.textContent = `${w}px × ${h}px`;
       }
+      const lblW = document.getElementById("lblMetricWidth");
+      if (lblW) lblW.textContent = `${w}px`;
+      const lblB1 = document.getElementById("lblMetricBox1");
+      if (lblB1) lblB1.textContent = `${b1Split}% : ${100 - b1Split}%`;
+      const lblSeal = document.getElementById("lblMetricSeal");
+      if (lblSeal) lblSeal.textContent = `${bSealW}%`;
+      const lblQr = document.getElementById("lblMetricQr");
+      if (lblQr) lblQr.textContent = `${bQrW}%`;
+      const lblSig = document.getElementById("lblMetricSig");
+      if (lblSig) lblSig.textContent = `${bSigW}%`;
+      const lblPad = document.getElementById("lblMetricPad");
+      if (lblPad) lblPad.textContent = `${b1Pad}px`;
+      const lblFloral = document.getElementById("lblFloralOffset");
+      if (lblFloral) lblFloral.textContent = `Y: ${fy}px, X: ${fx}px`;
 
-      if (watermarkLayer) {
-        watermarkLayer.style.display = chkWatermark?.checked ? "" : "none";
-      }
-      if (disclaimerWrap) {
-        disclaimerWrap.style.display = chkDisclaimer?.checked ? "" : "none";
-      }
+      // Overlays
+      const wm = document.getElementById("stampWatermarkLayer");
+      const disc = document.getElementById("stampDemoDisclaimerWrap");
+      const chkWm = document.getElementById("cfgStampShowWatermark");
+      const chkDisc = document.getElementById("cfgStampShowDisclaimer");
+      if (wm) wm.style.display = chkWm?.checked ? "" : "none";
+      if (disc) disc.style.display = chkDisc?.checked ? "" : "none";
 
       // Sync demo signature image if available
       const cfgSigUrl = document.getElementById("cfgCertSignatureUrl")?.value;
+      const demoSigImg = document.getElementById("stampDemoSigImg");
       if (demoSigImg && cfgSigUrl) {
         demoSigImg.src = cfgSigUrl;
       }
     }
 
-    // Attach slider listeners for real-time live preview
-    const allSliders = [
-      inputWidth, inputFloralY, inputFloralX, inputPadding, inputFontScale,
-      inputBox1Split, inputHeaderPadding, inputBox1Padding, inputBoxes24Padding,
-      inputCertifiedFontSize, inputBoxes58Padding, inputBottomSealWidth,
-      inputBottomQrWidth, inputBottomSigWidth, inputQrBoxSize, inputSealSpace
-    ];
+    // 1. In-Table Excel-Style Drag Lines (Horizontal & Vertical)
+    function initExcelDragLines() {
+      const dragLines = document.querySelectorAll(".excel-drag-line-h, .excel-drag-line-v");
 
-    allSliders.forEach(inp => {
-      if (inp) {
-        inp.addEventListener("input", () => {
-          applyStampLayoutToStage();
-          if (typeof markDraftDirty === 'function') markDraftDirty();
+      dragLines.forEach(lineEl => {
+        const isHorizontal = lineEl.classList.contains("excel-drag-line-h");
+        const targetKey = lineEl.getAttribute("data-target");
+        const label = lineEl.getAttribute("data-label") || targetKey;
+
+        lineEl.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          lineEl.classList.add("is-dragging");
+          if (frame) frame.classList.add("is-dragging");
+          document.body.style.cursor = isHorizontal ? "row-resize" : "col-resize";
+          document.body.style.userSelect = "none";
+
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startLayout = { ...currentStampLayout };
+          const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
+          const tableWidth = tableRect.width || frame.offsetWidth || 550;
+
+          if (tooltip) {
+            tooltip.style.display = "block";
+            tooltip.style.left = `${e.clientX}px`;
+            tooltip.style.top = `${e.clientY - 10}px`;
+            tooltip.textContent = isHorizontal ? `↕ ${label}` : `↔ ${label}`;
+          }
+
+          function onMouseMove(moveEvent) {
+            moveEvent.preventDefault();
+
+            if (tooltip) {
+              tooltip.style.left = `${moveEvent.clientX}px`;
+              tooltip.style.top = `${moveEvent.clientY - 10}px`;
+            }
+
+            if (isHorizontal) {
+              const deltaY = moveEvent.clientY - startY;
+
+              if (targetKey === "headerPadding") {
+                const val = Math.max(2, Math.min(22, Math.round(startLayout.headerPadding + deltaY / 2)));
+                currentStampLayout.headerPadding = val;
+                if (tooltip) tooltip.textContent = `↕ Header Spacing: ${val}px`;
+              } else if (targetKey === "subtitlePadding") {
+                const val = Math.max(1, Math.min(18, Math.round((startLayout.subtitlePadding || 2) + deltaY / 2)));
+                currentStampLayout.subtitlePadding = val;
+                if (tooltip) tooltip.textContent = `↕ Subtitle Spacing: ${val}px`;
+              } else if (targetKey === "box1Padding") {
+                const val = Math.max(1, Math.min(18, Math.round(startLayout.box1Padding + deltaY / 2)));
+                currentStampLayout.box1Padding = val;
+                if (tooltip) tooltip.textContent = `↕ Box 1 Row Height: ${val}px`;
+              } else if (targetKey === "boxes24Padding") {
+                const val = Math.max(1, Math.min(18, Math.round(startLayout.boxes24Padding + deltaY / 2)));
+                currentStampLayout.boxes24Padding = val;
+                if (tooltip) tooltip.textContent = `↕ Boxes 2-4 Height: ${val}px`;
+              } else if (targetKey === "certifiedPadding") {
+                const val = Math.max(1, Math.min(20, Math.round(startLayout.certifiedPadding + deltaY / 2)));
+                currentStampLayout.certifiedPadding = val;
+                if (tooltip) tooltip.textContent = `↕ Certified Height: ${val}px`;
+              } else if (targetKey === "boxes58Padding") {
+                const val = Math.max(1, Math.min(16, Math.round(startLayout.boxes58Padding + deltaY / 2)));
+                currentStampLayout.boxes58Padding = val;
+                if (tooltip) tooltip.textContent = `↕ Boxes 5-8 Height: ${val}px`;
+              } else if (targetKey === "sealSpace") {
+                const val = Math.max(10, Math.min(70, Math.round(startLayout.sealSpace + deltaY / 1.5)));
+                currentStampLayout.sealSpace = val;
+                if (tooltip) tooltip.textContent = `↕ Bottom Seal Height: ${val}px`;
+              }
+            } else {
+              // Vertical column divider
+              const relativeX = moveEvent.clientX - tableRect.left;
+              const pct = Math.round((relativeX / tableWidth) * 100);
+
+              if (targetKey === "box1Split") {
+                const clamped = Math.min(52, Math.max(20, pct));
+                currentStampLayout.box1Split = clamped;
+                if (tooltip) tooltip.textContent = `↔ Box 1 Split: ${clamped}% : ${100 - clamped}%`;
+              } else if (targetKey === "bottomSealWidth") {
+                const clampedSeal = Math.min(48, Math.max(22, pct));
+                const currentSig = currentStampLayout.bottomSigWidth || 39;
+                const qrPct = Math.max(14, 100 - clampedSeal - currentSig);
+                currentStampLayout.bottomSealWidth = clampedSeal;
+                currentStampLayout.bottomQrWidth = qrPct;
+                if (tooltip) tooltip.textContent = `↔ Seal: ${clampedSeal}% | QR: ${qrPct}%`;
+              } else if (targetKey === "bottomSigWidth") {
+                const leftDistance = relativeX / tableWidth;
+                const sigPct = Math.round((1 - leftDistance) * 100);
+                const clampedSig = Math.min(48, Math.max(22, sigPct));
+                const currentSeal = currentStampLayout.bottomSealWidth || 39;
+                const qrPct = Math.max(14, 100 - currentSeal - clampedSig);
+                currentStampLayout.bottomSigWidth = clampedSig;
+                currentStampLayout.bottomQrWidth = qrPct;
+                if (tooltip) tooltip.textContent = `↔ QR: ${qrPct}% | Sig: ${clampedSig}%`;
+              }
+            }
+
+            applyStampLayoutToStage();
+          }
+
+          function onMouseUp() {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mouseup", onMouseUp);
+            lineEl.classList.remove("is-dragging");
+            if (frame) frame.classList.remove("is-dragging");
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+            if (tooltip) tooltip.style.display = "none";
+            if (typeof markDraftDirty === "function") markDraftDirty();
+          }
+
+          window.addEventListener("mousemove", onMouseMove);
+          window.addEventListener("mouseup", onMouseUp);
         });
-      }
-    });
-
-    if (selectBorderStyle) {
-      selectBorderStyle.addEventListener("change", () => {
-        applyStampLayoutToStage();
-        if (typeof markDraftDirty === 'function') markDraftDirty();
       });
     }
 
-    [chkWatermark, chkDisclaimer].forEach(chk => {
+    // 2. Outer Frame Drag Handles (Width & Corner)
+    function initOuterFrameHandles() {
+      const handleE = document.getElementById("stampHandleE");
+      const handleS = document.getElementById("stampHandleS");
+      const handleSE = document.getElementById("stampHandleSE");
+
+      function bindOuterHandle(handleEl, type) {
+        if (!handleEl) return;
+        handleEl.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startWidth = currentStampLayout.width || 550;
+          const startSeal = currentStampLayout.sealSpace || 22;
+
+          if (frame) frame.classList.add("is-dragging");
+          document.body.style.userSelect = "none";
+
+          function onMouseMove(moveEvent) {
+            moveEvent.preventDefault();
+            if (type === "e" || type === "se") {
+              const deltaX = moveEvent.clientX - startX;
+              const newW = Math.min(750, Math.max(380, Math.round(startWidth + deltaX * 2)));
+              currentStampLayout.width = newW;
+            }
+            if (type === "s" || type === "se") {
+              const deltaY = moveEvent.clientY - startY;
+              const newSeal = Math.min(70, Math.max(10, Math.round(startSeal + deltaY / 2)));
+              currentStampLayout.sealSpace = newSeal;
+            }
+            applyStampLayoutToStage();
+          }
+
+          function onMouseUp() {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("mouseup", onMouseUp);
+            if (frame) frame.classList.remove("is-dragging");
+            document.body.style.userSelect = "";
+            if (typeof markDraftDirty === "function") markDraftDirty();
+          }
+
+          window.addEventListener("mousemove", onMouseMove);
+          window.addEventListener("mouseup", onMouseUp);
+        });
+      }
+
+      bindOuterHandle(handleE, "e");
+      bindOuterHandle(handleS, "s");
+      bindOuterHandle(handleSE, "se");
+    }
+
+    // 3. Quick Size Preset Buttons
+    document.querySelectorAll(".stamp-preset-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const preset = btn.getAttribute("data-preset");
+        if (preset === "standard") {
+          currentStampLayout.width = 550;
+          currentStampLayout.box1Split = 32;
+          currentStampLayout.bottomSealWidth = 39;
+          currentStampLayout.bottomQrWidth = 22;
+          currentStampLayout.bottomSigWidth = 39;
+          currentStampLayout.box1Padding = 3;
+          currentStampLayout.boxes24Padding = 3;
+          currentStampLayout.headerPadding = 5;
+        } else if (preset === "compact") {
+          currentStampLayout.width = 480;
+          currentStampLayout.box1Split = 30;
+          currentStampLayout.bottomSealWidth = 38;
+          currentStampLayout.bottomQrWidth = 24;
+          currentStampLayout.bottomSigWidth = 38;
+          currentStampLayout.box1Padding = 2;
+          currentStampLayout.boxes24Padding = 2;
+          currentStampLayout.headerPadding = 4;
+        } else if (preset === "wide") {
+          currentStampLayout.width = 620;
+          currentStampLayout.box1Split = 35;
+          currentStampLayout.bottomSealWidth = 40;
+          currentStampLayout.bottomQrWidth = 20;
+          currentStampLayout.bottomSigWidth = 40;
+          currentStampLayout.box1Padding = 4;
+          currentStampLayout.boxes24Padding = 4;
+          currentStampLayout.headerPadding = 6;
+        } else if (preset === "large") {
+          currentStampLayout.width = 680;
+          currentStampLayout.box1Split = 36;
+          currentStampLayout.bottomSealWidth = 40;
+          currentStampLayout.bottomQrWidth = 20;
+          currentStampLayout.bottomSigWidth = 40;
+          currentStampLayout.box1Padding = 5;
+          currentStampLayout.boxes24Padding = 5;
+          currentStampLayout.headerPadding = 7;
+        }
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    });
+
+    // 4. Floral Stars Nudge Buttons
+    const btnFloralUp = document.getElementById("btnNudgeFloralUp");
+    const btnFloralDown = document.getElementById("btnNudgeFloralDown");
+    const btnFloralLeft = document.getElementById("btnNudgeFloralLeft");
+    const btnFloralRight = document.getElementById("btnNudgeFloralRight");
+    const btnFloralCenter = document.getElementById("btnNudgeFloralCenter");
+
+    if (btnFloralUp) {
+      btnFloralUp.addEventListener("click", () => {
+        currentStampLayout.borderOffsetY = (currentStampLayout.borderOffsetY || 0) - 2;
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    }
+    if (btnFloralDown) {
+      btnFloralDown.addEventListener("click", () => {
+        currentStampLayout.borderOffsetY = (currentStampLayout.borderOffsetY || 0) + 2;
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    }
+    if (btnFloralLeft) {
+      btnFloralLeft.addEventListener("click", () => {
+        currentStampLayout.borderOffsetX = (currentStampLayout.borderOffsetX || 0) - 2;
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    }
+    if (btnFloralRight) {
+      btnFloralRight.addEventListener("click", () => {
+        currentStampLayout.borderOffsetX = (currentStampLayout.borderOffsetX || 0) + 2;
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    }
+    if (btnFloralCenter) {
+      btnFloralCenter.addEventListener("click", () => {
+        currentStampLayout.borderOffsetY = 0;
+        currentStampLayout.borderOffsetX = 0;
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    }
+
+    // 5. Border Style Dropdown
+    const selectBorder = document.getElementById("cfgStampBorderStyle");
+    if (selectBorder) {
+      selectBorder.addEventListener("change", () => {
+        currentStampLayout.borderStyle = selectBorder.value;
+        applyStampLayoutToStage();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+      });
+    }
+
+    // 6. Watermark & Disclaimer Checkboxes
+    const chkWm = document.getElementById("cfgStampShowWatermark");
+    const chkDisc = document.getElementById("cfgStampShowDisclaimer");
+    [chkWm, chkDisc].forEach(chk => {
       if (chk) {
         chk.addEventListener("change", () => {
           applyStampLayoutToStage();
-          if (typeof markDraftDirty === 'function') markDraftDirty();
+          if (typeof markDraftDirty === "function") markDraftDirty();
         });
       }
     });
 
-    // Preset Chip Buttons
-    document.querySelectorAll(".stamp-chip-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const action = btn.getAttribute("data-action");
-        const val = btn.getAttribute("data-val");
-        if (action === "set-width" && inputWidth) inputWidth.value = val;
-        else if (action === "set-floral-y" && inputFloralY) inputFloralY.value = val;
-        else if (action === "set-box1-split" && inputBox1Split) inputBox1Split.value = val;
+    // 7. Reset Layout Button
+    const btnReset = document.getElementById("btnResetStampLayout");
+    if (btnReset) {
+      btnReset.addEventListener("click", () => {
+        currentStampLayout = {
+          width: 550,
+          borderOffsetY: 0,
+          borderOffsetX: 0,
+          borderPadding: 44,
+          lineSpacing: 4,
+          fontScale: 100,
+          borderStyle: "1px solid #000000",
+          box1Split: 32,
+          headerPadding: 5,
+          subtitlePadding: 2,
+          box1Padding: 3,
+          boxes24Padding: 3,
+          certifiedFontSize: 1.45,
+          boxes58Padding: 2.5,
+          bottomSealWidth: 39,
+          bottomQrWidth: 22,
+          bottomSigWidth: 39,
+          qrBoxSize: 76,
+          sealSpace: 22,
+          enableCollapseButton: false,
+          enableWatermark: true,
+          enableDisclaimer: true
+        };
+        if (selectBorder) selectBorder.value = "1px solid #000000";
+        if (chkWm) chkWm.checked = true;
+        if (chkDisc) chkDisc.checked = true;
         applyStampLayoutToStage();
-        if (typeof markDraftDirty === 'function') markDraftDirty();
-      });
-    });
-
-    // Reset Layout Button
-    if (resetLayoutBtn) {
-      resetLayoutBtn.addEventListener("click", () => {
-        if (inputWidth) inputWidth.value = 550;
-        if (inputFloralY) inputFloralY.value = 0;
-        if (inputFloralX) inputFloralX.value = 0;
-        if (inputPadding) inputPadding.value = 44;
-        if (inputFontScale) inputFontScale.value = 100;
-        if (selectBorderStyle) selectBorderStyle.value = "1px solid #000000";
-        if (inputBox1Split) inputBox1Split.value = 32;
-        if (inputHeaderPadding) inputHeaderPadding.value = 5;
-        if (inputBox1Padding) inputBox1Padding.value = 3;
-        if (inputBoxes24Padding) inputBoxes24Padding.value = 3;
-        if (inputCertifiedFontSize) inputCertifiedFontSize.value = 1.45;
-        if (inputBoxes58Padding) inputBoxes58Padding.value = 2.5;
-        if (inputBottomSealWidth) inputBottomSealWidth.value = 39;
-        if (inputBottomQrWidth) inputBottomQrWidth.value = 22;
-        if (inputBottomSigWidth) inputBottomSigWidth.value = 39;
-        if (inputQrBoxSize) inputQrBoxSize.value = 76;
-        if (inputSealSpace) inputSealSpace.value = 22;
-        if (chkWatermark) chkWatermark.checked = true;
-        if (chkDisclaimer) chkDisclaimer.checked = true;
-        applyStampLayoutToStage();
-        if (typeof markDraftDirty === 'function') markDraftDirty();
+        if (typeof markDraftDirty === "function") markDraftDirty();
+        showToast("Stamp layout reset to MOFA defaults.", "info");
       });
     }
 
-    // 1. Box 1 Vertical Divider Mouse Drag (Drag Country vs Document split)
-    if (handleBox1) {
-      handleBox1.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleBox1.classList.add("is-dragging");
-        frame.classList.add("is-dragging");
+    // 8. UNIVERSAL SAVE & APPLY TO ALL DOCUMENTS (Buttons: Top & Side)
+    const btnSaveAll = document.getElementById("btnSaveStampLayoutAll");
+    const btnSaveSide = document.getElementById("btnSaveStampLayoutSide");
 
-        const tableEl = document.getElementById("stampGridTable");
-        const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
-
-        function onMouseMove(moveEvent) {
-          moveEvent.preventDefault();
-          const relativeX = moveEvent.clientX - tableRect.left;
-          const pct = Math.round((relativeX / tableRect.width) * 100);
-          const clamped = Math.min(50, Math.max(20, pct));
-          if (inputBox1Split) inputBox1Split.value = clamped;
-          applyStampLayoutToStage();
-        }
-
-        function onMouseUp() {
-          window.removeEventListener("mousemove", onMouseMove);
-          window.removeEventListener("mouseup", onMouseUp);
-          handleBox1.classList.remove("is-dragging");
-          frame.classList.remove("is-dragging");
-          if (typeof markDraftDirty === 'function') markDraftDirty();
-        }
-
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
+    async function handleSaveStampLayoutAll() {
+      const btns = [btnSaveAll, btnSaveSide].filter(Boolean);
+      btns.forEach(b => {
+        b.disabled = true;
+        b.dataset.origHtml = b.innerHTML;
+        b.innerHTML = `<span>⏳ Saving &amp; Applying to All Documents...</span>`;
       });
+
+      try {
+        showToast("Saving and applying layout to ALL saved documents...", "info");
+
+        // Prepare full authoritative config
+        const updatedConfig = gatherConfigFromForm();
+        updatedConfig.certificateView = updatedConfig.certificateView || {};
+        updatedConfig.certificateView.stampLayout = {
+          ...currentStampLayout,
+          enableCollapseButton: false
+        };
+
+        // 1. Save draft
+        const draftRes = await apiFetch('/api/admin/config/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedConfig)
+        });
+        if (!draftRes.ok) {
+          throw new Error("Failed to save draft layout.");
+        }
+
+        // 2. Publish Live
+        const pubRes = await apiFetch('/api/admin/config/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedConfig)
+        });
+        if (!pubRes.ok) {
+          throw new Error("Failed to publish layout to live website.");
+        }
+
+        const pubData = await pubRes.json();
+        const publishedConfig = pubData.config || updatedConfig;
+
+        // 3. Immediately sync to localStorage for zero-delay public verification
+        try {
+          localStorage.setItem('mofa_published_config', JSON.stringify(publishedConfig));
+        } catch (_) {}
+
+        showToast("✓ Stamp layout saved & applied to ALL documents successfully!", "success");
+        if (typeof checkPublishingStatus === "function") {
+          await checkPublishingStatus();
+        }
+      } catch (err) {
+        console.error('[Save Stamp Layout Error]:', err);
+        showToast("Error saving layout: " + err.message, "error");
+      } finally {
+        btns.forEach(b => {
+          b.disabled = false;
+          if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+        });
+      }
     }
 
-    // 2. Bottom Grid Divider 1 (Seal vs QR split)
-    if (handleBottom1) {
-      handleBottom1.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleBottom1.classList.add("is-dragging");
-        frame.classList.add("is-dragging");
+    if (btnSaveAll) btnSaveAll.addEventListener("click", handleSaveStampLayoutAll);
+    if (btnSaveSide) btnSaveSide.addEventListener("click", handleSaveStampLayoutAll);
 
-        const tableEl = document.getElementById("stampGridTable");
-        const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
-
-        function onMouseMove(moveEvent) {
-          moveEvent.preventDefault();
-          const relativeX = moveEvent.clientX - tableRect.left;
-          const sealPct = Math.round((relativeX / tableRect.width) * 100);
-          const clampedSeal = Math.min(48, Math.max(25, sealPct));
-          const currentSig = parseInt(inputBottomSigWidth?.value, 10) || 39;
-          const qrPct = Math.max(15, 100 - clampedSeal - currentSig);
-
-          if (inputBottomSealWidth) inputBottomSealWidth.value = clampedSeal;
-          if (inputBottomQrWidth) inputBottomQrWidth.value = qrPct;
-          applyStampLayoutToStage();
-        }
-
-        function onMouseUp() {
-          window.removeEventListener("mousemove", onMouseMove);
-          window.removeEventListener("mouseup", onMouseUp);
-          handleBottom1.classList.remove("is-dragging");
-          frame.classList.remove("is-dragging");
-          if (typeof markDraftDirty === 'function') markDraftDirty();
-        }
-
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
-      });
-    }
-
-    // 3. Bottom Grid Divider 2 (QR vs Signature split)
-    if (handleBottom2) {
-      handleBottom2.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleBottom2.classList.add("is-dragging");
-        frame.classList.add("is-dragging");
-
-        const tableEl = document.getElementById("stampGridTable");
-        const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
-
-        function onMouseMove(moveEvent) {
-          moveEvent.preventDefault();
-          const relativeX = moveEvent.clientX - tableRect.left;
-          const leftDistance = relativeX / tableRect.width;
-          const currentSeal = parseInt(inputBottomSealWidth?.value, 10) || 39;
-          const sigPct = Math.round((1 - leftDistance) * 100);
-          const clampedSig = Math.min(48, Math.max(25, sigPct));
-          const qrPct = Math.max(15, 100 - currentSeal - clampedSig);
-
-          if (inputBottomSigWidth) inputBottomSigWidth.value = clampedSig;
-          if (inputBottomQrWidth) inputBottomQrWidth.value = qrPct;
-          applyStampLayoutToStage();
-        }
-
-        function onMouseUp() {
-          window.removeEventListener("mousemove", onMouseMove);
-          window.removeEventListener("mouseup", onMouseUp);
-          handleBottom2.classList.remove("is-dragging");
-          frame.classList.remove("is-dragging");
-          if (typeof markDraftDirty === 'function') markDraftDirty();
-        }
-
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
-      });
-    }
-
-    // Frame Outer Drag Handles
-    function initMouseDragHandle(handleEl, type) {
-      if (!handleEl || !frame) return;
-
-      handleEl.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const startWidth = parseInt(inputWidth?.value, 10) || frame.offsetWidth || 550;
-        const startPad = parseInt(inputPadding?.value, 10) || 44;
-
-        frame.classList.add("is-dragging");
-
-        function onMouseMove(moveEvent) {
-          moveEvent.preventDefault();
-
-          if (type === "e" || type === "se") {
-            const deltaX = (moveEvent.clientX - startX) * 2;
-            const newW = Math.min(750, Math.max(380, Math.round(startWidth + deltaX)));
-            if (inputWidth) inputWidth.value = newW;
-          }
-
-          if (type === "s" || type === "se") {
-            const deltaY = moveEvent.clientY - startY;
-            const newPad = Math.min(65, Math.max(25, Math.round(startPad + deltaY / 4)));
-            if (inputPadding) inputPadding.value = newPad;
-          }
-
-          applyStampLayoutToStage();
-        }
-
-        function onMouseUp() {
-          window.removeEventListener("mousemove", onMouseMove);
-          window.removeEventListener("mouseup", onMouseUp);
-          frame.classList.remove("is-dragging");
-          if (typeof markDraftDirty === 'function') markDraftDirty();
-        }
-
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
-      });
-    }
-
-    initMouseDragHandle(handleE, "e");
-    initMouseDragHandle(handleS, "s");
-    initMouseDragHandle(handleSE, "se");
-
+    // Initialize drag lines and outer handles
+    initExcelDragLines();
+    initOuterFrameHandles();
     applyStampLayoutToStage();
 
     return {
       updateStage: applyStampLayoutToStage
     };
   }
-
   const stampDesignerStage = setupStampDesigner();
 
   // =========================================================================
