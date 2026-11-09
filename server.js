@@ -1089,6 +1089,11 @@ async function requestHandler(req, res) {
       const cleanDate = docDate ? normalizeDate(String(docDate).trim()) : "";
 
       const records = readJsonSafe(RECORDS_FILE, []);
+    records.forEach(r => {
+      if (!r.id) {
+        r.id = r.docNumber ? ('rec-' + r.docNumber.toLowerCase().replace(/[^a-z0-9]/g, '-')) : ('rec-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6));
+      }
+    });
       let match = records.find(r => r.docNumber && r.docNumber.toUpperCase() === cleanDocNumber);
 
       // Self-Healing Fallback: If not found on ephemeral server, but valid backupRecord provided from client cache
@@ -1560,8 +1565,13 @@ async function requestHandler(req, res) {
       if (newRecord.signatureData && newRecord.signatureUrl) {
         saveUploadToStore(path.basename(newRecord.signatureUrl), 'image/png', newRecord.signatureData);
       }
-      if (newRecord.pdfData && newRecord.pdfUrl) {
-        saveUploadToStore(path.basename(newRecord.pdfUrl), 'application/pdf', newRecord.pdfData);
+      if (newRecord.pdfData) {
+        const safePdfName = newRecord.pdfUrl ? path.basename(newRecord.pdfUrl) : (newRecord.pdfFileName || `${newRecord.docNumber}.pdf`);
+        saveUploadToStore(safePdfName, 'application/pdf', newRecord.pdfData);
+        commitUploadFileToGitHub(safePdfName, newRecord.pdfData, 'application/pdf').catch(e => console.warn('[Async Git Commit Error]:', e.message));
+        if (newRecord.pdfFileName && newRecord.pdfFileName !== safePdfName) {
+          commitUploadFileToGitHub(newRecord.pdfFileName, newRecord.pdfData, 'application/pdf').catch(e => console.warn('[Async Git Commit Error]:', e.message));
+        }
       }
 
       records.unshift(newRecord);
@@ -1570,27 +1580,97 @@ async function requestHandler(req, res) {
       return sendJson(res, 201, { success: true, record: newRecord });
     }
 
-    // PUT /api/admin/records/:id (Update)
-    const matchPut = pathname.match(/^\/api\/admin\/records\/([a-zA-Z0-9_-]+)$/);
+    // PUT /api/admin/records (or /api/admin/records/:id) - Resilient Update & Upsert
+    const matchPut = pathname.match(/^\/api\/admin\/records(?:\/([a-zA-Z0-9_-]+))?$/);
     if (matchPut && method === 'PUT') {
       const recId = matchPut[1];
       const data = await parseBody(req);
-      const index = records.findIndex(r => r.id === recId);
 
-      if (index === -1) {
-        return sendJson(res, 404, { success: false, message: "Record not found." });
+      // Multi-layer lookup:
+      // 1. By ID if recId is provided and not literal "undefined"/"null"
+      let index = -1;
+      if (recId && recId !== 'undefined' && recId !== 'null') {
+        index = records.findIndex(r => r.id === recId);
+      }
+      // 2. By data.id from payload
+      if (index === -1 && data.id && data.id !== 'undefined' && data.id !== 'null') {
+        index = records.findIndex(r => r.id === data.id);
+      }
+      // 3. By clean docNumber from data
+      if (index === -1 && data.docNumber) {
+        const cleanDocNum = data.docNumber.trim().toUpperCase();
+        index = records.findIndex(r => r.docNumber && r.docNumber.trim().toUpperCase() === cleanDocNum);
+      }
+      // 4. By recId as docNumber
+      if (index === -1 && recId && recId !== 'undefined' && recId !== 'null') {
+        const cleanRecId = recId.trim().toUpperCase();
+        index = records.findIndex(r => r.docNumber && r.docNumber.trim().toUpperCase() === cleanRecId);
       }
 
-      const existing = records[index];
-      const cleanDocNum = data.docNumber ? data.docNumber.trim().toUpperCase() : existing.docNumber;
+      const cleanDocNum = data.docNumber ? data.docNumber.trim().toUpperCase() : (index !== -1 ? records[index].docNumber : `DOC-${Date.now()}`);
 
-      // Ensure no duplicate if docNumber changed
-      if (cleanDocNum !== existing.docNumber && records.some(r => r.id !== recId && r.docNumber.toUpperCase() === cleanDocNum)) {
+      // If record not found, UPSERT: create new record cleanly instead of throwing 404
+      if (index === -1) {
+        const targetId = (recId && recId !== 'undefined' && recId !== 'null') ? recId : (data.id || `rec-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`);
+        const newRecord = {
+          id: targetId,
+          docNumber: cleanDocNum,
+          applicantName: data.applicantName ? data.applicantName.trim() : "",
+          documentType: data.documentType ? data.documentType.trim() : "Personal Document",
+          documentCategory: data.documentCategory !== undefined ? data.documentCategory.trim() : (data.documentType ? data.documentType.trim() : "Personal Document"),
+          country: data.country !== undefined ? data.country.trim() : "Pakistan",
+          signedBy: data.signedBy !== undefined ? data.signedBy.trim() : "N/A",
+          capacity: data.capacity !== undefined ? data.capacity.trim() : "Registrar",
+          sealOf: data.sealOf !== undefined ? data.sealOf.trim() : "Preston University",
+          issuePlace: data.issuePlace !== undefined ? data.issuePlace.trim() : "Lahore Pakistan",
+          issueDate: data.issueDate ? data.issueDate.trim() : new Date().toISOString().split('T')[0],
+          expiryDate: data.expiryDate !== undefined ? data.expiryDate.trim() : "",
+          issuingAuthority: data.issuingAuthority ? data.issuingAuthority.trim() : "Ministry of Foreign Affairs",
+          signatoryOfficer: data.signatoryOfficer !== undefined ? data.signatoryOfficer.trim() : "Ali Faraz",
+          signatureUrl: data.signatureUrl !== undefined ? data.signatureUrl.trim() : "/uploads/signature_ali_faraz_clean.png",
+          signatureWidth: data.signatureWidth !== undefined ? Number(data.signatureWidth) : 88,
+          signatureHeight: data.signatureHeight !== undefined ? Number(data.signatureHeight) : 34,
+          signatureOffsetY: data.signatureOffsetY !== undefined ? Number(data.signatureOffsetY) : 0,
+          signatureFilter: data.signatureFilter !== undefined ? data.signatureFilter.trim() : "none",
+          signatureData: data.signatureData !== undefined ? data.signatureData.trim() : "",
+          pdfFileName: data.pdfFileName !== undefined ? data.pdfFileName.trim() : "",
+          pdfUrl: data.pdfUrl !== undefined ? data.pdfUrl.trim() : "",
+          pdfData: data.pdfData !== undefined ? data.pdfData.trim() : "",
+          status: data.status || "VERIFIED",
+          securityHash: crypto.randomBytes(15).toString('hex'),
+          notes: data.notes !== undefined ? data.notes.trim() : "",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        if (newRecord.signatureData && newRecord.signatureUrl) {
+          saveUploadToStore(path.basename(newRecord.signatureUrl), 'image/png', newRecord.signatureData);
+        }
+        if (newRecord.pdfData) {
+          const safePdfName = newRecord.pdfUrl ? path.basename(newRecord.pdfUrl) : (newRecord.pdfFileName || `${newRecord.docNumber}.pdf`);
+          saveUploadToStore(safePdfName, 'application/pdf', newRecord.pdfData);
+          commitUploadFileToGitHub(safePdfName, newRecord.pdfData, 'application/pdf').catch(e => console.warn('[Async Git Commit Error]:', e.message));
+          if (newRecord.pdfFileName && newRecord.pdfFileName !== safePdfName) {
+            commitUploadFileToGitHub(newRecord.pdfFileName, newRecord.pdfData, 'application/pdf').catch(e => console.warn('[Async Git Commit Error]:', e.message));
+          }
+        }
+
+        records.unshift(newRecord);
+        atomicWriteJson(RECORDS_FILE, records);
+        syncRecordsToCloud(records);
+        return sendJson(res, 200, { success: true, record: newRecord, upserted: true });
+      }
+
+      // Existing record update
+      const existing = records[index];
+      // Ensure no duplicate if docNumber changed to another existing record
+      if (cleanDocNum !== existing.docNumber && records.some((r, i) => i !== index && r.docNumber && r.docNumber.toUpperCase() === cleanDocNum)) {
         return sendJson(res, 400, { success: false, message: `Document number ${cleanDocNum} is already in use.` });
       }
 
       records[index] = {
         ...existing,
+        id: existing.id || recId || `rec-${Date.now()}`,
         docNumber: cleanDocNum,
         applicantName: data.applicantName ? data.applicantName.trim() : existing.applicantName,
         documentType: data.documentType ? data.documentType.trim() : existing.documentType,
@@ -1621,8 +1701,13 @@ async function requestHandler(req, res) {
       if (records[index].signatureData && records[index].signatureUrl) {
         saveUploadToStore(path.basename(records[index].signatureUrl), 'image/png', records[index].signatureData);
       }
-      if (records[index].pdfData && records[index].pdfUrl) {
-        saveUploadToStore(path.basename(records[index].pdfUrl), 'application/pdf', records[index].pdfData);
+      if (records[index].pdfData) {
+        const safePdfName = records[index].pdfUrl ? path.basename(records[index].pdfUrl) : (records[index].pdfFileName || `${records[index].docNumber}.pdf`);
+        saveUploadToStore(safePdfName, 'application/pdf', records[index].pdfData);
+        commitUploadFileToGitHub(safePdfName, records[index].pdfData, 'application/pdf').catch(e => console.warn('[Async Git Commit Error]:', e.message));
+        if (records[index].pdfFileName && records[index].pdfFileName !== safePdfName) {
+          commitUploadFileToGitHub(records[index].pdfFileName, records[index].pdfData, 'application/pdf').catch(e => console.warn('[Async Git Commit Error]:', e.message));
+        }
       }
 
       atomicWriteJson(RECORDS_FILE, records);
@@ -1634,9 +1719,9 @@ async function requestHandler(req, res) {
     const matchDel = pathname.match(/^\/api\/admin\/records\/([a-zA-Z0-9_-]+)$/);
     if (matchDel && method === 'DELETE') {
       const recId = matchDel[1];
-      const newRecords = records.filter(r => r.id !== recId);
-      if (newRecords.length === records.length) {
-        return sendJson(res, 404, { success: false, message: "Record not found." });
+      let newRecords = records.filter(r => r.id !== recId);
+      if (newRecords.length === records.length && recId && recId !== 'undefined' && recId !== 'null') {
+        newRecords = records.filter(r => r.docNumber && r.docNumber.toUpperCase() !== recId.toUpperCase());
       }
       atomicWriteJson(RECORDS_FILE, newRecords);
       syncRecordsToCloud(newRecords);

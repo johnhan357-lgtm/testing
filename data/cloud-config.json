@@ -6,7 +6,7 @@
   "autoCommit": true,
   "kvRestApiUrl": "",
   "kvRestApiToken": "",
-  "lastSyncedAt": null,
-  "lastSyncStatus": "idle",
-  "lastSyncMessage": ""
+  "lastSyncedAt": "2026-11-09T07:50:54.062Z",
+  "lastSyncStatus": "success",
+  "lastSyncMessage": "Document records synchronized"
 }

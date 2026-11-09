@@ -2097,6 +2097,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     records.forEach(rec => {
+      if (!rec.id) {
+        rec.id = rec.docNumber ? ('rec-' + rec.docNumber.toLowerCase().replace(/[^a-z0-9]/g, '-')) : ('rec-' + Date.now());
+      }
       const row = document.createElement("tr");
       let statusClass = "badge-verified";
       if (rec.status === 'EXPIRED') statusClass = "badge-expired";
@@ -2173,11 +2176,11 @@ document.addEventListener("DOMContentLoaded", () => {
     recordsTableBody.querySelectorAll(".btn-rec-edit").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
-        const rec = cachedRecords.find(r => r.id === id);
+        const rec = cachedRecords.find(r => r.id === id || (r.docNumber && r.docNumber === id));
         if (!rec) return;
 
         recordModalTitle.textContent = "Edit Apostille / Document Certificate";
-        document.getElementById("recordId").value = rec.id;
+        document.getElementById("recordId").value = rec.id || rec.docNumber || "";
         document.getElementById("recDocNumber").value = rec.docNumber || "";
         document.getElementById("recApplicant").value = rec.applicantName || "";
         document.getElementById("recDocCategory").value = rec.documentCategory || rec.documentType || "Personal Document";
@@ -2460,10 +2463,12 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Document PDF uploaded successfully.", "success");
           } else {
             document.getElementById("recPdfFileName").value = file.name;
+            document.getElementById("recPdfUrl").value = `/uploads/${encodeURIComponent(file.name)}`;
             showToast(data.message || "PDF attached locally.", "info");
           }
         } catch {
           document.getElementById("recPdfFileName").value = file.name;
+          document.getElementById("recPdfUrl").value = `/uploads/${encodeURIComponent(file.name)}`;
           showToast("PDF attached locally.", "info");
         }
         recPdfFileInput.value = "";
@@ -2486,8 +2491,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (recordForm) {
     recordForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const recId = document.getElementById("recordId").value;
-      const existingRec = recId ? cachedRecords.find(r => r.id === recId) : null;
+      let recId = (document.getElementById("recordId")?.value || "").trim();
+      const curDocNum = (document.getElementById("recDocNumber")?.value || "").trim().toUpperCase();
+      let existingRec = (recId && recId !== "undefined") ? cachedRecords.find(r => r.id === recId) : null;
+      if (!existingRec && curDocNum) {
+        existingRec = cachedRecords.find(r => r.docNumber && r.docNumber.toUpperCase() === curDocNum);
+        if (existingRec && existingRec.id) {
+          recId = existingRec.id;
+        }
+      }
       const signatureDataVal = (typeof recSigStage !== 'undefined' && recSigStage.getStagedData())
         ? recSigStage.getStagedData()
         : ((document.getElementById("recSignatureUrl")?.value.startsWith('data:') ? document.getElementById("recSignatureUrl")?.value : "") || (existingRec ? existingRec.signatureData : "") || "");
@@ -2522,8 +2534,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         let res;
-        if (recId) {
-          res = await apiFetch(`/api/admin/records/${recId}`, {
+        if (recId && recId !== "undefined") {
+          res = await apiFetch(`/api/admin/records/${encodeURIComponent(recId)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -2708,11 +2720,13 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Document PDF uploaded.", "success");
           } else {
             document.getElementById("quickGenPdfFileName").value = file.name;
+            document.getElementById("quickGenPdfUrl").value = `/uploads/${encodeURIComponent(file.name)}`;
             if (statusEl) statusEl.textContent = `Attached: ${file.name}`;
             showToast(data.message || "Attached locally.", "info");
           }
         } catch {
           document.getElementById("quickGenPdfFileName").value = file.name;
+          document.getElementById("quickGenPdfUrl").value = `/uploads/${encodeURIComponent(file.name)}`;
           if (statusEl) statusEl.textContent = `Attached: ${file.name}`;
           showToast("Attached locally.", "info");
         }
