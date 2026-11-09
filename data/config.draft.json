@@ -167,9 +167,20 @@
       "lineSpacing": 4,
       "fontScale": 100,
       "borderStyle": "1px solid #000000",
-      "enableCollapseButton": true,
+      "enableCollapseButton": false,
       "enableWatermark": true,
-      "enableDisclaimer": true
+      "enableDisclaimer": true,
+      "box1Split": 32,
+      "headerPadding": 5,
+      "box1Padding": 3,
+      "boxes24Padding": 3,
+      "certifiedFontSize": 1.45,
+      "boxes58Padding": 2.5,
+      "bottomSealWidth": 39,
+      "bottomQrWidth": 22,
+      "bottomSigWidth": 39,
+      "qrBoxSize": 76,
+      "sealSpace": 22
     }
   },
   "metadata": {

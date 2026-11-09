@@ -490,7 +490,8 @@
                             </td>
                           </tr>
                           <tr class="apos-row-point1">
-                            <td colspan="2" class="apos-cell-col-left" style="width: 32%; padding: 3px 6px !important; border-right: 1px solid #000000;">
+                            <td colspan="2" class="apos-cell-col-left" id="stampDemoColLeft" style="position: relative; width: var(--box1-split, 32%); padding: var(--box1-padding, 3px) 6px !important; border-right: 1px solid #000000;">
+                                <div class="divider-drag-handle-v" id="handleBox1Split" title="Drag Left/Right to adjust Country vs Document width split"></div>
                               <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">1</span> Country</div>
                               <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Pakistan</div>
                             </td>
@@ -543,14 +544,16 @@
                             </td>
                           </tr>
                           <tr class="apos-row-verification">
-                            <td style="width: 39%; border-right: 1px solid #000000; vertical-align: top; padding: 0 !important;">
+                            <td id="stampDemoSealCell" style="position: relative; width: var(--bottom-seal-width, 39%); border-right: 1px solid #000000; vertical-align: top; padding: 0 !important;">
+                                <div class="divider-drag-handle-v" id="handleBottomDiv1" title="Drag Left/Right to adjust Seal vs QR column width"></div>
                               <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">Date: 22 Oct 2026</div>
                               <div style="padding: 20px 6px 3px 6px; font-size: 0.82rem; font-weight: 500;">Seal/Stamp</div>
                             </td>
-                            <td style="width: 22%; border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 3px !important;">
+                            <td id="stampDemoQrCell" style="position: relative; width: var(--bottom-qr-width, 22%); border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 3px !important;">
+                                <div class="divider-drag-handle-v" id="handleBottomDiv2" title="Drag Left/Right to adjust QR vs Signature column width"></div>
                               <div style="width: 60px; height: 60px; margin: 0 auto; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569; font-weight: 700;">QR CODE</div>
                             </td>
-                            <td style="width: 39%; vertical-align: middle; text-align: center; padding: 4px 8px !important;">
+                            <td id="stampDemoSigCell" style="width: var(--bottom-sig-width, 39%); vertical-align: middle; text-align: center; padding: 4px 8px !important;">
                               <div style="width: 80px; height: 30px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
                                 <img id="stampDemoSigImg" src="/uploads/signature_ali_faraz_clean.png" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;">
                               </div>
@@ -630,28 +633,122 @@
                     </div>
                   </div>
 
-                  <!-- Section 3: Inner Lines & Typography -->
-                  <div class="stamp-control-section">
+                  <!-- Section 3: Box 1 Split & Individual Section Heights (Complete Master Control) -->
+                  <div class="stamp-control-section" style="border-left: 3px solid #10b981;">
                     <div class="stamp-control-title">
-                      <span>📏 Table Lines, Spacing &amp; Scale</span>
+                      <span>⚡ Box 1 Column Split &amp; Section Layouts</span>
                     </div>
+
+                    <!-- Box 1 Column Split Slider -->
                     <div class="stamp-slider-item">
                       <div class="stamp-slider-header">
-                        <span>Line Padding / Row Height:</span>
-                        <span class="stamp-val-badge" id="cfgLineSpacingBadge">4px</span>
+                        <span>Box 1 Left Split (Country Width):</span>
+                        <span class="stamp-val-badge" id="cfgBox1SplitBadge">32%</span>
                       </div>
-                      <input type="range" id="cfgLineSpacing" class="stamp-range-slider" min="2" max="10" value="4" step="1">
+                      <input type="range" id="cfgBox1Split" class="stamp-range-slider" min="20" max="50" value="32" step="1">
                       <div class="stamp-chip-group">
-                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="2">Tight (2px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="4">Standard (4px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="6">Comfortable (6px)</button>
-                        <button type="button" class="stamp-chip-btn" data-action="set-spacing" data-val="8">Spacious (8px)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="26">Compact (26%)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="32">Default (32%)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="38">Balanced (38%)</button>
+                        <button type="button" class="stamp-chip-btn" data-action="set-box1-split" data-val="50">Half (50%)</button>
                       </div>
+                    </div>
+
+                    <!-- Header Padding Slider -->
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Header (Apostille Title) Height / Spacing:</span>
+                        <span class="stamp-val-badge" id="cfgHeaderPaddingBadge">5px</span>
+                      </div>
+                      <input type="range" id="cfgHeaderPadding" class="stamp-range-slider" min="2" max="14" value="5" step="1">
+                    </div>
+
+                    <!-- Box 1 (Country/Doc) Padding Slider -->
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Box 1 (Country / Public Doc) Row Height:</span>
+                        <span class="stamp-val-badge" id="cfgBox1PaddingBadge">3px</span>
+                      </div>
+                      <input type="range" id="cfgBox1Padding" class="stamp-range-slider" min="2" max="12" value="3" step="1">
+                    </div>
+
+                    <!-- Boxes 2-4 (Signatories) Padding Slider -->
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Boxes 2, 3, 4 (Signatories) Row Height:</span>
+                        <span class="stamp-val-badge" id="cfgBoxes24PaddingBadge">3px</span>
+                      </div>
+                      <input type="range" id="cfgBoxes24Padding" class="stamp-range-slider" min="2" max="12" value="3" step="1">
+                    </div>
+
+                    <!-- Certified Row Padding & Script Font Size -->
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>'Certified' Cursive Script Size:</span>
+                        <span class="stamp-val-badge" id="cfgCertifiedFontSizeBadge">1.45rem</span>
+                      </div>
+                      <input type="range" id="cfgCertifiedFontSize" class="stamp-range-slider" min="1.1" max="2.0" value="1.45" step="0.05">
+                    </div>
+
+                    <!-- Boxes 5-8 (Place/Date/No) Padding Slider -->
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Boxes 5 to 8 (Place, Date, No.) Row Height:</span>
+                        <span class="stamp-val-badge" id="cfgBoxes58PaddingBadge">2.5px</span>
+                      </div>
+                      <input type="range" id="cfgBoxes58Padding" class="stamp-range-slider" min="1.5" max="10" value="2.5" step="0.5">
+                    </div>
+                  </div>
+
+                  <!-- Section 3B: Bottom Verification Grid Master Controls -->
+                  <div class="stamp-control-section" style="border-left: 3px solid #8b5cf6;">
+                    <div class="stamp-control-title">
+                      <span>🏁 Bottom Verification Grid (Seal, QR &amp; Sig)</span>
                     </div>
 
                     <div class="stamp-slider-item">
                       <div class="stamp-slider-header">
-                        <span>Text Font Scale:</span>
+                        <span>Date &amp; Seal Column Width:</span>
+                        <span class="stamp-val-badge" id="cfgBottomSealWidthBadge">39%</span>
+                      </div>
+                      <input type="range" id="cfgBottomSealWidth" class="stamp-range-slider" min="25" max="50" value="39" step="1">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Center QR Code Column Width:</span>
+                        <span class="stamp-val-badge" id="cfgBottomQrWidthBadge">22%</span>
+                      </div>
+                      <input type="range" id="cfgBottomQrWidth" class="stamp-range-slider" min="15" max="40" value="22" step="1">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Signature Column Width:</span>
+                        <span class="stamp-val-badge" id="cfgBottomSigWidthBadge">39%</span>
+                      </div>
+                      <input type="range" id="cfgBottomSigWidth" class="stamp-range-slider" min="25" max="50" value="39" step="1">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>QR Code Box Size:</span>
+                        <span class="stamp-val-badge" id="cfgQrBoxSizeBadge">76px</span>
+                      </div>
+                      <input type="range" id="cfgQrBoxSize" class="stamp-range-slider" min="50" max="95" value="76" step="2">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Seal / Stamp Space (Height):</span>
+                        <span class="stamp-val-badge" id="cfgSealSpaceBadge">22px</span>
+                      </div>
+                      <input type="range" id="cfgSealSpace" class="stamp-range-slider" min="10" max="45" value="22" step="1">
+                    </div>
+
+                    <div class="stamp-slider-item">
+                      <div class="stamp-slider-header">
+                        <span>Overall Font Scale:</span>
                         <span class="stamp-val-badge" id="cfgStampFontScaleBadge">100%</span>
                       </div>
                       <input type="range" id="cfgStampFontScale" class="stamp-range-slider" min="80" max="120" value="100" step="1">

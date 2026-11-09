@@ -1251,8 +1251,8 @@ body {
 /* Row 1: Main Title */
 .apos-row-title td {
   text-align: center;
-  padding: 5px 0 2px 0 !important;
-  border-bottom: 1px solid #000000;
+  padding: var(--header-padding-top, 5px) 0 2px 0 !important;
+  border-bottom: var(--table-border, 1px solid #000000);
 }
 .apos-title-text {
   font-family: "Times New Roman", Times, Georgia, serif;
@@ -1267,8 +1267,8 @@ body {
 /* Row 2: Subtitle */
 .apos-row-subtitle td {
   text-align: center;
-  padding: 2px 0 4px 0 !important;
-  border-bottom: 1px solid #000000;
+  padding: 2px 0 var(--header-padding-bottom, 4px) 0 !important;
+  border-bottom: var(--table-border, 1px solid #000000);
 }
 .apos-subtitle-text {
   font-family: Arial, Helvetica, sans-serif;
@@ -1280,13 +1280,14 @@ body {
 
 /* Row 3: Point 1 (Country: 32% | This Public Document: 68%) */
 .apos-cell-col-left {
-  width: 32%;
-  padding: 3px 6px !important;
-  border-right: 1px solid #000000;
+  position: relative;
+  width: var(--box1-split, 32%);
+  padding: var(--box1-padding, 3px) 6px !important;
+  border-right: var(--table-border, 1px solid #000000);
 }
 .apos-cell-col-right {
-  width: 68%;
-  padding: 3px 6px !important;
+  width: calc(100% - var(--box1-split, 32%));
+  padding: var(--box1-padding, 3px) 6px !important;
 }
 
 /* Row Headers & Indented Bold Values */
@@ -1314,17 +1315,19 @@ body {
 
 /* Full Width Rows (Points 2, 3, 4) */
 .apos-row-full-item td {
-  padding: 3px 6px !important;
+  padding: var(--boxes24-padding, 3px) 6px !important;
+  border-bottom: var(--table-border, 1px solid #000000);
 }
 
 /* Row 7: Certified */
 .apos-row-certified td {
   text-align: center;
-  padding: 3px 0 !important;
+  padding: var(--certified-padding, 3px) 0 !important;
+  border-bottom: var(--table-border, 1px solid #000000);
 }
 .certified-script {
   font-family: "Brush Script MT", "Snell Roundhand", "Great Vibes", "Segoe Script", cursive;
-  font-size: 1.45rem;
+  font-size: var(--certified-font-size, 1.45rem);
   font-style: italic;
   font-weight: 600;
   color: #000000;
@@ -1337,7 +1340,7 @@ body {
   border-left: none !important;
 }
 .apos-cell-inline {
-  padding: 2.5px 6px !important;
+  padding: var(--boxes58-padding, 2.5px) 6px !important;
   font-size: 0.82rem;
   line-height: 1.35;
   white-space: nowrap;
@@ -1367,8 +1370,9 @@ body {
   padding: 0 !important;
 }
 .apos-cell-seal-block {
-  width: 39%;
-  border-right: 1px solid #000000;
+  position: relative;
+  width: var(--bottom-seal-width, 39%);
+  border-right: var(--table-border, 1px solid #000000);
   vertical-align: top;
 }
 .apos-seal-date-line {
@@ -1376,25 +1380,26 @@ body {
   font-size: 0.82rem;
   font-weight: 600;
   color: #000000;
-  border-bottom: 1px solid #000000;
+  border-bottom: var(--table-border, 1px solid #000000);
 }
 .apos-seal-stamp-line {
-  padding: 22px 6px 3px 6px;
+  padding: var(--bottom-seal-padding-top, 22px) 6px 3px 6px;
   font-size: 0.82rem;
   font-weight: 500;
   color: #000000;
 }
 
 .apos-cell-qr-block {
-  width: 22%;
-  border-right: 1px solid #000000;
+  position: relative;
+  width: var(--bottom-qr-width, 22%);
+  border-right: var(--table-border, 1px solid #000000);
   vertical-align: middle;
   text-align: center;
   padding: 3px !important;
 }
 .apos-qr-code {
-  width: 76px;
-  height: 76px;
+  width: var(--qr-box-size, 76px);
+  height: var(--qr-box-size, 76px);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -1413,7 +1418,7 @@ body {
 }
 
 .apos-cell-sig-block {
-  width: 39%;
+  width: var(--bottom-sig-width, 39%);
   vertical-align: middle;
   text-align: center;
   padding: 4px 8px !important;

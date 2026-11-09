@@ -525,6 +525,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (document.getElementById("cfgLineSpacing")) document.getElementById("cfgLineSpacing").value = sl.lineSpacing !== undefined ? sl.lineSpacing : 4;
       if (document.getElementById("cfgStampFontScale")) document.getElementById("cfgStampFontScale").value = sl.fontScale !== undefined ? sl.fontScale : 100;
       if (document.getElementById("cfgStampBorderStyle")) document.getElementById("cfgStampBorderStyle").value = sl.borderStyle || "1px solid #000000";
+      if (document.getElementById("cfgBox1Split")) document.getElementById("cfgBox1Split").value = sl.box1Split !== undefined ? sl.box1Split : 32;
+      if (document.getElementById("cfgHeaderPadding")) document.getElementById("cfgHeaderPadding").value = sl.headerPadding !== undefined ? sl.headerPadding : 5;
+      if (document.getElementById("cfgBox1Padding")) document.getElementById("cfgBox1Padding").value = sl.box1Padding !== undefined ? sl.box1Padding : 3;
+      if (document.getElementById("cfgBoxes24Padding")) document.getElementById("cfgBoxes24Padding").value = sl.boxes24Padding !== undefined ? sl.boxes24Padding : 3;
+      if (document.getElementById("cfgCertifiedFontSize")) document.getElementById("cfgCertifiedFontSize").value = sl.certifiedFontSize !== undefined ? sl.certifiedFontSize : 1.45;
+      if (document.getElementById("cfgBoxes58Padding")) document.getElementById("cfgBoxes58Padding").value = sl.boxes58Padding !== undefined ? sl.boxes58Padding : 2.5;
+      if (document.getElementById("cfgBottomSealWidth")) document.getElementById("cfgBottomSealWidth").value = sl.bottomSealWidth !== undefined ? sl.bottomSealWidth : 39;
+      if (document.getElementById("cfgBottomQrWidth")) document.getElementById("cfgBottomQrWidth").value = sl.bottomQrWidth !== undefined ? sl.bottomQrWidth : 22;
+      if (document.getElementById("cfgBottomSigWidth")) document.getElementById("cfgBottomSigWidth").value = sl.bottomSigWidth !== undefined ? sl.bottomSigWidth : 39;
+      if (document.getElementById("cfgQrBoxSize")) document.getElementById("cfgQrBoxSize").value = sl.qrBoxSize !== undefined ? sl.qrBoxSize : 76;
+      if (document.getElementById("cfgSealSpace")) document.getElementById("cfgSealSpace").value = sl.sealSpace !== undefined ? sl.sealSpace : 22;
       if (document.getElementById("cfgStampCollapseButton")) document.getElementById("cfgStampCollapseButton").checked = sl.enableCollapseButton !== false;
       if (document.getElementById("cfgStampShowWatermark")) document.getElementById("cfgStampShowWatermark").checked = sl.enableWatermark !== false;
       if (document.getElementById("cfgStampShowDisclaimer")) document.getElementById("cfgStampShowDisclaimer").checked = sl.enableDisclaimer !== false;
@@ -636,7 +647,18 @@ document.addEventListener("DOMContentLoaded", () => {
           lineSpacing: parseInt(document.getElementById("cfgLineSpacing")?.value, 10) || 4,
           fontScale: parseInt(document.getElementById("cfgStampFontScale")?.value, 10) || 100,
           borderStyle: document.getElementById("cfgStampBorderStyle")?.value || "1px solid #000000",
-          enableCollapseButton: document.getElementById("cfgStampCollapseButton") ? document.getElementById("cfgStampCollapseButton").checked : true,
+          box1Split: parseInt(document.getElementById("cfgBox1Split")?.value, 10) || 32,
+          headerPadding: parseInt(document.getElementById("cfgHeaderPadding")?.value, 10) || 5,
+          box1Padding: parseInt(document.getElementById("cfgBox1Padding")?.value, 10) || 3,
+          boxes24Padding: parseInt(document.getElementById("cfgBoxes24Padding")?.value, 10) || 3,
+          certifiedFontSize: parseFloat(document.getElementById("cfgCertifiedFontSize")?.value) || 1.45,
+          boxes58Padding: parseFloat(document.getElementById("cfgBoxes58Padding")?.value) || 2.5,
+          bottomSealWidth: parseInt(document.getElementById("cfgBottomSealWidth")?.value, 10) || 39,
+          bottomQrWidth: parseInt(document.getElementById("cfgBottomQrWidth")?.value, 10) || 22,
+          bottomSigWidth: parseInt(document.getElementById("cfgBottomSigWidth")?.value, 10) || 39,
+          qrBoxSize: parseInt(document.getElementById("cfgQrBoxSize")?.value, 10) || 76,
+          sealSpace: parseInt(document.getElementById("cfgSealSpace")?.value, 10) || 22,
+          enableCollapseButton: false,
           enableWatermark: document.getElementById("cfgStampShowWatermark") ? document.getElementById("cfgStampShowWatermark").checked : true,
           enableDisclaimer: document.getElementById("cfgStampShowDisclaimer") ? document.getElementById("cfgStampShowDisclaimer").checked : true
         }
@@ -1247,28 +1269,54 @@ document.addEventListener("DOMContentLoaded", () => {
     const handleS = document.getElementById("stampHandleS");
     const handleSE = document.getElementById("stampHandleSE");
 
-    // Sliders & Selects
+    // Divider Drag Handles inside Table
+    const handleBox1 = document.getElementById("handleBox1Split");
+    const handleBottom1 = document.getElementById("handleBottomDiv1");
+    const handleBottom2 = document.getElementById("handleBottomDiv2");
+
+    // Sliders & Controls
     const inputWidth = document.getElementById("cfgStampWidth");
     const inputFloralY = document.getElementById("cfgFloralOffsetY");
     const inputFloralX = document.getElementById("cfgFloralOffsetX");
     const inputPadding = document.getElementById("cfgStampPadding");
-    const inputLineSpacing = document.getElementById("cfgLineSpacing");
     const inputFontScale = document.getElementById("cfgStampFontScale");
     const selectBorderStyle = document.getElementById("cfgStampBorderStyle");
+
+    // New Master Section Sliders
+    const inputBox1Split = document.getElementById("cfgBox1Split");
+    const inputHeaderPadding = document.getElementById("cfgHeaderPadding");
+    const inputBox1Padding = document.getElementById("cfgBox1Padding");
+    const inputBoxes24Padding = document.getElementById("cfgBoxes24Padding");
+    const inputCertifiedFontSize = document.getElementById("cfgCertifiedFontSize");
+    const inputBoxes58Padding = document.getElementById("cfgBoxes58Padding");
+    const inputBottomSealWidth = document.getElementById("cfgBottomSealWidth");
+    const inputBottomQrWidth = document.getElementById("cfgBottomQrWidth");
+    const inputBottomSigWidth = document.getElementById("cfgBottomSigWidth");
+    const inputQrBoxSize = document.getElementById("cfgQrBoxSize");
+    const inputSealSpace = document.getElementById("cfgSealSpace");
 
     // Badges
     const badgeWidth = document.getElementById("cfgStampWidthBadge");
     const badgeFloralY = document.getElementById("cfgFloralOffsetYBadge");
     const badgeFloralX = document.getElementById("cfgFloralOffsetXBadge");
     const badgePadding = document.getElementById("cfgStampPaddingBadge");
-    const badgeLineSpacing = document.getElementById("cfgLineSpacingBadge");
     const badgeFontScale = document.getElementById("cfgStampFontScaleBadge");
     const badgeLiveDim = document.getElementById("stampLiveDimensionsBadge");
 
-    // Toggles & Switches
-    const toggleCollapseBtn = document.getElementById("btnToggleStampCollapse");
+    const badgeBox1Split = document.getElementById("cfgBox1SplitBadge");
+    const badgeHeaderPadding = document.getElementById("cfgHeaderPaddingBadge");
+    const badgeBox1Padding = document.getElementById("cfgBox1PaddingBadge");
+    const badgeBoxes24Padding = document.getElementById("cfgBoxes24PaddingBadge");
+    const badgeCertifiedFontSize = document.getElementById("cfgCertifiedFontSizeBadge");
+    const badgeBoxes58Padding = document.getElementById("cfgBoxes58PaddingBadge");
+    const badgeBottomSealWidth = document.getElementById("cfgBottomSealWidthBadge");
+    const badgeBottomQrWidth = document.getElementById("cfgBottomQrWidthBadge");
+    const badgeBottomSigWidth = document.getElementById("cfgBottomSigWidthBadge");
+    const badgeQrBoxSize = document.getElementById("cfgQrBoxSizeBadge");
+    const badgeSealSpace = document.getElementById("cfgSealSpaceBadge");
+
+    // Toggles
     const resetLayoutBtn = document.getElementById("btnResetStampLayout");
-    const chkCollapsePublic = document.getElementById("cfgStampCollapseButton");
     const chkWatermark = document.getElementById("cfgStampShowWatermark");
     const chkDisclaimer = document.getElementById("cfgStampShowDisclaimer");
 
@@ -1283,24 +1331,61 @@ document.addEventListener("DOMContentLoaded", () => {
       const fy = parseInt(inputFloralY?.value, 10) || 0;
       const fx = parseInt(inputFloralX?.value, 10) || 0;
       const pad = parseInt(inputPadding?.value, 10) || 44;
-      const spacing = parseInt(inputLineSpacing?.value, 10) || 4;
       const font = parseInt(inputFontScale?.value, 10) || 100;
       const bStyle = selectBorderStyle?.value || "1px solid #000000";
 
+      const b1Split = parseInt(inputBox1Split?.value, 10) || 32;
+      const hPad = parseInt(inputHeaderPadding?.value, 10) || 5;
+      const b1Pad = parseInt(inputBox1Padding?.value, 10) || 3;
+      const b24Pad = parseInt(inputBoxes24Padding?.value, 10) || 3;
+      const certFont = parseFloat(inputCertifiedFontSize?.value) || 1.45;
+      const b58Pad = parseFloat(inputBoxes58Padding?.value) || 2.5;
+      const bSealW = parseInt(inputBottomSealWidth?.value, 10) || 39;
+      const bQrW = parseInt(inputBottomQrWidth?.value, 10) || 22;
+      const bSigW = parseInt(inputBottomSigWidth?.value, 10) || 39;
+      const qrSize = parseInt(inputQrBoxSize?.value, 10) || 76;
+      const sealSp = parseInt(inputSealSpace?.value, 10) || 22;
+
+      // Apply CSS custom properties to preview frame
       frame.style.setProperty("--stamp-max-width", `${w}px`);
       frame.style.setProperty("--floral-offset-y", `${fy}px`);
       frame.style.setProperty("--floral-offset-x", `${fx}px`);
       frame.style.setProperty("--stamp-padding", `${pad}px`);
-      frame.style.setProperty("--line-padding", `${spacing}px`);
       frame.style.setProperty("--stamp-font-scale", font / 100);
       frame.style.setProperty("--table-border", bStyle);
 
+      frame.style.setProperty("--box1-split", `${b1Split}%`);
+      frame.style.setProperty("--header-padding-top", `${hPad}px`);
+      frame.style.setProperty("--header-padding-bottom", `${Math.max(2, hPad - 1)}px`);
+      frame.style.setProperty("--box1-padding", `${b1Pad}px`);
+      frame.style.setProperty("--boxes24-padding", `${b24Pad}px`);
+      frame.style.setProperty("--certified-padding", `${Math.max(2, Math.round(b24Pad))}px`);
+      frame.style.setProperty("--certified-font-size", `${certFont}rem`);
+      frame.style.setProperty("--boxes58-padding", `${b58Pad}px`);
+      frame.style.setProperty("--bottom-seal-width", `${bSealW}%`);
+      frame.style.setProperty("--bottom-qr-width", `${bQrW}%`);
+      frame.style.setProperty("--bottom-sig-width", `${bSigW}%`);
+      frame.style.setProperty("--qr-box-size", `${qrSize}px`);
+      frame.style.setProperty("--bottom-seal-padding-top", `${sealSp}px`);
+
+      // Update badge text values
       if (badgeWidth) badgeWidth.textContent = `${w}px`;
       if (badgeFloralY) badgeFloralY.textContent = `${fy}px`;
       if (badgeFloralX) badgeFloralX.textContent = `${fx}px`;
       if (badgePadding) badgePadding.textContent = `${pad}px`;
-      if (badgeLineSpacing) badgeLineSpacing.textContent = `${spacing}px`;
       if (badgeFontScale) badgeFontScale.textContent = `${font}%`;
+
+      if (badgeBox1Split) badgeBox1Split.textContent = `${b1Split}%`;
+      if (badgeHeaderPadding) badgeHeaderPadding.textContent = `${hPad}px`;
+      if (badgeBox1Padding) badgeBox1Padding.textContent = `${b1Pad}px`;
+      if (badgeBoxes24Padding) badgeBoxes24Padding.textContent = `${b24Pad}px`;
+      if (badgeCertifiedFontSize) badgeCertifiedFontSize.textContent = `${certFont}rem`;
+      if (badgeBoxes58Padding) badgeBoxes58Padding.textContent = `${b58Pad}px`;
+      if (badgeBottomSealWidth) badgeBottomSealWidth.textContent = `${bSealW}%`;
+      if (badgeBottomQrWidth) badgeBottomQrWidth.textContent = `${bQrW}%`;
+      if (badgeBottomSigWidth) badgeBottomSigWidth.textContent = `${bSigW}%`;
+      if (badgeQrBoxSize) badgeQrBoxSize.textContent = `${qrSize}px`;
+      if (badgeSealSpace) badgeSealSpace.textContent = `${sealSp}px`;
 
       if (badgeLiveDim) {
         const h = frame.offsetHeight || 500;
@@ -1321,8 +1406,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Attach slider listeners
-    [inputWidth, inputFloralY, inputFloralX, inputPadding, inputLineSpacing, inputFontScale].forEach(inp => {
+    // Attach slider listeners for real-time live preview
+    const allSliders = [
+      inputWidth, inputFloralY, inputFloralX, inputPadding, inputFontScale,
+      inputBox1Split, inputHeaderPadding, inputBox1Padding, inputBoxes24Padding,
+      inputCertifiedFontSize, inputBoxes58Padding, inputBottomSealWidth,
+      inputBottomQrWidth, inputBottomSigWidth, inputQrBoxSize, inputSealSpace
+    ];
+
+    allSliders.forEach(inp => {
       if (inp) {
         inp.addEventListener("input", () => {
           applyStampLayoutToStage();
@@ -1338,7 +1430,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    [chkCollapsePublic, chkWatermark, chkDisclaimer].forEach(chk => {
+    [chkWatermark, chkDisclaimer].forEach(chk => {
       if (chk) {
         chk.addEventListener("change", () => {
           applyStampLayoutToStage();
@@ -1352,26 +1444,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => {
         const action = btn.getAttribute("data-action");
         const val = btn.getAttribute("data-val");
-        if (action === "set-width" && inputWidth) {
-          inputWidth.value = val;
-        } else if (action === "set-floral-y" && inputFloralY) {
-          inputFloralY.value = val;
-        } else if (action === "set-spacing" && inputLineSpacing) {
-          inputLineSpacing.value = val;
-        }
+        if (action === "set-width" && inputWidth) inputWidth.value = val;
+        else if (action === "set-floral-y" && inputFloralY) inputFloralY.value = val;
+        else if (action === "set-box1-split" && inputBox1Split) inputBox1Split.value = val;
         applyStampLayoutToStage();
         if (typeof markDraftDirty === 'function') markDraftDirty();
       });
     });
-
-    // Expand / Collapse Preview Toggle
-    if (toggleCollapseBtn) {
-      toggleCollapseBtn.addEventListener("click", () => {
-        if (!frame) return;
-        const isCollapsed = frame.classList.toggle("is-collapsed");
-        toggleCollapseBtn.textContent = isCollapsed ? "🔄 Preview Expanded View" : "🔄 Preview Collapsed View";
-      });
-    }
 
     // Reset Layout Button
     if (resetLayoutBtn) {
@@ -1380,20 +1459,135 @@ document.addEventListener("DOMContentLoaded", () => {
         if (inputFloralY) inputFloralY.value = 0;
         if (inputFloralX) inputFloralX.value = 0;
         if (inputPadding) inputPadding.value = 44;
-        if (inputLineSpacing) inputLineSpacing.value = 4;
         if (inputFontScale) inputFontScale.value = 100;
         if (selectBorderStyle) selectBorderStyle.value = "1px solid #000000";
-        if (chkCollapsePublic) chkCollapsePublic.checked = true;
+        if (inputBox1Split) inputBox1Split.value = 32;
+        if (inputHeaderPadding) inputHeaderPadding.value = 5;
+        if (inputBox1Padding) inputBox1Padding.value = 3;
+        if (inputBoxes24Padding) inputBoxes24Padding.value = 3;
+        if (inputCertifiedFontSize) inputCertifiedFontSize.value = 1.45;
+        if (inputBoxes58Padding) inputBoxes58Padding.value = 2.5;
+        if (inputBottomSealWidth) inputBottomSealWidth.value = 39;
+        if (inputBottomQrWidth) inputBottomQrWidth.value = 22;
+        if (inputBottomSigWidth) inputBottomSigWidth.value = 39;
+        if (inputQrBoxSize) inputQrBoxSize.value = 76;
+        if (inputSealSpace) inputSealSpace.value = 22;
         if (chkWatermark) chkWatermark.checked = true;
         if (chkDisclaimer) chkDisclaimer.checked = true;
-        if (frame) frame.classList.remove("is-collapsed");
-        if (toggleCollapseBtn) toggleCollapseBtn.textContent = "🔄 Preview Expand / Collapse";
         applyStampLayoutToStage();
         if (typeof markDraftDirty === 'function') markDraftDirty();
       });
     }
 
-    // Mouse Drag Resizing Logic
+    // 1. Box 1 Vertical Divider Mouse Drag (Drag Country vs Document split)
+    if (handleBox1) {
+      handleBox1.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleBox1.classList.add("is-dragging");
+        frame.classList.add("is-dragging");
+
+        const tableEl = document.getElementById("stampGridTable");
+        const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
+
+        function onMouseMove(moveEvent) {
+          moveEvent.preventDefault();
+          const relativeX = moveEvent.clientX - tableRect.left;
+          const pct = Math.round((relativeX / tableRect.width) * 100);
+          const clamped = Math.min(50, Math.max(20, pct));
+          if (inputBox1Split) inputBox1Split.value = clamped;
+          applyStampLayoutToStage();
+        }
+
+        function onMouseUp() {
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+          handleBox1.classList.remove("is-dragging");
+          frame.classList.remove("is-dragging");
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+      });
+    }
+
+    // 2. Bottom Grid Divider 1 (Seal vs QR split)
+    if (handleBottom1) {
+      handleBottom1.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleBottom1.classList.add("is-dragging");
+        frame.classList.add("is-dragging");
+
+        const tableEl = document.getElementById("stampGridTable");
+        const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
+
+        function onMouseMove(moveEvent) {
+          moveEvent.preventDefault();
+          const relativeX = moveEvent.clientX - tableRect.left;
+          const sealPct = Math.round((relativeX / tableRect.width) * 100);
+          const clampedSeal = Math.min(48, Math.max(25, sealPct));
+          const currentSig = parseInt(inputBottomSigWidth?.value, 10) || 39;
+          const qrPct = Math.max(15, 100 - clampedSeal - currentSig);
+
+          if (inputBottomSealWidth) inputBottomSealWidth.value = clampedSeal;
+          if (inputBottomQrWidth) inputBottomQrWidth.value = qrPct;
+          applyStampLayoutToStage();
+        }
+
+        function onMouseUp() {
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+          handleBottom1.classList.remove("is-dragging");
+          frame.classList.remove("is-dragging");
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+      });
+    }
+
+    // 3. Bottom Grid Divider 2 (QR vs Signature split)
+    if (handleBottom2) {
+      handleBottom2.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleBottom2.classList.add("is-dragging");
+        frame.classList.add("is-dragging");
+
+        const tableEl = document.getElementById("stampGridTable");
+        const tableRect = tableEl ? tableEl.getBoundingClientRect() : frame.getBoundingClientRect();
+
+        function onMouseMove(moveEvent) {
+          moveEvent.preventDefault();
+          const relativeX = moveEvent.clientX - tableRect.left;
+          const leftDistance = relativeX / tableRect.width;
+          const currentSeal = parseInt(inputBottomSealWidth?.value, 10) || 39;
+          const sigPct = Math.round((1 - leftDistance) * 100);
+          const clampedSig = Math.min(48, Math.max(25, sigPct));
+          const qrPct = Math.max(15, 100 - currentSeal - clampedSig);
+
+          if (inputBottomSigWidth) inputBottomSigWidth.value = clampedSig;
+          if (inputBottomQrWidth) inputBottomQrWidth.value = qrPct;
+          applyStampLayoutToStage();
+        }
+
+        function onMouseUp() {
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("mouseup", onMouseUp);
+          handleBottom2.classList.remove("is-dragging");
+          frame.classList.remove("is-dragging");
+          if (typeof markDraftDirty === 'function') markDraftDirty();
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("mouseup", onMouseUp);
+      });
+    }
+
+    // Frame Outer Drag Handles
     function initMouseDragHandle(handleEl, type) {
       if (!handleEl || !frame) return;
 
