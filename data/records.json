@@ -1,21 +1,5 @@
 [
   {
-    "docNumber": "HEAL-DOC-1794197658646",
-    "applicantName": "Healed Candidate",
-    "documentType": "Special Diplomatic Clearance",
-    "documentCategory": "Official Document",
-    "issueDate": "2026-10-27",
-    "status": "VERIFIED"
-  },
-  {
-    "docNumber": "HEAL-DOC-1794144536986",
-    "applicantName": "Healed Candidate",
-    "documentType": "Special Diplomatic Clearance",
-    "documentCategory": "Official Document",
-    "issueDate": "2026-10-27",
-    "status": "VERIFIED"
-  },
-  {
     "id": "rec-1794144527363-q6ym",
     "docNumber": "EXP-2024-TEST-9981",
     "applicantName": "Test Expired Candidate",

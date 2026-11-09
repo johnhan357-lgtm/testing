@@ -2133,9 +2133,11 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => {
         const doc = btn.dataset.doc;
         const date = btn.dataset.date;
-        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}`;
+        const targetRec = cachedRecords.find(r => r.docNumber?.toUpperCase() === doc?.toUpperCase());
+        const token = buildCompactVerifiableToken(targetRec || { docNumber: doc, issueDate: date });
+        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}${token ? '&v=' + token : ''}`;
         navigator.clipboard.writeText(url).then(() => {
-          showToast(`Copied QR link for ${doc}`, "success");
+          showToast(`Copied verified QR link for ${doc}`, "success");
         }).catch(() => {
           prompt("Copy this QR Verification Link:", url);
         });
@@ -2147,7 +2149,9 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", () => {
         const doc = btn.dataset.doc;
         const date = btn.dataset.date;
-        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}`;
+        const targetRec = cachedRecords.find(r => r.docNumber?.toUpperCase() === doc?.toUpperCase());
+        const token = buildCompactVerifiableToken(targetRec || { docNumber: doc, issueDate: date });
+        const url = `${window.location.origin}/index.html?doc=${encodeURIComponent(doc)}&date=${encodeURIComponent(date)}${token ? '&v=' + token : ''}`;
         if (typeof window.renderQRCodeDataURL === 'function') {
           const dataUrl = window.renderQRCodeDataURL(url, 1000);
           if (dataUrl) {
@@ -2157,7 +2161,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            showToast(`Downloaded ultra-crisp QR for ${doc}`, "success");
+            showToast(`Downloaded ultra-crisp verified QR for ${doc}`, "success");
             return;
           }
         }
@@ -2616,7 +2620,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!resultBox || !rec) return;
 
-    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+    const token = buildCompactVerifiableToken(rec);
+    const pubUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}${token ? '&v=' + token : ''}`;
 
     if (numEl) numEl.textContent = rec.docNumber;
     if (urlInput) urlInput.value = pubUrl;
