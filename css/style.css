@@ -1160,7 +1160,7 @@ body {
   left: calc(var(--stamp-padding, 44px) - 2px);
   right: calc(var(--stamp-padding, 44px) - 2px);
   bottom: calc(var(--stamp-padding, 44px) - 2px);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='165' height='28' viewBox='0 0 165 28'%3E%3Ctext x='5' y='19' font-family='Arial, sans-serif' font-weight='800' font-size='12.5' fill='rgba(0, 0, 0, 0.055)' letter-spacing='1'%3EGOVTOFPAKISTAN%3C/text%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='165' height='28' viewBox='0 0 165 28'%3E%3Ctext x='5' y='19' font-family='Arial, sans-serif' font-weight='800' font-size='12.5' fill='rgba(0, 0, 0, 0.075)' letter-spacing='1'%3EGOVTOFPAKISTAN%3C/text%3E%3C/svg%3E");
   background-repeat: repeat;
   pointer-events: none;
   z-index: 1;
@@ -1256,9 +1256,9 @@ body {
 }
 .apos-title-text {
   font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 1.65rem;
+  font-size: 1.85rem;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   color: #000000;
   margin: 0;
   line-height: 1.15;
@@ -1307,7 +1307,7 @@ body {
   font-weight: 700;
   color: #000000;
   line-height: 1.25;
-  padding-left: 14px;
+  padding-left: 18px;
 }
 .apos-cell-col-right .apos-cell-val-bold {
   padding-left: 0;
@@ -1425,9 +1425,7 @@ body {
 }
 .apos-sig-graphic {
   width: 82px;
-  height: 32px;
-  max-width: 100%;
-  margin: 0 auto 2px auto;
+  height: 46px; max-width: 100%; margin: 0 auto 3px auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1477,9 +1475,7 @@ body {
   margin: 0;
   text-decoration: none !important;
 }
-.apos-legal-url u {
-  text-decoration: none !important;
-}
+.apos-legal-url u, .apos-legal-url span { text-decoration: underline !important; }
 
 /* Seamless Page View (Removing bulky card container when showing certificate) */
 .result-card.cert-page-view {

@@ -1266,22 +1266,23 @@ document.addEventListener("DOMContentLoaded", () => {
     width: 550,
     borderOffsetY: 0,
     borderOffsetX: 0,
-    borderPadding: 44,
+    borderPadding: 38,
     lineSpacing: 4,
     fontScale: 100,
     borderStyle: "1px solid #000000",
     box1Split: 32,
-    headerPadding: 5,
-    subtitlePadding: 2,
-    box1Padding: 3,
-    boxes24Padding: 3,
-    certifiedFontSize: 1.45,
-    boxes58Padding: 2.5,
-    bottomSealWidth: 39,
-    bottomQrWidth: 22,
-    bottomSigWidth: 39,
-    qrBoxSize: 76,
-    sealSpace: 22,
+    headerPadding: 8,
+    subtitlePadding: 5,
+    box1Padding: 6,
+    boxes24Padding: 6,
+    certifiedFontSize: 1.55,
+    certifiedPadding: 6,
+    boxes58Padding: 4,
+    bottomSealWidth: 40,
+    bottomQrWidth: 20,
+    bottomSigWidth: 40,
+    qrBoxSize: 92,
+    sealSpace: 38,
     enableCollapseButton: false,
     enableWatermark: true,
     enableDisclaimer: true
@@ -1324,7 +1325,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       frame.style.setProperty("--box1-split", `${b1Split}%`);
       frame.style.setProperty("--header-padding-top", `${hPad}px`);
-      frame.style.setProperty("--header-padding-bottom", `${Math.max(2, hPad - 1)}px`);
+      frame.style.setProperty("--header-padding-bottom", `${hPad}px`);
       frame.style.setProperty("--subtitle-padding", `${subPad}px`);
       frame.style.setProperty("--box1-padding", `${b1Pad}px`);
       frame.style.setProperty("--boxes24-padding", `${b24Pad}px`);
@@ -1553,12 +1554,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (preset === "standard") {
           currentStampLayout.width = 550;
           currentStampLayout.box1Split = 32;
-          currentStampLayout.bottomSealWidth = 39;
-          currentStampLayout.bottomQrWidth = 22;
-          currentStampLayout.bottomSigWidth = 39;
-          currentStampLayout.box1Padding = 3;
-          currentStampLayout.boxes24Padding = 3;
-          currentStampLayout.headerPadding = 5;
+          currentStampLayout.bottomSealWidth = 40;
+          currentStampLayout.bottomQrWidth = 20;
+          currentStampLayout.bottomSigWidth = 40;
+          currentStampLayout.box1Padding = 6;
+          currentStampLayout.boxes24Padding = 6;
+          currentStampLayout.headerPadding = 8;
+          currentStampLayout.subtitlePadding = 5;
+          currentStampLayout.certifiedFontSize = 1.55;
+          currentStampLayout.certifiedPadding = 6;
+          currentStampLayout.boxes58Padding = 4;
+          currentStampLayout.sealSpace = 38;
+          currentStampLayout.borderPadding = 38;
+          currentStampLayout.qrBoxSize = 92;
         } else if (preset === "compact") {
           currentStampLayout.width = 480;
           currentStampLayout.box1Split = 30;
@@ -1666,22 +1674,23 @@ document.addEventListener("DOMContentLoaded", () => {
           width: 550,
           borderOffsetY: 0,
           borderOffsetX: 0,
-          borderPadding: 44,
+          borderPadding: 38,
           lineSpacing: 4,
           fontScale: 100,
           borderStyle: "1px solid #000000",
           box1Split: 32,
-          headerPadding: 5,
-          subtitlePadding: 2,
-          box1Padding: 3,
-          boxes24Padding: 3,
-          certifiedFontSize: 1.45,
-          boxes58Padding: 2.5,
-          bottomSealWidth: 39,
-          bottomQrWidth: 22,
-          bottomSigWidth: 39,
-          qrBoxSize: 76,
-          sealSpace: 22,
+          headerPadding: 8,
+          subtitlePadding: 5,
+          box1Padding: 6,
+          boxes24Padding: 6,
+          certifiedFontSize: 1.55,
+          certifiedPadding: 6,
+          boxes58Padding: 4,
+          bottomSealWidth: 40,
+          bottomQrWidth: 20,
+          bottomSigWidth: 40,
+          qrBoxSize: 92,
+          sealSpace: 38,
           enableCollapseButton: false,
           enableWatermark: true,
           enableDisclaimer: true

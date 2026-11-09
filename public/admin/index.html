@@ -477,12 +477,12 @@
 
                     <!-- Interactive Content Layer -->
                     <div class="stamp-content-layer" id="stampContentLayer">
-                      <table class="apostille-grid-table excel-interactive-table" id="stampGridTable" style="margin: 0; position: relative;">
+                                            <table class="apostille-grid-table excel-interactive-table" id="stampGridTable" style="margin: 0; position: relative;">
                         <tbody>
                           <!-- Row 1: Title (APOSTILLE) -->
                           <tr class="apos-row-title" style="position: relative;">
-                            <td colspan="4" class="apos-cell-title" style="text-align: center; position: relative; padding: var(--header-padding-top, 5px) 0 var(--header-padding-bottom, 2px) 0 !important;">
-                              <div class="apos-title-text" id="stampDemoTitle" style="font-family: 'Times New Roman', Times, serif; font-size: 1.65rem; font-weight: 700; letter-spacing: 1px;">APOSTILLE</div>
+                            <td colspan="4" class="apos-cell-title" style="text-align: center; position: relative; padding: var(--header-padding-top, 8px) 0 var(--header-padding-bottom, 8px) 0 !important; border-bottom: 1px solid #000000;">
+                              <div class="apos-title-text" id="stampDemoTitle" style="font-family: 'Times New Roman', Times, serif; font-size: 1.85rem; font-weight: 700; letter-spacing: 2px;">APOSTILLE</div>
                               <!-- Excel Horizontal Drag Line after Row 1 -->
                               <div class="excel-drag-line-h" data-target="headerPadding" data-label="Title Spacing" title="Drag up/down to resize Title row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
@@ -492,8 +492,8 @@
 
                           <!-- Row 2: Subtitle ((Convention de La Haye du 5 October 1961)) -->
                           <tr class="apos-row-subtitle" style="position: relative;">
-                            <td colspan="4" class="apos-cell-subtitle" style="text-align: center; position: relative; padding: var(--subtitle-padding, 2px) 0 var(--header-padding-bottom, 4px) 0 !important;">
-                              <div class="apos-subtitle-text" id="stampDemoSubtitle" style="font-size: 0.82rem; font-weight: 500;">(Convention de La Haye du 5 October 1961)</div>
+                            <td colspan="4" class="apos-cell-subtitle" style="text-align: center; position: relative; padding: var(--subtitle-padding, 5px) 0 var(--subtitle-padding, 5px) 0 !important; border-bottom: 1px solid #000000;">
+                              <div class="apos-subtitle-text" id="stampDemoSubtitle" style="font-size: 0.84rem; font-weight: 500; font-family: Arial, sans-serif;">(Convention de La Haye du 5 October 1961)</div>
                               <!-- Excel Horizontal Drag Line after Row 2 -->
                               <div class="excel-drag-line-h" data-target="subtitlePadding" data-label="Subtitle Spacing" title="Drag up/down to resize Subtitle row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
@@ -503,7 +503,7 @@
 
                           <!-- Row 3: Point 1 (Country: Left | This Public Document: Right) -->
                           <tr class="apos-row-point1" style="position: relative;">
-                            <td colspan="2" class="apos-cell-col-left" id="stampDemoColLeft" style="position: relative; width: var(--box1-split, 32%); padding: var(--box1-padding, 3px) 6px !important; border-right: 1px solid #000000;">
+                            <td colspan="2" class="apos-cell-col-left" id="stampDemoColLeft" style="position: relative; width: var(--box1-split, 32%); padding: var(--box1-padding, 6px) 8px !important; border-right: 1px solid #000000; border-bottom: 1px solid #000000;">
                               <!-- Excel Vertical Drag Line between Country & Document -->
                               <div class="excel-drag-line-v" data-target="box1Split" data-label="Box 1 Split" title="Drag left/right to resize Country vs Document column split">
                                 <span class="excel-drag-badge">↔ Drag Split</span>
@@ -512,12 +512,12 @@
                               <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
                               </div>
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">1</span> Country</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Pakistan</div>
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;"><span class="apos-num-prefix" style="display: inline-block; min-width: 14px; margin-right: 4px;">1</span> Country</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000; padding-left: 18px;">Pakistan</div>
                             </td>
-                            <td colspan="2" class="apos-cell-col-right" style="position: relative; width: calc(100% - var(--box1-split, 32%)); padding: var(--box1-padding, 3px) 6px !important;">
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem;">This Public Document</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700;">Educational Document</div>
+                            <td colspan="2" class="apos-cell-col-right" style="position: relative; width: calc(100% - var(--box1-split, 32%)); padding: var(--box1-padding, 6px) 8px !important; border-bottom: 1px solid #000000;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;">This Public Document</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000;">Personal Document</div>
                               <!-- Excel Horizontal Drag Line at bottom of Box 1 (Right cell) -->
                               <div class="excel-drag-line-h" data-target="box1Padding" data-label="Box 1 Height" title="Drag up/down to resize Box 1 row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
@@ -527,9 +527,9 @@
 
                           <!-- Row 4: Point 2 (has been signed by) -->
                           <tr class="apos-row-full-item" style="position: relative;">
-                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 3px) 6px !important;">
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">2</span> has been signed by</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Muhammad Yasir</div>
+                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 6px) 8px !important; border-bottom: 1px solid #000000;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;"><span class="apos-num-prefix" style="display: inline-block; min-width: 14px; margin-right: 4px;">2</span> has been signed by</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000; padding-left: 18px;">N/A</div>
                               <div class="excel-drag-line-h" data-target="boxes24Padding" data-label="Boxes 2-4 Height" title="Drag up/down to resize row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
                               </div>
@@ -538,9 +538,9 @@
 
                           <!-- Row 5: Point 3 (acting in the capacity of) -->
                           <tr class="apos-row-full-item" style="position: relative;">
-                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 3px) 6px !important;">
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">3</span> acting in the capacity of</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">Assistant Director (Registration)</div>
+                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 6px) 8px !important; border-bottom: 1px solid #000000;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;"><span class="apos-num-prefix" style="display: inline-block; min-width: 14px; margin-right: 4px;">3</span> acting in the capacity of</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000; padding-left: 18px;">Registrar</div>
                               <div class="excel-drag-line-h" data-target="boxes24Padding" data-label="Boxes 2-4 Height" title="Drag up/down to resize row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
                               </div>
@@ -549,9 +549,9 @@
 
                           <!-- Row 6: Point 4 (bears the seal stamp of) -->
                           <tr class="apos-row-full-item" style="position: relative;">
-                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 3px) 6px !important;">
-                              <div class="apos-cell-header-text" style="font-size: 0.82rem;"><span class="apos-num-prefix">4</span> bears the seal stamp of</div>
-                              <div class="apos-cell-val-bold" style="font-size: 0.86rem; font-weight: 700; padding-left: 14px;">National Vocational &amp; Technical Training Commission</div>
+                            <td colspan="4" style="position: relative; padding: var(--boxes24-padding, 6px) 8px !important; border-bottom: 1px solid #000000;">
+                              <div class="apos-cell-header-text" style="font-size: 0.82rem; color: #000000; line-height: 1.25; margin-bottom: 2px;"><span class="apos-num-prefix" style="display: inline-block; min-width: 14px; margin-right: 4px;">4</span> bears the seal stamp of</div>
+                              <div class="apos-cell-val-bold" style="font-size: 0.88rem; font-weight: 700; color: #000000; padding-left: 18px;">Preston University</div>
                               <!-- Excel Horizontal Drag Line after Box 4 -->
                               <div class="excel-drag-line-h" data-target="boxes24Padding" data-label="Boxes 2-4 Height" title="Drag up/down to resize row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
@@ -561,8 +561,8 @@
 
                           <!-- Row 7: Certified Script Banner -->
                           <tr class="apos-row-certified" style="position: relative;">
-                            <td colspan="4" style="text-align: center; position: relative; padding: var(--certified-padding, 3px) 0 !important;">
-                              <div class="certified-script" id="stampDemoCertified" style="font-family: 'Brush Script MT', 'Great Vibes', cursive; font-size: var(--certified-font-size, 1.45rem); font-style: italic; font-weight: 600; line-height: 1.1;">Certified / Attest&eacute;</div>
+                            <td colspan="4" style="text-align: center; position: relative; padding: var(--certified-padding, 6px) 0 !important; border-bottom: 1px solid #000000;">
+                              <div class="certified-script" id="stampDemoCertified" style="font-family: 'Brush Script MT', 'Great Vibes', 'Allura', cursive; font-size: var(--certified-font-size, 1.55rem); font-style: italic; font-weight: 600; line-height: 1.1; color: #000000;">Certified</div>
                               <!-- Excel Horizontal Drag Line after Certified -->
                               <div class="excel-drag-line-h" data-target="certifiedPadding" data-label="Certified Banner Height" title="Drag up/down to resize Certified banner height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
@@ -570,38 +570,59 @@
                             </td>
                           </tr>
 
-                          <!-- Row 8: Points 5 & 6 (at & the) -->
+                          <!-- Row 8: Point 5 (at / Lahore Pakistan) -->
                           <tr class="apos-row-inline-item" style="position: relative;">
-                            <td colspan="2" style="padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-right: none !important;">
-                              <span style="display: inline-block; width: 16px;">5</span> <span style="display: inline-block; width: 32px;">at</span> <strong>Karachi Pakistan</strong>
-                            </td>
-                            <td colspan="2" style="padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-left: none !important;">
-                              <span style="display: inline-block; width: 16px;">6</span> <span style="display: inline-block; width: 32px;">the</span> <strong>22 Oct 2026</strong>
-                            </td>
-                          </tr>
-
-                          <!-- Row 9: Point 7 (by) -->
-                          <tr class="apos-row-inline-item" style="position: relative;">
-                            <td colspan="4" style="padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
-                              <span style="display: inline-block; width: 16px;">7</span> <span style="display: inline-block; width: 32px;">by</span> <strong>Ministry of Foreign Affairs</strong>
-                            </td>
-                          </tr>
-
-                          <!-- Row 10: Point 8 (N°) -->
-                          <tr class="apos-row-inline-item" style="position: relative;">
-                            <td colspan="4" style="position: relative; padding: var(--boxes58-padding, 2.5px) 6px !important; font-size: 0.82rem; border-right: none !important; border-left: none !important;">
-                              <span style="display: inline-block; width: 16px;">8</span> <span style="display: inline-block; width: 32px;">No</span> <strong style="letter-spacing: 0.5px;">APO-DEMO-2026-LIVE</strong>
-                              <!-- Excel Horizontal Drag Line after Box 8 -->
-                              <div class="excel-drag-line-h" data-target="boxes58Padding" data-label="Boxes 5-8 Height" title="Drag up/down to resize row height">
+                            <td colspan="4" style="padding: var(--boxes58-padding, 4px) 8px !important; font-size: 0.82rem; border-bottom: 1px solid #000000; border-left: none !important; border-right: none !important;">
+                              <span style="display: inline-block; width: 16px; color: #000000;">5</span>
+                              <span style="display: inline-block; width: 38px; color: #000000;">at</span>
+                              <strong style="color: #000000;">Lahore Pakistan</strong>
+                              <div class="excel-drag-line-h" data-target="boxes58Padding" data-label="Box 5 Height" title="Drag up/down to resize row height">
                                 <span class="excel-drag-badge">↕ Drag Row</span>
                               </div>
                             </td>
                           </tr>
 
-                          <!-- Row 11: Verification Grid (Seal, QR, Signature) -->
+                          <!-- Row 9: Point 6 (the / 09 Jun 2026) -->
+                          <tr class="apos-row-inline-item" style="position: relative;">
+                            <td colspan="4" style="padding: var(--boxes58-padding, 4px) 8px !important; font-size: 0.82rem; border-bottom: 1px solid #000000; border-left: none !important; border-right: none !important;">
+                              <span style="display: inline-block; width: 16px; color: #000000;">6</span>
+                              <span style="display: inline-block; width: 38px; color: #000000;">the</span>
+                              <strong style="color: #000000;">09 Jun 2026</strong>
+                              <div class="excel-drag-line-h" data-target="boxes58Padding" data-label="Box 6 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
+                            </td>
+                          </tr>
+
+                          <!-- Row 10: Point 7 (by / Ministry of Foreign Affairs) -->
+                          <tr class="apos-row-inline-item" style="position: relative;">
+                            <td colspan="4" style="padding: var(--boxes58-padding, 4px) 8px !important; font-size: 0.82rem; border-bottom: 1px solid #000000; border-left: none !important; border-right: none !important;">
+                              <span style="display: inline-block; width: 16px; color: #000000;">7</span>
+                              <span style="display: inline-block; width: 38px; color: #000000;">by</span>
+                              <strong style="color: #000000;">Ministry of Foreign Affairs</strong>
+                              <div class="excel-drag-line-h" data-target="boxes58Padding" data-label="Box 7 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
+                            </td>
+                          </tr>
+
+                          <!-- Row 11: Point 8 (No / APO-KTAQ-NWSP-VDSJ) -->
+                          <tr class="apos-row-inline-item" style="position: relative;">
+                            <td colspan="4" style="position: relative; padding: var(--boxes58-padding, 4px) 8px !important; font-size: 0.82rem; border-bottom: 1px solid #000000; border-left: none !important; border-right: none !important;">
+                              <span style="display: inline-block; width: 16px; color: #000000;">8</span>
+                              <span style="display: inline-block; width: 38px; color: #000000;">No</span>
+                              <strong style="letter-spacing: 0.5px; color: #000000;">APO-KTAQ-NWSP-VDSJ</strong>
+                              <!-- Excel Horizontal Drag Line after Box 8 -->
+                              <div class="excel-drag-line-h" data-target="boxes58Padding" data-label="Box 8 Height" title="Drag up/down to resize row height">
+                                <span class="excel-drag-badge">↕ Drag Row</span>
+                              </div>
+                            </td>
+                          </tr>
+
+                          <!-- Row 12: Verification Grid (Seal/Date, QR, Signature) -->
                           <tr class="apos-row-verification" style="position: relative;">
                             <!-- Col 1: Date & Seal -->
-                            <td id="stampDemoSealCell" style="position: relative; width: var(--bottom-seal-width, 39%); border-right: 1px solid #000000; vertical-align: top; padding: 0 !important;">
+                            <td id="stampDemoSealCell" style="position: relative; width: var(--bottom-seal-width, 40%); border-right: 1px solid #000000; vertical-align: top; padding: 0 !important;">
                               <!-- Excel Vertical Drag Line between Seal & QR -->
                               <div class="excel-drag-line-v" data-target="bottomSealWidth" data-label="Seal vs QR Column" title="Drag left/right to resize Seal vs QR column split">
                                 <span class="excel-drag-badge">↔ Drag Split</span>
@@ -610,12 +631,12 @@
                               <div class="excel-drag-line-h" data-target="sealSpace" data-label="Seal &amp; Bottom Height" title="Drag up/down to resize Seal / Bottom height">
                                 <span class="excel-drag-badge">↕ Drag Height</span>
                               </div>
-                              <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">Date: 22 Oct 2026</div>
-                              <div style="padding: var(--bottom-seal-padding-top, 22px) 6px 3px 6px; font-size: 0.82rem; font-weight: 500;">Seal/Stamp</div>
+                              <div style="padding: 5px 8px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000; color: #000000;">Date: 09 Jun 2026</div>
+                              <div style="padding: var(--bottom-seal-padding-top, 38px) 8px 6px 8px; font-size: 0.82rem; font-weight: 500; color: #000000;">Seal/Stamp</div>
                             </td>
 
                             <!-- Col 2: Center QR Code -->
-                            <td id="stampDemoQrCell" style="position: relative; width: var(--bottom-qr-width, 22%); border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 3px !important;">
+                            <td id="stampDemoQrCell" style="position: relative; width: var(--bottom-qr-width, 20%); border-right: 1px solid #000000; vertical-align: middle; text-align: center; padding: 4px !important;">
                               <!-- Excel Vertical Drag Line between QR & Sig -->
                               <div class="excel-drag-line-v" data-target="bottomSigWidth" data-label="QR vs Sig Column" title="Drag left/right to resize QR vs Signature column split">
                                 <span class="excel-drag-badge">↔ Drag Split</span>
@@ -624,28 +645,30 @@
                               <div class="excel-drag-line-h" data-target="sealSpace" data-label="Seal &amp; Bottom Height" title="Drag up/down to resize Seal / Bottom height">
                                 <span class="excel-drag-badge">↕ Drag Height</span>
                               </div>
-                              <div style="width: var(--qr-box-size, 76px); height: var(--qr-box-size, 76px); margin: 0 auto; background: #ffffff; border: 1px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569; font-weight: 700;">QR CODE</div>
+                              <div style="width: var(--qr-box-size, 92px); height: var(--qr-box-size, 92px); margin: 0 auto; background: #ffffff; display: flex; align-items: center; justify-content: center;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=92x92&margin=2&color=000000&bgcolor=ffffff&data=https%3A%2F%2Fapostille.mofa.gov.pk%2Findex.html%3Fdoc%3DAPO-KTAQ-NWSP-VDSJ%26date%3D2026-06-09" alt="QR" width="92" height="92" style="display:block;margin:0 auto;image-rendering:pixelated;">
+                              </div>
                             </td>
 
                             <!-- Col 3: Signature -->
-                            <td id="stampDemoSigCell" style="position: relative; width: var(--bottom-sig-width, 39%); vertical-align: top; padding: 0 !important;">
+                            <td id="stampDemoSigCell" style="position: relative; width: var(--bottom-sig-width, 40%); vertical-align: middle; text-align: center; padding: 6px 8px !important;">
                               <!-- Excel Horizontal Drag Line at bottom of table -->
                               <div class="excel-drag-line-h" data-target="sealSpace" data-label="Seal &amp; Bottom Height" title="Drag up/down to resize Seal / Bottom height">
                                 <span class="excel-drag-badge">↕ Drag Height</span>
                               </div>
-                              <div style="padding: 4px 6px; font-size: 0.82rem; font-weight: 600; border-bottom: 1px solid #000000;">10 Signature</div>
-                              <div style="padding: 4px 6px 2px 6px; min-height: 44px; display: flex; align-items: center; justify-content: center;">
-                                <img id="stampDemoSigImg" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-height: 38px; width: auto; object-fit: contain;">
+                              <div style="min-height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
+                                <img id="stampDemoSigImg" src="/uploads/signature_ali_faraz_clean.png" alt="Signature" style="max-height: 44px; width: auto; object-fit: contain;">
                               </div>
-                              <div style="padding: 2px 6px 4px 6px; font-size: 0.82rem; font-weight: 700; border-top: 1px solid #000000;">Ali Faraz</div>
+                              <div style="font-size: 0.76rem; font-weight: 600; color: #000000;">Ali Faraz</div>
                             </td>
                           </tr>
                         </tbody>
                       </table>
 
                       <!-- Bottom Legal Disclaimer Preview -->
-                      <div id="stampDemoDisclaimerWrap" style="margin-top: 6px; padding: 0 4px; font-size: 0.72rem; color: #000000; text-align: center; line-height: 1.35; font-family: Arial, sans-serif;">
-                        This Apostille certificate verifies the authenticity of the signature, the capacity in which the person signing the document has acted and, where appropriate, the identity of the seal or stamp which it bears. It does not certify the content of the document for which it was issued. To verify this Apostille, please visit: <strong style="text-decoration: underline;">https://apostille.mofa.gov.pk/</strong>
+                      <div id="stampDemoDisclaimerWrap" style="margin-top: 14px; padding: 0 6px; font-size: 0.72rem; color: #000000; text-align: center; line-height: 1.45; font-family: Arial, sans-serif;">
+                        This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.<br>
+                        To verify this apostille, visit <span style="text-decoration: underline; font-weight: 700;">www.apostille.mofa.gov.pk</span>
                       </div>
                     </div>
                   </div>

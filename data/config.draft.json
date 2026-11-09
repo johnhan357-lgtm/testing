@@ -144,7 +144,7 @@
     "statusBadgeText": "Document Certificate Verified",
     "breadcrumbText": "Home / Apostille verification",
     "issuerStatement": "This apostille refers to Other Documents and issued on N/A and is Approved by Ministry of Foreign Affairs Pakistan",
-    "summaryTemplate": "This apostille refers to {category} and issued on {date} and is Approved by {authority}",
+    "summaryTemplate": "This {category} has been signed by N/A, Registrar, Preston University, and issued on {date} by {authority}.",
     "watermarkText": "GOVTOFPAKISTAN",
     "conventionTitle": "APOSTILLE",
     "conventionSubtitle": "(Convention de La Haye du 5 October 1961)",
@@ -166,7 +166,7 @@
       "width": 550,
       "borderOffsetY": 0,
       "borderOffsetX": 0,
-      "borderPadding": 44,
+      "borderPadding": 38,
       "lineSpacing": 4,
       "fontScale": 100,
       "borderStyle": "1px solid #000000",
@@ -174,22 +174,23 @@
       "enableWatermark": true,
       "enableDisclaimer": true,
       "box1Split": 32,
-      "headerPadding": 5,
-      "box1Padding": 3,
-      "boxes24Padding": 3,
-      "certifiedFontSize": 1.45,
-      "boxes58Padding": 2.5,
-      "bottomSealWidth": 39,
-      "bottomQrWidth": 22,
-      "bottomSigWidth": 39,
-      "qrBoxSize": 76,
-      "sealSpace": 22,
-      "subtitlePadding": 2
+      "headerPadding": 8,
+      "subtitlePadding": 5,
+      "box1Padding": 6,
+      "boxes24Padding": 6,
+      "certifiedFontSize": 1.55,
+      "certifiedPadding": 6,
+      "boxes58Padding": 4,
+      "bottomSealWidth": 40,
+      "bottomQrWidth": 20,
+      "bottomSigWidth": 40,
+      "qrBoxSize": 92,
+      "sealSpace": 38
     }
   },
   "metadata": {
     "lastSavedAt": "2026-11-09T05:03:35.059Z",
-    "lastPublishedAt": "2026-11-09T12:52:38.561Z",
-    "version": 1012
+    "lastPublishedAt": "2026-11-09T13:22:21.057Z",
+    "version": 1014
   }
 }
