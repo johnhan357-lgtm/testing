@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (cfg.footer) {
       if (footerBrandTitleEl && cfg.footer.authorityName) footerBrandTitleEl.textContent = cfg.footer.authorityName;
       if (footerBrandSubtitleEl && cfg.footer.authoritySubtitle) footerBrandSubtitleEl.textContent = cfg.footer.authoritySubtitle;
-      if (footerBottomEl && cfg.footer.copyrightText) footerBottomEl.textContent = cfg.footer.copyrightText;
+      if (footerBottomEl && cfg.footer.copyrightText) footerBottomEl.innerHTML = cfg.footer.copyrightText;
 
       const footerBrandEmblemEl = document.getElementById("footerBrandEmblem") || document.querySelector(".footer-brand .brand-emblem");
       if (footerBrandEmblemEl) {
@@ -573,6 +573,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Apply Fonts to All Applicable Elements
     applyFieldFonts(cfg);
   }
+
+  // Immediately hydrate published configuration so public UI updates without delay
+  await loadPublishedConfig();
 
   // =========================================================================
   // 2. MODAL CONTROLS
@@ -898,7 +901,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           </div>`;
         }
         if (pdfLoadingIndicator) pdfLoadingIndicator.style.display = "none";
-      }
       }
 
       // Legacy fallback values for tests and backward compatibility
