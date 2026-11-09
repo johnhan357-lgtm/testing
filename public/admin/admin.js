@@ -2582,7 +2582,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!rec || !rec.docNumber) return "";
     try {
       const sigUrl = (rec.signatureUrl && !rec.signatureUrl.startsWith("data:") && rec.signatureUrl.length < 120) ? rec.signatureUrl : "";
-      const pdfName = (rec.pdfFileName && !rec.pdfFileName.startsWith("data:") && rec.pdfFileName.length < 120) ? rec.pdfFileName : "";
+      const pdfTarget = (rec.pdfUrl && !rec.pdfUrl.startsWith("data:") && rec.pdfUrl.length < 120) ? rec.pdfUrl : (rec.pdfFileName || "");
+      const pdfName = pdfTarget;
       const compact = {
         n: rec.docNumber,
         d: rec.issueDate,

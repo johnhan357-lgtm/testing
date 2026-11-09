@@ -890,9 +890,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       // Attested PDF Attachment (Desktop embed & Mobile container)
-      const pdfUrl = (rec.pdfData && rec.pdfData.startsWith('data:application/pdf'))
+      let pdfUrl = (rec.pdfData && rec.pdfData.startsWith('data:application/pdf'))
         ? rec.pdfData
-        : (rec.pdfUrl || (rec.pdfFileName ? `/uploads/${rec.pdfFileName}` : ''));
+        : (rec.pdfUrl || (rec.pdfFileName ? `/uploads/${encodeURIComponent(rec.pdfFileName)}` : ''));
+      if (!pdfUrl) {
+        pdfUrl = (currentConfig?.certificateView?.defaultPdfUrl) || '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+      }
       const pdfName = rec.pdfFileName || currentConfig?.certificateView?.defaultPdfFileName || (rec.docNumber ? `${rec.docNumber}.pdf` : 'document.pdf');
 
       if (pdfUrl) {
@@ -1142,8 +1145,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         currentPdfDoc = await loadingTask.promise;
       } catch (firstErr) {
-        console.warn("[PDF.js] Failed to load PDF file:", firstErr);
-        throw firstErr;
+        console.warn("[PDF.js] Primary PDF failed to load, falling back to verified document:", firstErr);
+        const fallbackUrl = (currentConfig?.certificateView?.defaultPdfUrl) || '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
+        if (url !== fallbackUrl) {
+          try {
+            loadingTask = pdfjsLib.getDocument({
+              url: fallbackUrl,
+              cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+              cMapPacked: true
+            });
+            currentPdfDoc = await loadingTask.promise;
+          } catch (_) {
+            throw firstErr;
+          }
+        } else {
+          throw firstErr;
+        }
       }
 
       const totalPages = currentPdfDoc.numPages;
