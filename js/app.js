@@ -769,6 +769,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     statusBadge.className = "result-status-badge";
 
     if (data.status === "VERIFIED" && data.record) {
+      const rec = data.record;
+      const formattedDate = formatDateDisplay(rec.issueDate);
+
       // Official Authentic Apostille Result View matching target government portal
       statusBadge.style.display = "none";
       const heroSection = document.getElementById("heroSection") || document.querySelector(".hero-title-section");
@@ -794,9 +797,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (attachedPdfSection && (!currentConfig || !currentConfig.certificateView || currentConfig.certificateView.enablePdfViewer !== false)) {
         attachedPdfSection.style.display = "block";
       }
-
-      const rec = data.record;
-      const formattedDate = formatDateDisplay(rec.issueDate);
 
       if (statusTitle && currentConfig?.certificateView?.statusBadgeText) {
         statusTitle.textContent = currentConfig.certificateView.statusBadgeText;

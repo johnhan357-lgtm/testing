@@ -1018,19 +1018,19 @@ async function requestHandler(req, res) {
   if (pathname === '/api/verify' && method === 'POST') {
     try {
       const { docNumber, docDate, backupRecord } = await parseBody(req);
-      if (!docNumber || !docDate) {
+      if (!docNumber) {
         return sendJson(res, 400, {
           success: false,
           status: "INVALID_INPUT",
-          message: "Both Document Number and Issue Date are required for verification."
+          message: "Document Number is required for verification."
         });
       }
 
       const cleanDocNumber = String(docNumber).trim().toUpperCase();
-      const cleanDate = String(docDate).trim();
+      const cleanDate = docDate ? normalizeDate(String(docDate).trim()) : "";
 
       const records = readJsonSafe(RECORDS_FILE, []);
-      let match = records.find(r => r.docNumber.toUpperCase() === cleanDocNumber);
+      let match = records.find(r => r.docNumber && r.docNumber.toUpperCase() === cleanDocNumber);
 
       // Self-Healing Fallback: If not found on ephemeral server, but valid backupRecord provided from client cache
       if (!match && backupRecord && backupRecord.docNumber && String(backupRecord.docNumber).trim().toUpperCase() === cleanDocNumber) {
