@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (cfg.theme && cfg.theme.globalFont && FONT_MAP[cfg.theme.globalFont]) {
       const globalCss = FONT_MAP[cfg.theme.globalFont];
       document.documentElement.style.setProperty('--font-family', globalCss);
-      document.body.style.fontFamily = globalCss;
+      if (document.body) document.body.style.fontFamily = globalCss;
     }
 
     // Apply Per-Field Custom Fonts
@@ -259,6 +259,74 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (activeConfig) {
       currentConfig = activeConfig;
       applyConfig(currentConfig);
+    }
+  }
+
+  // =========================================================================
+  // UNIVERSAL STAMP VISUAL LAYOUT & RATIO ENGINE
+  // =========================================================================
+  function applyStampLayout(layout) {
+    const sl = layout || (currentConfig && currentConfig.certificateView && currentConfig.certificateView.stampLayout) || {};
+    const frame = document.getElementById("apostilleFrame");
+    if (!frame) return;
+
+    const w = sl.width !== undefined ? sl.width : 550;
+    const fy = sl.borderOffsetY !== undefined ? sl.borderOffsetY : 0;
+    const fx = sl.borderOffsetX !== undefined ? sl.borderOffsetX : 0;
+    const pad = sl.borderPadding !== undefined ? sl.borderPadding : 44;
+    const fontScale = (sl.fontScale !== undefined ? sl.fontScale : 100) / 100;
+    const bStyle = sl.borderStyle || "1px solid #000000";
+
+    const b1Split = sl.box1Split !== undefined ? sl.box1Split : 32;
+    const hPad = sl.headerPadding !== undefined ? sl.headerPadding : 5;
+    const subPad = sl.subtitlePadding !== undefined ? sl.subtitlePadding : 2;
+    const b1Pad = sl.box1Padding !== undefined ? sl.box1Padding : 3;
+    const b24Pad = sl.boxes24Padding !== undefined ? sl.boxes24Padding : 3;
+    const certFont = sl.certifiedFontSize !== undefined ? sl.certifiedFontSize : 1.45;
+    const b58Pad = sl.boxes58Padding !== undefined ? sl.boxes58Padding : 2.5;
+    const bSealW = sl.bottomSealWidth !== undefined ? sl.bottomSealWidth : 39;
+    const bQrW = sl.bottomQrWidth !== undefined ? sl.bottomQrWidth : 22;
+    const bSigW = sl.bottomSigWidth !== undefined ? sl.bottomSigWidth : 39;
+    const qrSize = sl.qrBoxSize !== undefined ? sl.qrBoxSize : 76;
+    const sealSp = sl.sealSpace !== undefined ? sl.sealSpace : 22;
+
+    // Apply CSS Custom Properties
+    frame.style.setProperty("--stamp-max-width", `${w}px`);
+    frame.style.setProperty("--floral-offset-y", `${fy}px`);
+    frame.style.setProperty("--floral-offset-x", `${fx}px`);
+    frame.style.setProperty("--stamp-padding", `${pad}px`);
+    frame.style.setProperty("--stamp-font-scale", fontScale);
+    frame.style.setProperty("--table-border", bStyle);
+
+    frame.style.setProperty("--box1-split", `${b1Split}%`);
+    frame.style.setProperty("--header-padding-top", `${hPad}px`);
+    frame.style.setProperty("--header-padding-bottom", `${hPad}px`);
+    frame.style.setProperty("--subtitle-padding", `${subPad}px`);
+    frame.style.setProperty("--box1-padding", `${b1Pad}px`);
+    frame.style.setProperty("--boxes24-padding", `${b24Pad}px`);
+    frame.style.setProperty("--certified-padding", `${Math.max(2, Math.round(b24Pad))}px`);
+    frame.style.setProperty("--certified-font-size", `${certFont}rem`);
+    frame.style.setProperty("--boxes58-padding", `${b58Pad}px`);
+    frame.style.setProperty("--bottom-seal-width", `${bSealW}%`);
+    frame.style.setProperty("--bottom-qr-width", `${bQrW}%`);
+    frame.style.setProperty("--bottom-sig-width", `${bSigW}%`);
+    frame.style.setProperty("--qr-box-size", `${qrSize}px`);
+    frame.style.setProperty("--bottom-seal-padding-top", `${sealSp}px`);
+
+    const apostilleToolbar = document.getElementById("apostilleToolbar");
+    if (apostilleToolbar) {
+      apostilleToolbar.style.setProperty("--stamp-max-width", `${w}px`);
+      apostilleToolbar.style.display = "none";
+    }
+
+    const apostilleWatermark = document.getElementById("apostilleWatermark");
+    if (apostilleWatermark) {
+      apostilleWatermark.style.display = (sl.enableWatermark === false) ? "none" : "";
+    }
+
+    const aposDisclaimer = document.getElementById("aposDisclaimer");
+    if (aposDisclaimer) {
+      aposDisclaimer.style.display = (sl.enableDisclaimer === false) ? "none" : "";
     }
   }
 
@@ -536,30 +604,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Apply Stamp Visual Layout & Section Master Customization
       applyStampLayout(cv.stampLayout);
-      const apostilleToolbar = document.getElementById("apostilleToolbar");
-      if (apostilleToolbar) {
-        apostilleToolbar.style.setProperty("--stamp-max-width", `${stampWidth}px`);
-        const enableCollapse = sl.enableCollapseButton !== false;
-        if (apostilleContainer && apostilleContainer.style.display !== "none" && enableCollapse) {
-          apostilleToolbar.style.display = "none";
-        } else if (!enableCollapse) {
-          apostilleToolbar.style.display = "none";
-        }
-      }
-
-      const apostilleWatermark = document.getElementById("apostilleWatermark");
-      if (apostilleWatermark && sl.enableWatermark === false) {
-        apostilleWatermark.style.display = "none";
-      } else if (apostilleWatermark) {
-        apostilleWatermark.style.display = "";
-      }
-
-      const aposDisclaimer = document.getElementById("aposDisclaimer");
-      if (aposDisclaimer && sl.enableDisclaimer === false) {
-        aposDisclaimer.style.display = "none";
-      } else if (aposDisclaimer) {
-        aposDisclaimer.style.display = "";
-      }
     }
 
     // Apply Fonts to All Applicable Elements
@@ -593,33 +637,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 3. AUTHORITATIVE SERVER-SIDE VERIFICATION & RESILIENT AUTO-HEAL
   // =========================================================================
   function decodeVerifiableToken(token) {
-    if (!token) return null;
-    try {
-      const jsonStr = decodeURIComponent(escape(atob(token)));
-      const compact = JSON.parse(jsonStr);
-      if (!compact || !compact.n) return null;
-      return {
-        docNumber: compact.n,
-        issueDate: compact.d,
-        applicantName: compact.a,
-        documentType: compact.t || compact.c || "Personal Document",
-        documentCategory: compact.c || compact.t || "Personal Document",
-        country: compact.o || "Pakistan",
-        signedBy: compact.s || "N/A",
-        capacity: compact.p || "Registrar",
-        sealOf: compact.u || "Preston University",
-        issuePlace: compact.l || "Lahore Pakistan",
-        issuingAuthority: compact.auth || "Ministry of Foreign Affairs",
-        signatoryOfficer: compact.so || "Ali Faraz",
-        signatureUrl: compact.sig || "/uploads/signature_ali_faraz_clean.png",
-        signatureWidth: compact.sw || 88,
-        signatureHeight: compact.sh || 34,
-        signatureOffsetY: compact.sy !== undefined ? compact.sy : 0,
-        signatureFilter: compact.sf || "none",
-        pdfFileName: compact.pdf || "",
-        status: compact.st || "VERIFIED"
-      };
-    } catch {
+        if (!token) return null;
+        try {
+          const jsonStr = decodeURIComponent(escape(atob(token)));
+          const compact = JSON.parse(jsonStr);
+          if (!compact || !compact.n) return null;
+          const pdfTarget = compact.pdf || "";
+          const pdfCleanUrl = pdfTarget ? (pdfTarget.startsWith("/") ? pdfTarget : `/uploads/${pdfTarget}`) : "";
+          return {
+            docNumber: compact.n,
+            issueDate: compact.d,
+            applicantName: compact.a,
+            documentType: compact.t || compact.c || "Personal Document",
+            documentCategory: compact.c || compact.t || "Personal Document",
+            country: compact.o || "Pakistan",
+            signedBy: compact.s || "N/A",
+            capacity: compact.p || "Registrar",
+            sealOf: compact.u || "Preston University",
+            issuePlace: compact.l || "Lahore Pakistan",
+            issuingAuthority: compact.auth || "Ministry of Foreign Affairs",
+            signatoryOfficer: compact.so || "Ali Faraz",
+            signatureUrl: compact.sig || "/uploads/signature_ali_faraz_clean.png",
+            signatureWidth: compact.sw || 88,
+            signatureHeight: compact.sh || 34,
+            signatureOffsetY: compact.sy !== undefined ? compact.sy : 0,
+            signatureFilter: compact.sf || "none",
+            pdfUrl: pdfCleanUrl,
+            pdfFileName: pdfTarget ? pdfTarget.split("/").pop() : "",
+            status: compact.st || "VERIFIED"
+          };
+        } catch {
       return null;
     }
   }
@@ -876,7 +923,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Attested PDF Attachment (Desktop embed & Mobile container)
       let pdfUrl = (rec.pdfData && rec.pdfData.startsWith('data:application/pdf'))
         ? rec.pdfData
-        : (rec.pdfUrl || (rec.pdfFileName ? `/uploads/${encodeURIComponent(rec.pdfFileName)}` : ''));
+        : (rec.pdfUrl || (rec.pdfFileName ? (rec.pdfFileName.startsWith('/') ? rec.pdfFileName : `/uploads/${encodeURIComponent(rec.pdfFileName)}`) : ''));
       if (!pdfUrl) {
         pdfUrl = (currentConfig?.certificateView?.defaultPdfUrl) || '/uploads/wLb2mwU18B98yhP5HgPkdE365DWUOhgJCl0djEsH.pdf';
       }
@@ -1503,6 +1550,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const paramDoc = urlParams.get("doc") || urlParams.get("id") || urlParams.get("cert");
   const paramDate = urlParams.get("date");
+  const tokenRecord = decodeVerifiableToken(urlParams.get("v"));
 
   if (paramDoc) {
     docNumberInput.value = paramDoc;
@@ -1516,8 +1564,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const heroSection = document.getElementById("heroSection");
     if (heroSection) {
-      heroSection.style.display = "none";
-    }
-    executeVerification(paramDoc, paramDate || "");
+          heroSection.style.display = "none";
+        }
+    
+        // Instant Hydration: If valid signed token exists in URL, render verified certificate immediately
+        if (tokenRecord && tokenRecord.docNumber.toUpperCase() === String(paramDoc).trim().toUpperCase()) {
+          renderVerificationResult({
+            success: true,
+            status: tokenRecord.status || "VERIFIED",
+            record: tokenRecord
+          }, paramDoc, paramDate || tokenRecord.issueDate);
+        }
+    
+        executeVerification(paramDoc, paramDate || "");
   }
 });
