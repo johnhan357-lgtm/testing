@@ -907,7 +907,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Live Scannable High-Definition QR Code linking to official verification endpoint
       if (aposQrCode) {
-        const qrUrl = `${window.location.origin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
+        const baseOrigin = (window.location.origin && !window.location.origin.includes('localhost') && !window.location.origin.includes('127.0.0.1') && !window.location.origin.startsWith('file'))
+          ? window.location.origin
+          : 'https://apostille-mofa-gov-pk-verify-attestation.vercel.app';
+        const qrUrl = `${baseOrigin}/index.html?doc=${encodeURIComponent(rec.docNumber)}&date=${encodeURIComponent(rec.issueDate)}`;
         try {
           if (typeof window.renderQRCodeSVG === "function") {
             aposQrCode.innerHTML = window.renderQRCodeSVG(qrUrl, 84, 4);

@@ -181,16 +181,16 @@
       "certifiedFontSize": 1.55,
       "certifiedPadding": 6,
       "boxes58Padding": 4,
-      "bottomSealWidth": 40,
-      "bottomQrWidth": 20,
-      "bottomSigWidth": 40,
-      "qrBoxSize": 92,
+      "bottomSealWidth": 39,
+      "bottomQrWidth": 22,
+      "bottomSigWidth": 39,
+      "qrBoxSize": 84,
       "sealSpace": 38
     }
   },
   "metadata": {
-    "lastSavedAt": "2026-11-09T05:03:35.059Z",
-    "lastPublishedAt": "2026-11-09T13:22:21.057Z",
-    "version": 1014
+    "lastSavedAt": "2026-11-09T17:23:07.334Z",
+    "lastPublishedAt": "2026-11-09T17:23:07.343Z",
+    "version": 1016
   }
 }
