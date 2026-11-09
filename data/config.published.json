@@ -23,9 +23,8 @@
   },
   "fieldFonts": {
     "cfgHeroTitle": "Poppins",
-    "cfgCertConventionTitle": "Fair",
-    "cfgCertSignatoryOfficer": "Times",
-    "cfgHelpText": "Helvetica"
+    "cfgHelpText": "Helvetica",
+    "cfgCertConventionTitle": "Fair"
   },
   "navigation": [
     {
@@ -154,6 +153,10 @@
     "signatoryOfficer": "Ali Faraz",
     "defaultSignatory": "Ali Faraz",
     "signatureUrl": "/uploads/signature_ali_faraz_clean.png",
+    "defaultSignatureWidth": 88,
+    "defaultSignatureHeight": 34,
+    "defaultSignatureOffsetY": 0,
+    "defaultSignatureFilter": "none",
     "disclaimerText": "This apostille is not intended for use in Pakistan. It solely confirms the authenticity of the signature, seal, or stamp on the attached Pakistan public document. Please note that it does not verify the authenticity of the underlying document.",
     "verificationUrlText": "To verify this apostille, visit www.apostille.mofa.gov.pk",
     "enablePdfViewer": true,
@@ -173,8 +176,8 @@
     }
   },
   "metadata": {
-    "lastSavedAt": "2026-11-09T04:14:08.853Z",
-    "lastPublishedAt": "2026-11-09T04:14:08.861Z",
-    "version": 136
+    "lastSavedAt": "2026-11-09T04:27:34.515Z",
+    "lastPublishedAt": "2026-11-09T04:27:26.381Z",
+    "version": 1007
   }
 }
