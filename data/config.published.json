@@ -183,12 +183,13 @@
       "bottomQrWidth": 22,
       "bottomSigWidth": 39,
       "qrBoxSize": 76,
-      "sealSpace": 22
+      "sealSpace": 22,
+      "subtitlePadding": 2
     }
   },
   "metadata": {
     "lastSavedAt": "2026-11-09T05:03:35.059Z",
-    "lastPublishedAt": "2026-11-09T05:03:27.090Z",
-    "version": 1011
+    "lastPublishedAt": "2026-11-09T12:52:38.561Z",
+    "version": 1012
   }
 }
