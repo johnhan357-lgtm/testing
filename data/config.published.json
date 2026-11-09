@@ -177,27 +177,26 @@
       "lineSpacing": 4,
       "fontScale": 100,
       "borderStyle": "1px solid #000000",
-      "enableCollapseButton": false,
-      "enableWatermark": true,
-      "enableDisclaimer": true,
       "box1Split": 32,
       "headerPadding": 8,
       "subtitlePadding": 5,
       "box1Padding": 6,
       "boxes24Padding": 6,
       "certifiedFontSize": 1.55,
-      "certifiedPadding": 6,
       "boxes58Padding": 4,
       "bottomSealWidth": 39,
       "bottomQrWidth": 22,
       "bottomSigWidth": 39,
       "qrBoxSize": 84,
-      "sealSpace": 38
+      "sealSpace": 38,
+      "enableCollapseButton": false,
+      "enableWatermark": true,
+      "enableDisclaimer": true
     }
   },
   "metadata": {
-    "lastSavedAt": "2026-11-09T17:23:07.334Z",
-    "lastPublishedAt": "2026-11-09T17:23:07.343Z",
-    "version": 1016
+    "lastSavedAt": "2026-11-09T18:01:32.345Z",
+    "lastPublishedAt": "2026-11-09T18:01:24.619Z",
+    "version": 1020
   }
 }
